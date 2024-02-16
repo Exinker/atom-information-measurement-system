@@ -1,0 +1,7 @@
+matplotlib
+numpy
+pandas
+tqdm
+watchdog
+
+# spectrumapp @ git+https://github.com/Exinker/spectrumapp.git@develop
