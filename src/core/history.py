@@ -142,7 +142,7 @@ class History:
         if data.empty:
             return tuple()
 
-        paths = tuple(data['path'])
+        paths = tuple(data['path'].unique())
         return paths
 
     # --------        handlers        --------
