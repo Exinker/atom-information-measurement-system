@@ -4,8 +4,8 @@ import os
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from spectrumapp.core.color import COLOR
-from spectrumapp.core.utils import pave
 from spectrumapp.core.setting import set_setting
+from spectrumapp.core.utils import pave
 from spectrumapp.utils.find import find_window
 from spectrumapp.window.window import BaseWindow
 
@@ -40,13 +40,13 @@ class LastRecordFrame(QtWidgets.QFrame):
         # analysisLabel
         widget = self.findChild(QtWidgets.QLabel, 'analysisNameValueLavel')
         widget.setText(
-            f'{datum.analysis_name}'
+            f'{datum.analysis_name}',
         )
 
         # sampleNameLabel
         widget = self.findChild(QtWidgets.QLabel, 'sampleNameValueLavel')
         widget.setText(
-            f'{datum.probe_name}'
+            f'{datum.probe_name}',
         )
 
 
@@ -99,7 +99,7 @@ class StatInfoFrame(QtWidgets.QFrame):
         # trackedNumberLabel
         widget = self.findChild(QtWidgets.QLabel, 'trackedValueLabel')
         widget.setText(
-            f'<strong>{n_tracked}</strong>/{n_columns}'
+            f'<strong>{n_tracked}</strong>/{n_columns}',
         )
 
         # warningNumberLabel

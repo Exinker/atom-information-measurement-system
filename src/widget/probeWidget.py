@@ -48,7 +48,7 @@ class TableModel(QtCore.QAbstractTableModel):
                     else:
                         return value.strftime('%H:%M:%S')
 
-                if column in ('analysis_name', 'file_name',):
+                if column in ('analysis_name', 'file_name', ):
                     if row in self._target_rows:
                         return ''
                     else:
@@ -77,7 +77,7 @@ class TableModel(QtCore.QAbstractTableModel):
                     if (row == 'ОСКО, %') and (column in self._target_columns):
                         value = self._data.loc[row, column]
 
-                        if value >= 5:  # FIXME: 
+                        if value >= 5:  # FIXME:
                             font = QtGui.QFont()
                             font.setBold(True)
 
@@ -88,9 +88,9 @@ class TableModel(QtCore.QAbstractTableModel):
                     if (row == 'ОСКО, %') and (column in self._target_columns):
                         value = self._data.loc[row, column]
 
-                        if value >= 10:  # FIXME: 
+                        if value >= 10:  # FIXME:
                             return QtGui.QColor(COLOR['red'])
-                        if value >= 5:  # FIXME: 
+                        if value >= 5:  # FIXME:
                             return QtGui.QColor(COLOR['orange'])
 
             if role == QtCore.Qt.BackgroundRole:

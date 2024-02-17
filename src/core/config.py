@@ -8,6 +8,8 @@ from typing import Any
 
 from spectrumapp.core.exception import eprint
 
+from src import APPLICATION_VERSION
+
 
 # ---------        CONSTANTS        ---------
 DEBUG = True
@@ -288,7 +290,7 @@ class Config():
 
                     sep=Separator(value=data['sep']),
 
-                    database_path=DatabasePath(path=data['database_path'])
+                    database_path=DatabasePath(path=data['database_path']),
                 )
 
         except (json.JSONDecodeError, TypeError, ValueError, KeyError):

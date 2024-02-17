@@ -9,10 +9,10 @@ import pandas as pd
 from .alias import AnalysisName, Frame, ProbeName, Series
 from .atom_data import AtomData
 from .atom_database import MeasurementToleranceDatabase
-from .config import Config, TrackedPediod, Mode
+from .config import Config, Mode, TrackedPediod
 from .history import History
-from .utils import load_xml, normalize_name
 from .setting import FilterLevel, SorterKind
+from .utils import load_xml, normalize_name
 
 
 @dataclass
@@ -78,7 +78,7 @@ class Datum:
         )
 
     @classmethod
-    def from_default(cls, analysis_name: AnalysisName = '', probe_name: ProbeName = '',) -> 'Datum':
+    def from_default(cls, analysis_name: AnalysisName = '', probe_name: ProbeName = '') -> 'Datum':
         """Get empty `datum`."""
 
         return cls(
@@ -148,7 +148,7 @@ class Datum:
                                 cond[j] = False
 
                         case _:
-                            assert False, f'Tracked pediod {config.tracked_period} is not used!.'
+                            raise ValueError(f'Tracked pediod {config.tracked_period} is not supported!.')
 
                 # parse probes
                 for probe_id in atom_data.probes.index[cond]:
@@ -298,7 +298,7 @@ class Data:
             return self.items[0]
 
         except IndexError:
-            return None
+            return Datum.from_default()
 
     # --------        handlers        --------
     @classmethod

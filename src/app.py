@@ -94,7 +94,7 @@ class MainWindow(BaseMainWindow):
 
         # main window
         self.setCentralWidget(
-            CentralWidget(parent=self)
+            CentralWidget(parent=self),
         )
 
         # info window
@@ -165,7 +165,7 @@ class MainWindow(BaseMainWindow):
         for window in app.topLevelWidgets():
             window_name = window.objectName()
 
-            if window_name in ('mainWindow',):
+            if window_name in ('mainWindow', ):
                 pass
             else:
                 window.close()
@@ -194,10 +194,10 @@ class MainWindow(BaseMainWindow):
         for window in app.topLevelWidgets():
             window_name = window.objectName()
 
-            if window_name in ('mainWindow',):
+            if window_name in ('mainWindow', ):
                 window.centralWidget()._onRefreshAction()
 
-            if window_name in ('widgetWindow',):
+            if window_name in ('widgetWindow', ):
                 window._onRefreshAction()
 
             if window_name in ('HelpWindow', 'AboutWindow', ):
