@@ -1,11 +1,13 @@
 # -*- mode: python ; coding: utf-8 -*-
-
 import os
+
+from src import APPLICATION_NAME, APPLICATION_VERSION
+
 block_cipher = None
 
 
 a = Analysis(
-    ['app.py'],
+    ['src/app.py'],
     pathex=['.'],
     binaries=[],
     datas=[
@@ -31,7 +33,10 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='Atom Information System 0.1.4a (beta)',
+    name='{name} {version}a (beta)'.format(
+        name=APPLICATION_NAME,
+        version=APPLICATION_VERSION,
+    ),
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

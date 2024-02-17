@@ -18,30 +18,30 @@ import os
 import sys
 from datetime import datetime
 
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtWidgets
 
-from spectrumapp.core.logging import setdefault_logging, log
-from spectrumapp.window.splashScreenWindow import splashscreen
-from spectrumapp.window.window import BaseMainWindow
+from spectrumapp.core.logging import log, setdefault_logging
 from spectrumapp.utils.find import find_window
 from spectrumapp.utils.modifier import wait
+from spectrumapp.window.splashScreenWindow import splashscreen
+from spectrumapp.window.window import BaseMainWindow
 
-from core.config import APPLICATION_NAME, APPLICATION_VERSION, ORGANIZATION_NAME, DEBUG
-from core.config import setdefault_config, Config
-from core.data import fetch_data
-from core.observer import Observer, ObserverEventHandler
-from core.setting import setdefault_setting, set_setting, get_setting
-from widget.analisysWidget import AnalysisWidget
-from widget.metaWidget import MetaWidget
-from widget.probeWidget import ProbeWidget
-from window.widgetWindow import WidgetWindow
+from src import APPLICATION_NAME, APPLICATION_VERSION, ORGANIZATION_NAME
+from src.core.config import DEBUG, Config, setdefault_config
+from src.core.data import fetch_data
+from src.core.observer import Observer, ObserverEventHandler
+from src.core.setting import get_setting, set_setting, setdefault_setting
+from src.widget.analisysWidget import AnalysisWidget
+from src.widget.metaWidget import MetaWidget
+from src.widget.probeWidget import ProbeWidget
+from src.window.widgetWindow import WidgetWindow
 
 
 try:  # change app id for correct icon present
     from PySide6.QtWinExtras import QtWin
 
-    myAppID = f'{ORGANIZATION_NAME}.{APPLICATION_NAME}.MAINWINDOW.{APPLICATION_VERSION}'
-    QtWin.setCurrentProcessExplicitAppUserModelID(myAppID)
+    app_id = f'{ORGANIZATION_NAME}.{APPLICATION_NAME}.MAINWINDOW.{APPLICATION_VERSION}'
+    QtWin.setCurrentProcessExplicitAppUserModelID(app_id)
 
 except ImportError:
     pass
@@ -121,6 +121,7 @@ class MainWindow(BaseMainWindow):
     @log(msg='window: open', debug=DEBUG)
     @wait
     def _onOpenAction(self):
+        app = QtWidgets.QApplication.instance()
 
         # update path
         path = QtWidgets.QFileDialog().getExistingDirectory(
@@ -149,9 +150,9 @@ class MainWindow(BaseMainWindow):
     # @splashscreen(delay=1)
     def _onResetAppAction(self, *args, **kwargs):
         '''An action occurs due to change file.'''
+        app = QtWidgets.QApplication.instance()
 
         # reset app
-        app = QtWidgets.QApplication.instance()
         app.reset()
 
         # update title
@@ -175,9 +176,8 @@ class MainWindow(BaseMainWindow):
         app = QtWidgets.QApplication.instance()
 
         # visible
-        if (get_setting(key='mainWindow/visible') == False) and (get_setting(key='widgetWindow/visible') == False):
+        if (not get_setting(key='mainWindow/visible')) and (not get_setting(key='widgetWindow/visible')):
             visible = True
-
         else:
             visible = get_setting(key='mainWindow/visible')
 
@@ -246,7 +246,7 @@ class Application(QtWidgets.QApplication):
         """Setup tracked path observer."""
 
         # observer's handler
-        handler = ObserverEventHandler(callback=app.reset, logger=logging.getLogger('app'))
+        handler = ObserverEventHandler(callback=self.reset, logger=logging.getLogger('app'))
 
         # observer's path
         path = os.path.abspath(

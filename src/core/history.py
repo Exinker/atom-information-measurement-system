@@ -7,7 +7,7 @@ from typing import Iterator
 import pandas as pd
 
 from .alias import AnalysisName, XMLPath, Frame, ProbeName, XML
-from .config import TrackedPath
+from .config import DEBUG, TrackedPath
 from .utils import load_xml, normalize_name, normalize_datetime
 
 
@@ -34,7 +34,7 @@ def parse_analysis(xml: XML) -> AnalysisName:
     try:
         analysis_name = xml.find('titul').find('aname').text
 
-    except AttributeError as error:
+    except AttributeError:
         return ''
 
     return analysis_name
@@ -48,8 +48,8 @@ def parse_probes(xml: XML, sep: str) -> Frame:
         columns=['id', 'name', 'dt'],
     ).set_index('id', drop=False)
 
+    # parse probe
     try:
-        # parse probe
         for probe in xml.find('probes').findall('probe'):
 
             is_not_empty = len(probe.findall('spe')) > 0
@@ -59,7 +59,7 @@ def parse_probes(xml: XML, sep: str) -> Frame:
                 probes.loc[probe_id, 'name'] = normalize_name(probe.attrib['name'], sep=sep)
                 probes.loc[probe_id, 'dt'] = normalize_datetime(probe.find('date[@type="last"]').text)
 
-    except AttributeError as error:
+    except AttributeError:
         return None
 
     return probes
@@ -115,7 +115,7 @@ class History:
         raise NotImplementedError
 
     def get_queue(self, analysis_name: AnalysisName, n: int = 1, ascending: bool = False) -> tuple[ProbeName]:
-        """Get the n latest probe names for a given analysis name."""
+        """Get the `n` latest probe names for a given `analysis_name`."""
 
         # select from records
         cond = (self.records['analysis_name'] == analysis_name)
@@ -123,10 +123,10 @@ class History:
         data = data.set_index('dt', drop=False)
         data = data.groupby(by='probe_name').max().sort_values(by='dt')
 
-        #
         if data.empty:
             return tuple()
 
+        #
         probe_names = tuple(data.iloc[-n:].index)
         probe_names = probe_names if ascending else reversed(probe_names)
         return probe_names
@@ -147,11 +147,13 @@ class History:
 
     # --------        handlers        --------
     @classmethod
-    def from_path(cls, tracked_path: TrackedPath, sep: str) -> 'History':
+    def from_path(cls, tracked_path: TrackedPath, sep: str, verbose: bool = False) -> 'History':
         """Get history for a given path by iterable walk."""
 
         records = []
         for filepath, xml in walk(tracked_path):
+            if verbose or DEBUG:
+                print(filepath)
 
             # parse analysis data
             analysis_name = parse_analysis(xml)
@@ -160,6 +162,9 @@ class History:
 
             # parse probe data
             probes = parse_probes(xml, sep=sep)
+            if verbose or DEBUG:
+                print(probes)
+
             if probes.empty:
                 continue
 

@@ -1,14 +1,10 @@
-
 import logging
 import os
 from logging import Logger
 from typing import Callable, Literal
 
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler, FileSystemEvent
-
-
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore
+from watchdog.events import FileSystemEvent, FileSystemEventHandler
 
 
 class Bridge(QtCore.QObject):
@@ -41,7 +37,3 @@ class ObserverEventHandler(FileSystemEventHandler):
                 self.logger.info('observer: %s file: %s', kind, event.src_path)
 
                 self.bridge.updated.emit(event)
-
-                # filepath = os.path.join('.', 'tmp.txt')
-                # with open(filepath, 'w', encoding='utf-8') as file:
-                #     file.write(event.src_path)

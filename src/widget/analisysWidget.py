@@ -1,8 +1,8 @@
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from core.setting import get_setting
-from widget.probeWidget import ProbeWidget
+from src.core.setting import get_setting
+from src.widget.probeWidget import ProbeWidget
 
 
 def _format_tab_label(label: str) -> str:

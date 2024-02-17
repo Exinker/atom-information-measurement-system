@@ -4,7 +4,7 @@ import subprocess
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
-from .alias import XMLPath, ProbeName, XML
+from .alias import ProbeName, XML, XMLPath
 from .config import EXPLORER
 
 
@@ -38,7 +38,7 @@ def load_xml(path: XMLPath) -> XML | None:
 
         return xml
 
-    except Exception as error:  # TODO: refactor
+    except Exception:  # TODO: refactor
         return None
 
 
@@ -57,5 +57,5 @@ def run_explorer(path: XMLPath):
         if os.path.isfile(path):
             subprocess.run([EXPLORER, '/select,', f'{path}'])
 
-    except (TypeError, FileNotFoundError) as error:  # TODO: refactor
+    except (TypeError, FileNotFoundError):  # TODO: refactor
         pass

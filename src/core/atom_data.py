@@ -1,12 +1,10 @@
-
 from dataclasses import dataclass
 from datetime import datetime
 
 import pandas as pd
 
 from .alias import AnalysisName, Frame, XML
-from .config import FiltratedSheet, FiltratedLabel
-from .utils import normalize_datetime
+from .config import FiltratedLabel, FiltratedSheet
 
 
 # --------        Meta        --------
@@ -22,13 +20,11 @@ class Meta:
         """Get recorded meta from Atom's .xml file."""
 
         # parse
-        analysis_name = xml.find('titul').find('aname').text
         organization_name = xml.find('titul').find('organization').text
         device_name = xml.find('titul').find('device').text
         user_name = xml.find('titul').find('user').text
-        # dt = normalize_datetime(xml.find('titul').find('date').text)
+        analysis_name = xml.find('titul').find('aname').text
 
-        #
         return cls(
             organization_name=organization_name,
             device_name=device_name,
@@ -41,7 +37,6 @@ class Meta:
 def _find_sheets(element: XML, sheet_name: FiltratedSheet) -> list[XML]:
     """Find sheets for a given name (or return all sheets)."""
 
-    #
     if sheet_name is None:
         return element.findall('sheet')
 
@@ -64,7 +59,7 @@ def _find_line_columns(element: XML, label: FiltratedLabel) -> list[XML]:
             }.get(label.value, label.value)
 
             return element.findall(f'column[@type="line"][@{key}="yes"]')
-        
+
         case _:
             assert False, f'Filtrated label {label.value} is not used!.'
 
@@ -123,7 +118,7 @@ class AtomData:
 
                 line_id = int(column.attrib['id'])
                 symbol = column.find('element').text
-                
+
                 lines.loc[line_id, 'id'] = line_id
                 lines.loc[line_id, 'symbol'] = symbol
                 lines.loc[line_id, 'wavelength'] = column.find('wl').text

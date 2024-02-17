@@ -1,7 +1,11 @@
-matplotlib
-numpy
-pandas
-tqdm
-watchdog
+-r requirements.txt
 
-# spectrumapp @ git+https://github.com/Exinker/spectrumapp.git@develop
+flake8
+flake8-commas
+flake8-import-order
+flake8-bugbear
+flake8-builtins
+pep8-naming
+
+pyinstaller
+pytest

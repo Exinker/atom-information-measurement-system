@@ -1,7 +1,6 @@
+from PySide6 import QtCore, QtWidgets
 
-from PySide6 import QtCore, QtGui, QtWidgets
-
-from core.setting import get_setting
+from src.core.setting import get_setting
 
 
 class LastRecordFrame(QtWidgets.QFrame):

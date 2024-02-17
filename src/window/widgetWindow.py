@@ -9,8 +9,8 @@ from spectrumapp.core.setting import set_setting
 from spectrumapp.utils.find import find_window
 from spectrumapp.window.window import BaseWindow
 
-from core.setting import get_setting
-from core.config import APPLICATION_NAME, APPLICATION_VERSION
+from src import APPLICATION_NAME, APPLICATION_VERSION
+from src.core.setting import get_setting
 
 
 class LastRecordFrame(QtWidgets.QFrame):

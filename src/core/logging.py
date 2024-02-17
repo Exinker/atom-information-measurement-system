@@ -80,4 +80,4 @@ def setdefault_logging():
     #
     if DEBUG or DEVELOP:
         logger = logging.getLogger('app')
-        logger.debug(f'app: run')
+        logger.debug('app: run')

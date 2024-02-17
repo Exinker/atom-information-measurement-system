@@ -1,26 +1,16 @@
-
 import dataclasses
 import json
 import os
 import sys
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, TypeAlias
+from typing import Any
 
 from spectrumapp.core.exception import eprint
 
 
 # ---------        CONSTANTS        ---------
-APPLICATION_NAME = 'Atom Information Measurement System'
-APPLICATION_DESCRIPTION = ''''''
-APPLICATION_VERSION = '0.1.4'
-
-AUTHOR_NAME = 'Pavel Vaschenko'
-AUTHOR_EMAIL = 'vaschenko@vmk.ru'
-
-ORGANIZATION_NAME = 'VMK-Optoelektronika'
-
-DEBUG = False
+DEBUG = True
 DEPLOY = hasattr(sys, '_MEIPASS')
 
 # ---------        EXPLORER        ---------
@@ -116,15 +106,15 @@ class FiltratedSheet:
         if value is None:
             return None
 
-        # 
+        #
         if not isinstance(value, str):
-            message = 'Filtrated sheet have to be "null" or string!'.format(
+            message = 'Filtrated sheet "{value}" have to be "null" or string!'.format(
                 value=json.dumps(value),
             )
             raise ValueError(message)
 
         if value == '':
-            message = 'Filtrated sheet have to be NOT empty string!'.format(
+            message = 'Filtrated sheet "{value}" have to be NOT empty string!'.format(
                 value=json.dumps(value),
             )
             raise ValueError(message)
@@ -162,15 +152,15 @@ class Separator:
         if value is None:
             return None
 
-        # 
+        #
         if not isinstance(value, str):
-            message = 'Separator value have to be "null" or string!'.format(
+            message = 'Separator value "{value}" have to be "null" or string!'.format(
                 value=json.dumps(value),
             )
             raise ValueError(message)
 
         if value == '':
-            message = 'Separator value have to be NOT empty string!'.format(
+            message = 'Separator value have "{value}" to be NOT empty string!'.format(
                 value=json.dumps(value),
             )
             raise ValueError(message)
@@ -301,7 +291,7 @@ class Config():
                     database_path=DatabasePath(path=data['database_path'])
                 )
 
-        except (json.JSONDecodeError, TypeError, ValueError, KeyError) as error:
+        except (json.JSONDecodeError, TypeError, ValueError, KeyError):
             eprint(msg='config: from_json')
             config = cls.default(save=True)
 
@@ -312,4 +302,4 @@ def setdefault_config() -> None:
     """Generate default config file if needed."""
 
     if not os.path.exists('config.json'):
-        config = Config.default(save=True)
+        Config.default(save=True)

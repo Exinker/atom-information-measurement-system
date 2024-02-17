@@ -4,7 +4,7 @@ import os
 from enum import Enum
 from typing import Any
 
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore
 
 from spectrumapp.core.logging import log
 

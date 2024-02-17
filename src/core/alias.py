@@ -1,4 +1,3 @@
-
 from typing import NewType, TypeAlias
 from xml.etree.ElementTree import Element
 
@@ -9,7 +8,6 @@ Frame: TypeAlias = pd.DataFrame
 Series: TypeAlias = pd.Series
 
 AnalysisName = NewType('AnalysisName', str)
-XMLPath = NewType('XMLPath', str)
 ProbeName = NewType('ProbeName', str)
 XML = NewType('XML', Element)
-
+XMLPath = NewType('XMLPath', str)

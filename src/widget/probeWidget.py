@@ -1,16 +1,14 @@
-
 import os
 
 import numpy as np
-
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from spectrumapp.core.color import COLOR
 from spectrumapp.core.number import format_number
 
-from core.data import Datum
-from core.setting import get_setting
-from core.utils import run_explorer
+from src.core.data import Datum
+from src.core.setting import get_setting
+from src.core.utils import run_explorer
 
 
 class TableModel(QtCore.QAbstractTableModel):

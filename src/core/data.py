@@ -97,7 +97,7 @@ class Datum:
         # last record
         cond = (history.records['analysis_name'] == tracked_analysis) & ((history.records['probe_name'] == tracked_probe))
         records = history.records[cond]
-        
+
         last_record = records.iloc[-1]
 
         #
@@ -105,7 +105,7 @@ class Datum:
             # meta, prediction, reference
             index = history.get_index(analysis_name=tracked_analysis, probe_name=tracked_probe)
             if len(index) == 0:
-                raise ValueError(f'List of paths is empty!')
+                raise ValueError('List of paths is empty!')
 
             meta = []
             reference = []
@@ -193,7 +193,7 @@ class Datum:
                 prediction,
             ).set_index(['i'], drop=True)
 
-        except (ValueError, KeyError) as error:
+        except (ValueError, KeyError):
             # TODO: add logging
 
             return Datum.from_default(
@@ -223,7 +223,7 @@ class Datum:
 
                 #
                 targets.loc['Cред.'] = values.mean(axis=0, skipna=True)
-                targets.loc['СКО'] = values.std(axis=0, ddof=n_probes>1, skipna=True)
+                targets.loc['СКО'] = values.std(axis=0, ddof=n_probes > 1, skipna=True)
                 targets.loc['ОСКО, %'] = 100 * targets.loc['СКО', nicknames] / targets.loc['Cред.', nicknames]
 
                 values = targets.loc['ОСКО, %']
@@ -236,7 +236,7 @@ class Datum:
                 xml = load_xml(config.database_path)
                 tolerance_database = MeasurementToleranceDatabase.from_xml(xml=xml, analysis_name=tracked_analysis)
 
-                # 
+                #
                 n_probes = prediction.shape[0]
                 values = pd.DataFrame(
                     {},
@@ -261,11 +261,8 @@ class Datum:
                     else:
                         print()
 
-                    
-
                 #
                 print()
-
 
             case Mode.NONE:
                 pass
@@ -306,7 +303,7 @@ class Data:
     # --------        handlers        --------
     @classmethod
     def from_history(cls, history: History, config: Config) -> 'Data':
-        
+
         # tracked analysis
         tracked_analysis = config.tracked_analisys or history.last_analisys_name
 
@@ -337,6 +334,7 @@ def fetch_data(config: Config) -> Data:
 
     # history
     history = History.from_path(tracked_path=config.tracked_path, sep=config.sep)
+    print(history)
 
     #  data
     data = Data.from_history(
