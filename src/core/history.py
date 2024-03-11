@@ -6,9 +6,9 @@ from typing import Iterator
 
 import pandas as pd
 
-from .alias import AnalysisName, XMLPath, Frame, ProbeName, XML
 from .config import DEBUG, TrackedPath
-from .utils import load_xml, normalize_name, normalize_datetime
+from .typing import AnalysisName, Frame, ProbeName, XML, XMLPath
+from .utils import load_xml, normalize_datetime, normalize_name
 
 
 def walk(path: TrackedPath) -> Iterator[tuple[XMLPath, XML]]:

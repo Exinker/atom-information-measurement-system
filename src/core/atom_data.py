@@ -3,8 +3,8 @@ from datetime import datetime
 
 import pandas as pd
 
-from .alias import AnalysisName, Frame, XML
 from .config import FiltratedLabel, FiltratedSheet
+from .typing import AnalysisName, Frame, XML
 
 
 # --------        Meta        --------
@@ -49,19 +49,17 @@ def _find_sheets(element: XML, sheet_name: FiltratedSheet) -> list[XML]:
 def _find_line_columns(element: XML, label: FiltratedLabel) -> list[XML]:
     """Find columns for a given label."""
 
-    match label:
-        case FiltratedLabel.NONE:
-            return element.findall('column[@type="line"]')
+    if label in (FiltratedLabel.NONE, ):
+        return element.findall('column[@type="line"]')
 
-        case FiltratedLabel.ENGINEAR | FiltratedLabel.LABORANT | FiltratedLabel.REPORT:
-            key = {
-                'enginear': 'visible',
-            }.get(label.value, label.value)
+    if label in (FiltratedLabel.ENGINEAR, FiltratedLabel.LABORANT, FiltratedLabel.REPORT):
+        key = {
+            'enginear': 'visible',
+        }.get(label.value, label.value)
 
-            return element.findall(f'column[@type="line"][@{key}="yes"]')
+        return element.findall(f'column[@type="line"][@{key}="yes"]')
 
-        case _:
-            assert False, f'Filtrated label {label.value} is not used!.'
+    raise AssertionError(f'Filtrated label {label.value} is not used!.')
 
 
 @dataclass

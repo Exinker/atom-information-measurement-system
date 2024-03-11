@@ -1,5 +1,4 @@
-
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtWidgets
 
 from src.core.setting import get_setting
 from src.widget.probeWidget import ProbeWidget

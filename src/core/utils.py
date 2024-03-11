@@ -1,11 +1,11 @@
 
 import os
 import subprocess
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ElementTree
 from datetime import datetime
 
-from .alias import ProbeName, XML, XMLPath
 from .config import EXPLORER
+from .typing import ProbeName, XML, XMLPath
 
 
 def normalize_name(name: ProbeName, sep: str) -> ProbeName:
@@ -33,7 +33,7 @@ def load_xml(path: XMLPath) -> XML | None:
     # TODO: check Atom's xml
 
     try:
-        tree = ET.parse(path)
+        tree = ElementTree.parse(path)
         xml = tree.getroot()
 
         return xml

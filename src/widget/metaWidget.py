@@ -52,7 +52,7 @@ class LastRecordFrame(QtWidgets.QFrame):
     # --------        slots        --------
     def _onRefreshAction(self):
         app = QtWidgets.QApplication.instance()
-        
+
         datum = app.data.last_datum
         meta = datum.last_meta
 
@@ -61,37 +61,37 @@ class LastRecordFrame(QtWidgets.QFrame):
 
         widget = self.findChild(QtWidgets.QLabel, 'organizationLabel')
         widget.setText(
-            f'<strong>{meta.organization_name}</strong>'
+            f'<strong>{meta.organization_name}</strong>',
         )
 
         widget = self.findChild(QtWidgets.QLabel, 'deviceLabel')
         widget.setText(
-            f'<strong>{meta.device_name}</strong>'
+            f'<strong>{meta.device_name}</strong>',
         )
 
         widget = self.findChild(QtWidgets.QLabel, 'userLabel')
         widget.setText(
-            f'{meta.user_name}'
+            f'{meta.user_name}',
         )
 
         widget = self.findChild(QtWidgets.QLabel, 'probeNameLabel')
         widget.setText(
-            f'{meta.probe_name}'
+            f'{meta.probe_name}',
         )
 
         widget = self.findChild(QtWidgets.QLabel, 'probeDateLabel')
         widget.setText(
-            f'{meta.datetime_created.date()}'
+            f'{meta.datetime_created.date()}',
         )
 
         widget = self.findChild(QtWidgets.QLabel, 'probeTimeLabel')
         widget.setText(
-            f'{meta.datetime_created.time()}'
+            f'{meta.datetime_created.time()}',
         )
 
         widget = self.findChild(QtWidgets.QLabel, 'analysisNameLabel')
         widget.setText(
-            f'{meta.analysis_name}'
+            f'{meta.analysis_name}',
         )
 
 
@@ -105,7 +105,7 @@ class MetaWidget(QtWidgets.QFrame):
         layout.setSpacing(0)
 
         layout.addSpacing(20)
-        
+
         widget = LastRecordFrame()
         layout.addWidget(widget)
 
@@ -117,6 +117,6 @@ class MetaWidget(QtWidgets.QFrame):
         self.setVisible(visible)
 
         # update widgets
-        for object_name in ['lastRecordFrame', ]:
+        for object_name in ('lastRecordFrame', ):
             widget = self.findChild(QtWidgets.QFrame, object_name)
             widget._onRefreshAction()

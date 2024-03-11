@@ -38,7 +38,7 @@ class ProgressWindowHandler(logging.StreamHandler):
 # @splashscreen(progress=0, info='<strong>SET DEFAULT</strong> logging...')
 def setdefault_logging():
 
-    LOGGING_CONFIG = {
+    config = {
         'version': 1,
         'disable_existing_loggers': False,
 
@@ -72,10 +72,10 @@ def setdefault_logging():
                 'level': logging.DEBUG,
                 'handlers': ['file_handler', 'progress_window_handler'],
                 'propagate': False,
-            }
-        }
+            },
+        },
     }
-    logging.config.dictConfig(LOGGING_CONFIG)
+    logging.config.dictConfig(config)
 
     #
     if DEBUG or DEVELOP:

@@ -48,7 +48,7 @@ class TableModel(QtCore.QAbstractTableModel):
                     else:
                         return value.strftime('%H:%M:%S')
 
-                if column in ('analysis_name', 'file_name', ):
+                if column in ('analysis_name', 'file_name'):
                     if row in self._target_rows:
                         return ''
                     else:
@@ -216,9 +216,7 @@ class TableView(QtWidgets.QTableView):
         # geometry
         # width = n_info_columns*120 + n_target_columns*90 + 20
         # self.setMaximumWidth(width)
-        self.setMinimumSize(
-            QtCore.QSize(5 + 120 + 15, 240)
-        )
+        self.setMinimumSize(QtCore.QSize(5 + 120 + 15, 240))
 
     def _update(self, model: QtCore.QAbstractTableModel):
 

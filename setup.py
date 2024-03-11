@@ -1,25 +1,22 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
-
-install_requires = [
-    item.strip() for item in open('requirements.txt', 'r').readlines()
-    if item.strip()
-]
 
 setup(
-	# info
+    # info
     name='src',
 
-	# setup directories
+    # setup directories
     packages=find_packages(),
 
-	# setup data
-    package_data = {
+    # setup data
+    package_data={
         '': ['*.iso', '*.css'],
     },
 
-	# requires
-    install_requires=install_requires,
+    # requires
+    install_requires=[
+        item.strip() for item in open('requirements.txt', 'r').readlines()
+        if item.strip()
+    ],
     python_requires='>=3.10',
-
 )

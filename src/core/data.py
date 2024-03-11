@@ -6,12 +6,12 @@ from datetime import timedelta
 import numpy as np
 import pandas as pd
 
-from .alias import AnalysisName, Frame, ProbeName, Series
 from .atom_data import AtomData
 from .atom_database import MeasurementToleranceDatabase
 from .config import Config, Mode, TrackedPediod
 from .history import History
 from .setting import FilterLevel, SorterKind
+from .typing import AnalysisName, Frame, ProbeName, Series
 from .utils import load_xml, normalize_name
 
 

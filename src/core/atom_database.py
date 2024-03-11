@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from .alias import AnalysisName, Frame, XML
+from .typing import AnalysisName, Frame, XML
 
 
 @dataclass
