@@ -1,12 +1,14 @@
 
 import os
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Iterator
 
 import pandas as pd
 
-from .config import DEBUG, TrackedPath
+from spectrumapp.exception import eprint
+
+from .config import DEBUG, TrackedPath, TrackedPediod
 from .typing import AnalysisName, Frame, ProbeName, XML, XMLPath
 from .utils import load_xml, normalize_datetime, normalize_name
 
@@ -147,13 +149,32 @@ class History:
 
     # --------        handlers        --------
     @classmethod
-    def from_path(cls, tracked_path: TrackedPath, sep: str, verbose: bool = False) -> 'History':
+    def from_path(cls, tracked_path: TrackedPath, tracked_period: TrackedPediod, sep: str, verbose: bool = False) -> 'History':
         """Get history for a given path by iterable walk."""
+        now = datetime.now()
 
         records = []
         for filepath, xml in walk(tracked_path):
             if verbose or DEBUG:
                 print(filepath)
+
+            # check tracked period
+            dt = normalize_datetime(xml.find('titul').find('date').text)
+
+            match tracked_period:
+                case TrackedPediod.ALL:
+                    pass
+
+                case TrackedPediod.DAY:
+                    if dt.date() != now.date():
+                        continue
+
+                case TrackedPediod._24H:
+                    if dt < (now - timedelta(days=1)):
+                        continue
+
+                case _:
+                    raise ValueError(f'Tracked pediod {config.tracked_period} is not supported!.')
 
             # parse analysis data
             analysis_name = parse_analysis(xml)

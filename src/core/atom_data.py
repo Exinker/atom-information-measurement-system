@@ -5,6 +5,7 @@ import pandas as pd
 
 from .config import FiltratedLabel, FiltratedSheet
 from .typing import AnalysisName, Frame, XML
+from .utils import normalize_datetime
 
 
 # --------        Meta        --------
@@ -87,7 +88,7 @@ class AtomData:
             n_parallels = len(probe.findall('spe'))
             if n_parallels > 0:
                 probe_id = int(probe.attrib['id'])
-                datetimes = [datetime.fromisoformat(parallel.find('date').text) for parallel in probe.findall('spe')]
+                datetimes = [normalize_datetime(parallel.find('date').text) for parallel in probe.findall('spe')]
 
                 probes.loc[probe_id, 'id'] = probe_id
                 probes.loc[probe_id, 'name'] = probe.attrib.get('name', '???')

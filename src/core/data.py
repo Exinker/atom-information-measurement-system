@@ -333,7 +333,7 @@ class Data:
 def fetch_data(config: Config) -> Data:
 
     # history
-    history = History.from_path(tracked_path=config.tracked_path, sep=config.sep)
+    history = History.from_path(tracked_path=config.tracked_path, tracked_period=config.tracked_period, sep=config.sep)
     print(history)
 
     #  data
