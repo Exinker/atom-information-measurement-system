@@ -93,7 +93,7 @@ def get_setting(key: str) -> Any:
             value = settings.value(key)
 
             try:
-                return json.loads(value)
+                value = json.loads(value)
             finally:
                 return value
 

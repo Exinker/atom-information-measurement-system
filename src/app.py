@@ -1,18 +1,3 @@
-"""
-TODO:
-    - Настройка количества значащих цифр (не больше, чем в XML-файле);
-
-TIMEIT:
-    2023.04.10 - 3 days
-    2023.04.17 - 1 day
-    2023.04.24 - 5 days
-    2023.05.02 - 3 days
-    2023.06.05 - 3 days
-    2023.06.12 - 2 days
-    2023.06.19 - 3 days
-    2023.09.11 - 1 days
-"""
-
 import logging
 import os
 import sys
@@ -232,7 +217,7 @@ class Application(QtWidgets.QApplication):
         self.observer = None
 
     # --------        slots        --------
-    # @splashscreen(progress=10, info='<strong>LOADING</strong> user_name interface...')
+    # @splashscreen(progress=10, info='<strong>LOADING</strong> interface...')
     def _setup_window(self, *args, **kwargs) -> None:
         self.window = MainWindow(
             flags=QtCore.Qt.Window | QtCore.Qt.WindowStaysOnTopHint,

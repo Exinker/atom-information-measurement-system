@@ -4,4 +4,4 @@ pandas
 tqdm
 watchdog
 
-# spectrumapp @ git+https://github.com/Exinker/spectrumapp.git@develop
+# spectrumapp @ git+https://github.com/Exinker/spectrumapp.git

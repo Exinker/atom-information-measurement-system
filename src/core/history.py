@@ -12,7 +12,7 @@ from .utils import load_xml, normalize_datetime, normalize_name
 
 
 def walk(path: TrackedPath) -> Iterator[tuple[XMLPath, XML]]:
-    """Iterable walk along for a given path."""
+    """Walk iterable along for a given path."""
 
     for dirpath, dirnames, filenames in os.walk(path):
         for filename in filenames:

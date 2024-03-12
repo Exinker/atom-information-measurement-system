@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
-from spectrumapp.core.exception import eprint
+from spectrumapp.exception import eprint
 
 from src import APPLICATION_VERSION
 
