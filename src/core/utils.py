@@ -36,6 +36,26 @@ def load_xml(path: XMLPath) -> XML | None:
         tree = ElementTree.parse(path)
         xml = tree.getroot()
 
+        # validate xml
+        if xml.tag != 'analysis':
+            return None
+
+        titul = xml.find('titul')
+        if titul is None:
+            return None
+        else:
+            if any(titul.find(tag) is None for tag in ('date', 'organization', 'device', 'user', 'aname')):
+                return None
+
+        probes = xml.find('probes')
+        if probes is None:
+            return None
+
+        columns = xml.find('columns')
+        if columns is None:
+            return None
+
+        #
         return xml
 
     except Exception:  # TODO: refactor
