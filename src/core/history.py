@@ -16,11 +16,11 @@ from .utils import load_xml, normalize_datetime, normalize_name
 def walk(path: TrackedPath) -> Iterator[tuple[XMLPath, XML]]:
     """Walk iterable along for a given path."""
 
-    for dirpath, dirnames, filenames in os.walk(path):
-        for filename in filenames:
+    for filedir, _, filenames in os.walk(path):
 
+        for filename in filenames:
             if filename.endswith('.xml'):
-                filepath = os.path.join(dirpath, filename)
+                filepath = os.path.join(filedir, filename)
                 xml = load_xml(filepath)
 
                 if xml is not None:
@@ -174,7 +174,7 @@ class History:
                         continue
 
                 case _:
-                    raise ValueError(f'Tracked pediod {config.tracked_period} is not supported!.')
+                    raise ValueError(f'Tracked pediod {tracked_period} is not supported!.')
 
             # parse analysis data
             analysis_name = parse_analysis(xml)

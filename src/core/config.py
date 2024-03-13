@@ -30,6 +30,10 @@ class Mode(Enum):
     NONE = 'none'
 
     @classmethod
+    def default(cls) -> 'Mode':
+        return cls.CONVERGENCE
+
+    @classmethod
     def from_str(cls, value: str) -> 'Mode':
 
         valid_values = {item.value: item for item in cls}
@@ -44,6 +48,22 @@ class Mode(Enum):
 
 
 class TrackedPath(str):
+
+    @classmethod
+    def default(cls) -> 'TrackedPath':
+
+        path = os.getcwd()
+        super_path, root_dir = os.path.split(path)
+        database_dir = os.path.join(super_path, 'DB')
+
+        cond = all([
+            root_dir == 'AIMS',
+            os.path.isdir(database_dir),
+        ])
+        if cond:
+            return database_dir
+
+        return path
 
     def __new__(cls, path: str):
 
@@ -66,6 +86,10 @@ class TrackedPediod(Enum):
     ALL = 'all'
     DAY = 'day'
     _24H = '24h'
+
+    @classmethod
+    def default(cls) -> 'TrackedPediod':
+        return cls.DAY
 
     @classmethod
     def from_str(cls, value: str) -> 'TrackedPediod':
@@ -129,6 +153,10 @@ class FiltratedLabel(Enum):
     ENGINEAR = 'enginear'
     REPORT = 'report'
     NONE = 'none'
+
+    @classmethod
+    def default(cls) -> 'FiltratedLabel':
+        return cls.NONE
 
     @classmethod
     def from_str(cls, value: str) -> 'TrackedPediod':
@@ -201,13 +229,13 @@ class Config():
     mode: Mode
 
     tracked_path: TrackedPath
-    tracked_period: TrackedPediod = field(default=TrackedPediod.DAY)
+    tracked_period: TrackedPediod
     tracked_analisys: str = field(default='')
     tracked_probe: str = field(default='')
     tracked_queue: int = field(default=5)
 
     filtrated_by_sheet: FiltratedSheet = field(default=None)
-    filtrated_by_label: FiltratedLabel = field(default=FiltratedLabel.NONE)
+    filtrated_by_label: FiltratedLabel = field(default=FiltratedLabel.default())
 
     sep: str = field(default='*')
 
@@ -217,10 +245,11 @@ class Config():
     def default(cls, save: bool = False) -> 'Config':
         """Generate default config file."""
 
-        config = Config(
+        config = cls(
             version=APPLICATION_VERSION,
-            mode='convergence-control',
-            tracked_path=os.getcwd(),
+            mode=Mode.default(),
+            tracked_path=TrackedPath.default(),
+            tracked_period=TrackedPediod.default(),
         )
 
         #
