@@ -3,6 +3,7 @@ import json
 import os
 import sys
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any
 
@@ -86,6 +87,20 @@ class TrackedPediod(Enum):
     ALL = 'all'
     DAY = 'day'
     _24H = '24h'
+
+    def check(self, dt: datetime) -> bool:
+        now = datetime.now()  # TODO: synchronize with app now datetime!
+
+        if self == TrackedPediod.ALL:
+            return True
+
+        if self == TrackedPediod.DAY:
+            return dt.date() == now.date()
+
+        if self == TrackedPediod._24H:
+            return dt > (now - timedelta(days=1))
+
+        raise ValueError(f'Tracked pediod {self} is not supported!.')
 
     @classmethod
     def default(cls) -> 'TrackedPediod':
