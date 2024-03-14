@@ -10,9 +10,10 @@ from .atom_data import AtomData
 from .atom_database import MeasurementToleranceDatabase
 from .config import Config, Mode, TrackedPediod
 from .history import History
+from .scraper import load_xml
 from .setting import FilterLevel, SorterKind
 from .typing import AnalysisName, Frame, ProbeName, Series
-from .utils import load_xml, normalize_name
+from .utils import normalize_name
 
 
 @dataclass
@@ -334,7 +335,6 @@ def fetch_data(config: Config) -> Data:
 
     # history
     history = History.from_path(tracked_path=config.tracked_path, tracked_period=config.tracked_period, sep=config.sep)
-    print(history)
 
     #  data
     data = Data.from_history(
