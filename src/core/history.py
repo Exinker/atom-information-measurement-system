@@ -33,10 +33,8 @@ def walk(tracked_path: TrackedPath, tracked_period: TrackedPediod) -> Iterator[t
 
 def parse_analysis(xml: XML) -> AnalysisName:
     """Parse analysis from given Atom's `xml`."""
-    # TODO: have to check atom's xml!
 
-    analysis_name = ''
-
+    # parse analysis
     try:
         analysis_name = xml.find('titul').find('aname').text
 
