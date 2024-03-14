@@ -13,18 +13,22 @@ from .typing import AnalysisName, Frame, ProbeName, XML, XMLPath
 from .utils import load_xml, normalize_datetime, normalize_name
 
 
-def walk(path: TrackedPath) -> Iterator[tuple[XMLPath, XML]]:
+def walk(tracked_path: TrackedPath, tracked_period: TrackedPediod) -> Iterator[tuple[XMLPath, XML]]:
     """Walk iterable along for a given path."""
 
-    for dirpath, dirnames, filenames in os.walk(path):
+    for filedir, _, filenames in os.walk(tracked_path):
+
         for filename in filenames:
-
             if filename.endswith('.xml'):
-                filepath = os.path.join(dirpath, filename)
-                xml = load_xml(filepath)
+                filepath = os.path.join(filedir, filename)
+                filestat = os.stat(filepath)
 
-                if xml is not None:
-                    yield filepath, xml
+                created_dt = datetime.fromtimestamp(filestat.st_ctime)
+                if tracked_period.check(created_dt):
+                    xml = load_xml(filepath)
+
+                    if xml is not None:
+                        yield filepath, xml
 
 
 def parse_analysis(xml: XML) -> AnalysisName:
@@ -151,30 +155,11 @@ class History:
     @classmethod
     def from_path(cls, tracked_path: TrackedPath, tracked_period: TrackedPediod, sep: str, verbose: bool = False) -> 'History':
         """Get history for a given path by iterable walk."""
-        now = datetime.now()
 
         records = []
-        for filepath, xml in walk(tracked_path):
+        for filepath, xml in walk(tracked_path, tracked_period):
             if verbose or DEBUG:
                 print(filepath)
-
-            # check tracked period
-            dt = normalize_datetime(xml.find('titul').find('date').text)
-
-            match tracked_period:
-                case TrackedPediod.ALL:
-                    pass
-
-                case TrackedPediod.DAY:
-                    if dt.date() != now.date():
-                        continue
-
-                case TrackedPediod._24H:
-                    if dt < (now - timedelta(days=1)):
-                        continue
-
-                case _:
-                    raise ValueError(f'Tracked pediod {config.tracked_period} is not supported!.')
 
             # parse analysis data
             analysis_name = parse_analysis(xml)
