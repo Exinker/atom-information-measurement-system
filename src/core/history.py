@@ -48,8 +48,6 @@ def parse_analysis(xml: XML) -> AnalysisName:
 
 def parse_probes(xml: XML, sep: str) -> Frame:
     """Parse probes data from given Atom's `xml`."""
-    # TODO: have to check atom's xml!
-
     probes = pd.DataFrame(
         columns=['id', 'name', 'dt'],
     ).set_index('id', drop=False)
@@ -61,12 +59,15 @@ def parse_probes(xml: XML, sep: str) -> Frame:
             is_not_empty = len(probe.findall('spe')) > 0
             if is_not_empty:
                 probe_id = int(probe.attrib['id'])
+
                 probes.loc[probe_id, 'id'] = probe_id
                 probes.loc[probe_id, 'name'] = normalize_name(probe.attrib['name'], sep=sep)
                 probes.loc[probe_id, 'dt'] = normalize_datetime(probe.find('date[@type="last"]').text)
 
     except AttributeError:
-        return None
+        return pd.DataFrame(
+            columns=['id', 'name', 'dt'],
+        ).set_index('id', drop=False)
 
     return probes
 
