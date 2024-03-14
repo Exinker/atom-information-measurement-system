@@ -1,11 +1,9 @@
-
 import os
 import subprocess
-import xml.etree.ElementTree as ElementTree
 from datetime import datetime
 
 from .config import EXPLORER
-from .typing import ProbeName, XML, XMLPath
+from .typing import ProbeName, XMLPath
 
 
 def normalize_name(name: ProbeName, sep: str) -> ProbeName:
@@ -26,40 +24,6 @@ def normalize_name(name: ProbeName, sep: str) -> ProbeName:
 def normalize_datetime(dt: str) -> datetime:
     """Normalize `datetime`."""
     return datetime.fromisoformat(dt)
-
-
-def load_xml(path: XMLPath) -> XML | None:
-    """Load `xml` element object from file for a given `path`."""
-    # TODO: check Atom's xml
-
-    try:
-        tree = ElementTree.parse(path)
-        xml = tree.getroot()
-
-        # validate xml
-        if xml.tag != 'analysis':
-            return None
-
-        titul = xml.find('titul')
-        if titul is None:
-            return None
-        else:
-            if any(titul.find(tag) is None for tag in ('date', 'organization', 'device', 'user', 'aname')):
-                return None
-
-        probes = xml.find('probes')
-        if probes is None:
-            return None
-
-        columns = xml.find('columns')
-        if columns is None:
-            return None
-
-        #
-        return xml
-
-    except Exception:  # TODO: refactor
-        return None
 
 
 def run_explorer(path: XMLPath):

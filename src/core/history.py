@@ -1,73 +1,9 @@
-
-import os
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from typing import Iterator
+from datetime import datetime
 
-import pandas as pd
-
-from spectrumapp.exception import eprint
-
-from .config import DEBUG, TrackedPath, TrackedPediod
-from .typing import AnalysisName, Frame, ProbeName, XML, XMLPath
-from .utils import load_xml, normalize_datetime, normalize_name
-
-
-def walk(tracked_path: TrackedPath, tracked_period: TrackedPediod) -> Iterator[tuple[XMLPath, XML]]:
-    """Walk iterable along for a given path."""
-
-    for filedir, _, filenames in os.walk(tracked_path):
-
-        for filename in filenames:
-            if filename.endswith('.xml'):
-                filepath = os.path.join(filedir, filename)
-                filestat = os.stat(filepath)
-
-                created_dt = datetime.fromtimestamp(filestat.st_ctime)
-                if tracked_period.check(created_dt):
-                    xml = load_xml(filepath)
-
-                    if xml is not None:
-                        yield filepath, xml
-
-
-def parse_analysis(xml: XML) -> AnalysisName:
-    """Parse analysis from given Atom's `xml`."""
-
-    # parse analysis
-    try:
-        analysis_name = xml.find('titul').find('aname').text
-
-    except AttributeError:
-        return ''
-
-    return analysis_name
-
-
-def parse_probes(xml: XML, sep: str) -> Frame:
-    """Parse probes data from given Atom's `xml`."""
-    probes = pd.DataFrame(
-        columns=['id', 'name', 'dt'],
-    ).set_index('id', drop=False)
-
-    # parse probe
-    try:
-        for probe in xml.find('probes').findall('probe'):
-
-            is_not_empty = len(probe.findall('spe')) > 0
-            if is_not_empty:
-                probe_id = int(probe.attrib['id'])
-
-                probes.loc[probe_id, 'id'] = probe_id
-                probes.loc[probe_id, 'name'] = normalize_name(probe.attrib['name'], sep=sep)
-                probes.loc[probe_id, 'dt'] = normalize_datetime(probe.find('date[@type="last"]').text)
-
-    except AttributeError:
-        return pd.DataFrame(
-            columns=['id', 'name', 'dt'],
-        ).set_index('id', drop=False)
-
-    return probes
+from .config import TrackedPath, TrackedPediod
+from .scraper import Scraper
+from .typing import AnalysisName, Frame, ProbeName, XMLPath
 
 
 # --------        History        --------
@@ -155,41 +91,16 @@ class History:
     def from_path(cls, tracked_path: TrackedPath, tracked_period: TrackedPediod, sep: str, verbose: bool = False) -> 'History':
         """Get history for a given path by iterable walk."""
 
-        records = []
-        for filepath, xml in walk(tracked_path, tracked_period):
-            if verbose or DEBUG:
-                print(filepath)
-
-            # parse analysis data
-            analysis_name = parse_analysis(xml)
-            if analysis_name == '':
-                continue
-
-            # parse probe data
-            probes = parse_probes(xml, sep=sep)
-            if verbose or DEBUG:
-                print(probes)
-
-            if probes.empty:
-                continue
-
-            #
-            for probe_id in probes.index:
-                records.append({
-                    'analysis_name': analysis_name,
-                    'probe_name': probes.loc[probe_id, 'name'],
-                    'dt': probes.loc[probe_id, 'dt'],
-                    'path': filepath,
-                })
-
-        records = pd.DataFrame(
-            records,
-            columns=['analysis_name', 'probe_name', 'dt', 'path'],
+        scraper = Scraper(
+            tracked_path=tracked_path,
+            tracked_period=tracked_period,
+            sep=sep,
+            verbose=verbose,
         )
 
         #
         return cls(
-            records=records,
+            records=scraper.parse(),
             tracked_path=tracked_path,
             sep=sep,
         )
