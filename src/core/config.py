@@ -52,19 +52,21 @@ class TrackedPath(str):
 
     @classmethod
     def default(cls) -> 'TrackedPath':
-
         path = os.getcwd()
-        super_path, root_dir = os.path.split(path)
+
+        super_path, root_dirname = os.path.split(path)
         database_dir = os.path.join(super_path, 'DB')
 
-        cond = all([
-            root_dir == 'AIMS',
-            os.path.isdir(database_dir),
-        ])
-        if cond:
-            return database_dir
+        # check root directory
+        if root_dirname.upper() != 'AIMS':
+            return path
 
-        return path
+        # check database directory
+        if not os.path.isdir(database_dir):
+            return path
+
+        #
+        return database_dir
 
     def __new__(cls, path: str):
 
