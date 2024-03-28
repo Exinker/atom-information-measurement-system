@@ -42,7 +42,6 @@ def validate_file(filepath: XMLPath, tracked_period: TrackedPediod) -> bool:
 # --------        xml        --------
 def load_xml(filepath: XMLPath) -> XML | None:
     """Load `xml` element object from file for a given `filepath`."""
-    # TODO: check Atom's xml
 
     try:
         tree = ElementTree.parse(filepath)

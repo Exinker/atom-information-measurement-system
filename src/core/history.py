@@ -6,12 +6,11 @@ from .scraper import Scraper
 from .typing import AnalysisName, Frame, ProbeName, XMLPath
 
 
-# --------        History        --------
 @dataclass
 class Record:
     analysis_name: AnalysisName = field(default='')
     probe_name: ProbeName = field(default='')
-    dt: datetime = field(default_factory=lambda: datetime.fromtimestamp(0))
+    datetime: datetime = field(default_factory=lambda: datetime.fromtimestamp(0))
 
 
 @dataclass
@@ -22,7 +21,7 @@ class History:
 
     @property
     def last_analisys_name(self) -> AnalysisName:
-        """Get the last `Record`'s analysis name."""
+        """Get the last analysis name."""
 
         # select data
         data = self.records[['analysis_name', 'datetime']].copy(deep=True)
@@ -37,7 +36,7 @@ class History:
         return datum['analysis_name']
 
     @property
-    def last_record(self) -> Record:
+    def last_record(self) -> Record | None:
         """Get the last `Record`."""
 
         # select data
@@ -47,14 +46,11 @@ class History:
 
         #
         if data.empty:
-            return Record()
+            return None
 
-        record = Record(**data.iloc[-1])
-        return record
+        return Record(**data.iloc[-1])
 
-    def add(self) -> None:
-        raise NotImplementedError
-
+    # --------        handler        --------
     def get_queue(self, analysis_name: AnalysisName, n: int = 1, ascending: bool = False) -> tuple[ProbeName]:
         """Get the `n` latest probe names for a given `analysis_name`."""
 
@@ -72,21 +68,27 @@ class History:
         probe_names = probe_names if ascending else reversed(probe_names)
         return probe_names
 
-    def get_index(self, analysis_name: AnalysisName, probe_name: ProbeName) -> tuple[XMLPath]:
+    def get_paths(self) -> tuple[XMLPath]:
         """Get filepaths of all `xml` files for a given analysis and probe's name."""
 
-        # select from records
-        cond = (self.records['analysis_name'] == analysis_name) & (self.records['probe_name'] == probe_name)
-        data = self.records[cond][['analysis_name', 'probe_name', 'path']].copy(deep=True)
-
-        #
-        if data.empty:
+        if self.records.empty:
             return tuple()
 
-        paths = tuple(data['path'].unique())
-        return paths
+        return tuple(self.records['path'].unique())
 
-    # --------        handlers        --------
+    # --------        factory        --------
+    def select(self, analysis_name: AnalysisName, probe_name: ProbeName) -> 'History':
+
+        cond = (self.records['analysis_name'] == analysis_name) & (self.records['probe_name'] == probe_name)
+        records = self.records[cond].copy(deep=True)
+
+        #
+        return self.__class__(
+            records=records,
+            tracked_path=self.tracked_path,
+            sep=self.sep,
+        )
+
     @classmethod
     def from_path(cls, tracked_path: TrackedPath, tracked_period: TrackedPediod, sep: str, verbose: bool = False) -> 'History':
         """Get history for a given path by iterable walk."""

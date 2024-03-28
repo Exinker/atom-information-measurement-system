@@ -91,32 +91,31 @@ class Datum:
         )
 
     @classmethod
-    def from_history(cls, tracked_analysis: AnalysisName, tracked_probe: ProbeName, history: History, config: Config) -> 'Datum':
+    def from_history(cls, history: History, tracked_analysis: AnalysisName, tracked_probe: ProbeName, config: Config) -> 'Datum':
         """Get `datum` from history."""
 
-        # last record
-        cond = (history.records['analysis_name'] == tracked_analysis) & ((history.records['probe_name'] == tracked_probe))
-        records = history.records[cond]
-
-        last_record = records.iloc[-1]
+        # select history
+        history = history.select(
+            analysis_name=tracked_analysis,
+            probe_name=tracked_probe,
+        )
 
         #
         try:
             # meta, prediction, reference
-            index = history.get_index(analysis_name=tracked_analysis, probe_name=tracked_probe)
-            if len(index) == 0:
+            paths = history.get_paths()
+            if len(paths) == 0:
                 raise ValueError('List of paths is empty!')
 
             meta = []
             reference = []
             prediction = []
             i = -1
-            for path in index:
-                filedir, filename = os.path.split(path)
-
-                xml = load_xml(path)
+            for path in paths:
 
                 # atom data
+                xml = load_xml(path)
+
                 atom_data = AtomData.from_xml(
                     xml=xml,
                     filtrated_by_sheet=config.filtrated_by_sheet,
@@ -124,25 +123,26 @@ class Datum:
                 )
 
                 # filtrate probes
-                probes = atom_data.probes
-                n_probes, _ = probes.shape
+                n_probes, _ = atom_data.probes.shape
 
                 cond = np.full(n_probes, True)
                 for j in range(n_probes):
 
                     # check: probe's name
                     cond[j] = cond[j] and normalize_name(
-                        name=probes.iloc[j]['name'],
+                        name=atom_data.probes.iloc[j]['name'],
                         sep=history.sep,
                     ) == tracked_probe
 
                     # check: probe's created datetime
                     cond[j] = cond[j] and config.tracked_period.check(
-                        value=probes.iloc[j]['datetime'],
-                        ref=last_record['datetime'],
+                        value=atom_data.probes.iloc[j]['datetime'],
+                        ref=history.last_record.datetime,
                     )
 
                 # parse probes
+                filedir, filename = os.path.split(path)
+
                 for probe_id in atom_data.probes.index[cond]:
                     i += 1
 
@@ -309,9 +309,9 @@ class Data:
         items = []
         for tracked_probe in tracked_probes:
             item = Datum.from_history(
+                history=history,
                 tracked_analysis=tracked_analysis,
                 tracked_probe=tracked_probe,
-                history=history,
                 config=config,
             )
             items.append(item)
