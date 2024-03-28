@@ -142,7 +142,7 @@ class MainWindow(BaseMainWindow):
 
         # update title
         datum = app.data.last_datum
-        dt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        dt = app.datetime.strftime('%Y-%m-%d %H:%M:%S')
         title = f'{APPLICATION_NAME} - [{datum.analysis_name} / {datum.probe_name}] - [{dt}]'
         self.setWindowTitle(title)
 
@@ -170,7 +170,7 @@ class MainWindow(BaseMainWindow):
 
         # update window: title
         datum = app.data.last_datum
-        dt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        dt = app.datetime.strftime('%Y-%m-%d %H:%M:%S')
 
         title = f'{APPLICATION_NAME} - [{datum.analysis_name} / {datum.probe_name}] - [{dt}]' if datum else f'{APPLICATION_NAME} - [{dt}]'
         self.setWindowTitle(title)
@@ -212,19 +212,32 @@ class Application(QtWidgets.QApplication):
         self.setApplicationName(APPLICATION_NAME)
         self.setApplicationVersion(APPLICATION_VERSION)
 
+        self.milestone = None
         self.data = None
         self.window = None
         self.observer = None
 
     # --------        slots        --------
+    def _update_milestone(self) -> None:
+        self.milestone = datetime.now()
+
+    # @splashscreen(progress=50, info='<strong>PARSING</strong> xml files...')
+    def _update_data(self) -> None:
+        """Update (or parse) tracked path data."""
+
+        self.data = fetch_data(
+            config=Config.from_json(),
+            milestone=self.milestone,
+        )
+
+    def _update_window(self) -> None:
+        self.window._onRefreshAppAction()
+
     # @splashscreen(progress=10, info='<strong>LOADING</strong> interface...')
     def _setup_window(self, *args, **kwargs) -> None:
         self.window = MainWindow(
             flags=QtCore.Qt.Window | QtCore.Qt.WindowStaysOnTopHint,
         )
-
-    def _update_window(self) -> None:
-        self.window._onRefreshAppAction()
 
     # @splashscreen(progress=30, info='<strong>SETTING</strong> a watcher...')
     def _setup_observer(self) -> None:
@@ -249,14 +262,6 @@ class Application(QtWidgets.QApplication):
 
         self.observer = observer
 
-    # @splashscreen(progress=50, info='<strong>PARSING</strong> xml files...')
-    def _update_data(self) -> None:
-        """Update (or parse) tracked path data."""
-
-        self.data = fetch_data(
-            config=Config.from_json(),
-        )
-
     # --------        slots        --------
     # @splashscreen()
     @wait
@@ -277,6 +282,7 @@ class Application(QtWidgets.QApplication):
         if force:
             self._setup_observer()
 
+        self._update_milestone()
         self._update_data()
         self._update_window()
 
