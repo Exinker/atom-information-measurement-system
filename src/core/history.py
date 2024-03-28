@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from .config import TrackedPath, TrackedPediod
+from src.config import TrackedPath, TrackedPediod
+
 from .scraper import Scraper
 from .typing import AnalysisName, Frame, ProbeName, XMLPath
 

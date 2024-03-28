@@ -2,7 +2,8 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from .config import FiltratedLabel, FiltratedSheet
+from src.config import FiltratedLabel, FiltratedSheet
+
 from .typing import AnalysisName, Frame, XML
 from .utils import normalize_datetime
 

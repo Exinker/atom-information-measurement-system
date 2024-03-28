@@ -5,7 +5,8 @@ from typing import Iterator
 
 import pandas as pd
 
-from .config import TrackedPath, TrackedPediod
+from src.config import TrackedPath, TrackedPediod
+
 from .typing import AnalysisName, Frame, XML, XMLPath
 from .utils import normalize_datetime, normalize_name
 

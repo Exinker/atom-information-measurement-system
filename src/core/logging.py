@@ -8,7 +8,7 @@ from PySide6 import QtGui
 from spectrumapp.utils.find import find_window
 from spectrumapp.window.splashScreenWindow import splashscreen
 
-from .config import DEBUG, DEVELOP
+from src.config import DEBUG, DEVELOP
 
 
 class ProgressWindowHandler(logging.StreamHandler):

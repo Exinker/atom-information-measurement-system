@@ -12,7 +12,7 @@ from spectrumapp.window.splashScreenWindow import splashscreen
 from spectrumapp.window.window import BaseMainWindow
 
 from src import APPLICATION_NAME, APPLICATION_VERSION, ORGANIZATION_NAME
-from src.core.config import Config, DEBUG, setdefault_config
+from src.config import Config, DEBUG, setdefault_config
 from src.core.data import fetch_data
 from src.core.observer import Observer, ObserverEventHandler
 from src.core.setting import get_setting, set_setting, setdefault_setting

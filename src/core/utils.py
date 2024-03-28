@@ -2,7 +2,8 @@ import os
 import subprocess
 from datetime import datetime
 
-from .config import EXPLORER
+from src.config import EXPLORER
+
 from .typing import ProbeName, XMLPath
 
 

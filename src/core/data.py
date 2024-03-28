@@ -5,9 +5,10 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
+from src.config import Config, Mode
+
 from .atom_data import AtomData
 from .atom_database import MeasurementToleranceDatabase
-from .config import Config, Mode
 from .history import History
 from .scraper import load_xml
 from .setting import FilterLevel, SorterKind
