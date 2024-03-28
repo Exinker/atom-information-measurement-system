@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any
 
+import pandas as pd
+
 from spectrumapp.exception import eprint
 
 from src import APPLICATION_VERSION
@@ -87,8 +89,11 @@ class TrackedPath(str):
 
 class TrackedPediod(Enum):
     ALL = 'all'
+    YEAR = 'year'
+    MONTH = 'month'
+    WEEK = 'week'
     DAY = 'day'
-    _24H = '24H'
+    TODAY = 'today'
 
     def check(self, value: datetime, ref: datetime | None = None) -> bool:
         ref = ref or datetime.now()  # TODO: synchronize with app now datetime!
@@ -96,17 +101,26 @@ class TrackedPediod(Enum):
         if self == TrackedPediod.ALL:
             return True
 
-        if self == TrackedPediod.DAY:
-            return value.date() == ref.date()
+        if self == TrackedPediod.YEAR:
+            return value > (ref - pd.offsets.DateOffset(years=1))
 
-        if self == TrackedPediod._24H:
-            return value > (ref - timedelta(days=1))
+        if self == TrackedPediod.MONTH:
+            return value > (ref - pd.offsets.DateOffset(months=1))
+
+        if self == TrackedPediod.WEEK:
+            return value > (ref - pd.offsets.DateOffset(days=1))
+
+        if self == TrackedPediod.DAY:
+            return value > (ref - pd.offsets.DateOffset(days=1))
+
+        if self == TrackedPediod.TODAY:
+            return value.date() == ref.date()
 
         raise ValueError(f'Tracked pediod {self} is not supported!.')
 
     @classmethod
     def default(cls) -> 'TrackedPediod':
-        return cls.DAY
+        return cls.TODAY
 
     @classmethod
     def from_str(cls, value: str) -> 'TrackedPediod':
