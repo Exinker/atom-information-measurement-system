@@ -112,13 +112,13 @@ class Scraper:
                         records.append({
                             'analysis_name': analysis_name,
                             'probe_name': probes.loc[probe_id, 'name'],
-                            'dt': probes.loc[probe_id, 'dt'],
+                            'datetime': probes.loc[probe_id, 'datetime'],
                             'path': filepath,
                         })
 
         return pd.DataFrame(
             records,
-            columns=['analysis_name', 'probe_name', 'dt', 'path'],
+            columns=['analysis_name', 'probe_name', 'datetime', 'path'],
         )
 
     # --------        private        --------
@@ -137,7 +137,7 @@ class Scraper:
     def _parse_probes(self, xml: XML) -> Frame:
         """Parse probes data from given Atom's `xml`."""
         probes = pd.DataFrame(
-            columns=['id', 'name', 'dt'],
+            columns=['id', 'name', 'datetime', 'is_certified'],
         ).set_index('id', drop=False)
 
         # parse probe
@@ -150,11 +150,15 @@ class Scraper:
 
                     probes.loc[probe_id, 'id'] = probe_id
                     probes.loc[probe_id, 'name'] = normalize_name(probe.attrib['name'], sep=self.sep)
-                    probes.loc[probe_id, 'dt'] = normalize_datetime(probe.find('date[@type="last"]').text)
+                    probes.loc[probe_id, 'datetime'] = normalize_datetime(probe.find('date[@type="last"]').text)
+                    probes.loc[probe_id, 'is_certified'] = {
+                        'yes': True,
+                        'no': False,
+                    }.get(probe.attrib.get('COC', 'no'))
 
         except AttributeError:
             return pd.DataFrame(
-                columns=['id', 'name', 'dt'],
+                columns=['id', 'name', 'datetime'],
             ).set_index('id', drop=False)
 
         return probes

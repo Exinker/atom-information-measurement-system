@@ -81,12 +81,12 @@ class LastRecordFrame(QtWidgets.QFrame):
 
         widget = self.findChild(QtWidgets.QLabel, 'probeDateLabel')
         widget.setText(
-            f'{meta.datetime_created.date()}',
+            f'{meta.datetime.date()}',
         )
 
         widget = self.findChild(QtWidgets.QLabel, 'probeTimeLabel')
         widget.setText(
-            f'{meta.datetime_created.time()}',
+            f'{meta.datetime.time()}',
         )
 
         widget = self.findChild(QtWidgets.QLabel, 'analysisNameLabel')

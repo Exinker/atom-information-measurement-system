@@ -25,8 +25,8 @@ class History:
         """Get the last `Record`'s analysis name."""
 
         # select data
-        data = self.records[['analysis_name', 'dt']].copy(deep=True)
-        data = data.set_index('dt', drop=False)
+        data = self.records[['analysis_name', 'datetime']].copy(deep=True)
+        data = data.set_index('datetime', drop=False)
         data = data.sort_index()
 
         #
@@ -41,8 +41,8 @@ class History:
         """Get the last `Record`."""
 
         # select data
-        data = self.records[['analysis_name', 'probe_name', 'dt']].copy(deep=True)
-        data = data.set_index('dt', drop=False)
+        data = self.records[['analysis_name', 'probe_name', 'datetime']].copy(deep=True)
+        data = data.set_index('datetime', drop=False)
         data = data.sort_index()
 
         #
@@ -60,9 +60,9 @@ class History:
 
         # select from records
         cond = (self.records['analysis_name'] == analysis_name)
-        data = self.records[cond][['probe_name', 'dt']].copy(deep=True)
-        data = data.set_index('dt', drop=False)
-        data = data.groupby(by='probe_name').max().sort_values(by='dt')
+        data = self.records[cond][['probe_name', 'datetime']].copy(deep=True)
+        data = data.set_index('datetime', drop=False)
+        data = data.groupby(by='probe_name').max().sort_values(by='datetime')
 
         if data.empty:
             return tuple()

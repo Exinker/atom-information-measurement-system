@@ -18,8 +18,8 @@ class TableModel(QtCore.QAbstractTableModel):
 
         #
         _data = datum.to_frame()
-        # if 'datetime_created' in _data:
-        #     _data = _data.sort_values(by='datetime_created', axis=0)
+        # if 'datetime' in _data:
+        #     _data = _data.sort_values(by='datetime', axis=0)
 
         self._data = _data
 
@@ -42,7 +42,7 @@ class TableModel(QtCore.QAbstractTableModel):
 
                     return value
 
-                if column in ('datetime_created', ):
+                if column in ('datetime', ):
                     if True:
                         return value.strftime('%Y-%m-%d %H:%M:%S')
                     else:
@@ -110,7 +110,7 @@ class TableModel(QtCore.QAbstractTableModel):
                     return QtGui.QColor('#E3E3E3') if row % 2 else QtGui.QColor('#F9F9F9')
 
             elif role == QtCore.Qt.TextAlignmentRole:
-                if column in ('datetime_created', ):
+                if column in ('datetime', ):
                     return QtCore.Qt.AlignRight
 
                 return QtCore.Qt.AlignLeft
@@ -130,7 +130,7 @@ class TableModel(QtCore.QAbstractTableModel):
                 if row in self._target_rows:
                     return row
                 else:
-                    value = self._data['datetime_created'].loc[section]
+                    value = self._data['datetime'].loc[section]
                     return value.strftime('%Y-%m-%d %H:%M:%S')
 
     def rowCount(self, index):

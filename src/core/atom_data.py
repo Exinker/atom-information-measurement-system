@@ -79,20 +79,18 @@ class AtomData:
 
         # parse probes
         probes = pd.DataFrame(
-            columns=['id', 'name', 'datetime_created', 'datetime_updated', 'is_ref'],
+            columns=['id', 'name', 'datetime', 'is_certified'],
         ).set_index('id', drop=False)
 
         for probe in xml.find('probes').findall('probe'):
 
-            n_parallels = len(probe.findall('spe'))
-            if n_parallels > 0:
+            is_not_empty = len(probe.findall('spe')) > 0
+            if is_not_empty:
                 probe_id = int(probe.attrib['id'])
-                datetimes = [normalize_datetime(parallel.find('date').text) for parallel in probe.findall('spe')]
 
                 probes.loc[probe_id, 'id'] = probe_id
                 probes.loc[probe_id, 'name'] = probe.attrib.get('name', '???')
-                probes.loc[probe_id, 'datetime_created'] = min(datetimes)
-                probes.loc[probe_id, 'datetime_updated'] = max(datetimes)
+                probes.loc[probe_id, 'datetime'] = normalize_datetime(probe.find('date[@type="last"]').text)
                 probes.loc[probe_id, 'is_certified'] = {
                     'yes': True,
                     'no': False,

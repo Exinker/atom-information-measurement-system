@@ -29,7 +29,7 @@ class Datum:
         """Get the last recorded probe's meta `Series`."""
 
         data = self.meta.copy(deep=True)
-        data = data.set_index('datetime_created', drop=False)
+        data = data.set_index('datetime', drop=False)
         data = data.sort_index()
 
         #
@@ -84,7 +84,7 @@ class Datum:
         return cls(
             analysis_name=analysis_name,
             probe_name=probe_name,
-            meta=pd.DataFrame({}, columns=['file_dir', 'file_name', 'datetime_created', 'analysis_name', 'organization_name', 'device_name', 'user_name', 'probe_name', 'is_certified']),
+            meta=pd.DataFrame({}, columns=['file_dir', 'file_name', 'datetime', 'analysis_name', 'organization_name', 'device_name', 'user_name', 'probe_name', 'is_certified']),
             prediction=pd.DataFrame(),
             targets=pd.DataFrame(),
             levels=pd.Series(),
@@ -138,8 +138,8 @@ class Datum:
 
                     # check: probe's created datetime
                     cond[j] = cond[j] and config.tracked_period.check(
-                        value=probes.iloc[j]['datetime_created'],
-                        ref=last_record['dt'],
+                        value=probes.iloc[j]['datetime'],
+                        ref=last_record['datetime'],
                     )
 
                 # parse probes
@@ -150,7 +150,7 @@ class Datum:
                         'i': i,
                         'file_dir': filedir,
                         'file_name': filename,
-                        'datetime_created': atom_data.probes.loc[probe_id, 'datetime_created'],
+                        'datetime': atom_data.probes.loc[probe_id, 'datetime'],
                         'analysis_name': atom_data.meta.analysis_name,
                         'organization_name': atom_data.meta.organization_name,
                         'device_name': atom_data.meta.device_name,
