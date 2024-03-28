@@ -88,19 +88,19 @@ class TrackedPath(str):
 class TrackedPediod(Enum):
     ALL = 'all'
     DAY = 'day'
-    _24H = '24h'
+    _24H = '24H'
 
-    def check(self, dt: datetime) -> bool:
-        now = datetime.now()  # TODO: synchronize with app now datetime!
+    def check(self, value: datetime, ref: datetime | None = None) -> bool:
+        ref = ref or datetime.now()  # TODO: synchronize with app now datetime!
 
         if self == TrackedPediod.ALL:
             return True
 
         if self == TrackedPediod.DAY:
-            return dt.date() == now.date()
+            return value.date() == ref.date()
 
         if self == TrackedPediod._24H:
-            return dt > (now - timedelta(days=1))
+            return value > (ref - timedelta(days=1))
 
         raise ValueError(f'Tracked pediod {self} is not supported!.')
 
