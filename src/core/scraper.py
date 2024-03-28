@@ -22,7 +22,7 @@ def walk(tracked_path: TrackedPath) -> Iterator[XMLPath]:
 
 
 def validate_file(filepath: XMLPath, tracked_period: TrackedPediod) -> bool:
-    """Validate file to simplest cases."""
+    """Validate file to the simplest cases."""
 
     # validate file's extension
     if not filepath.endswith('.xml'):
