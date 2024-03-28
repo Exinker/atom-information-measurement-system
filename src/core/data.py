@@ -1,14 +1,13 @@
 
 import os
 from dataclasses import dataclass
-from datetime import timedelta
 
 import numpy as np
 import pandas as pd
 
 from .atom_data import AtomData
 from .atom_database import MeasurementToleranceDatabase
-from .config import Config, Mode, TrackedPediod
+from .config import Config, Mode
 from .history import History
 from .scraper import load_xml
 from .setting import FilterLevel, SorterKind
@@ -128,28 +127,20 @@ class Datum:
                 probes = atom_data.probes
                 n_probes, _ = probes.shape
 
-                cond = np.full((n_probes, ), True)
+                cond = np.full(n_probes, True)
                 for j in range(n_probes):
 
                     # check: probe's name
-                    if normalize_name(probes.iloc[j]['name'], history.sep) != tracked_probe:
-                        cond[j] = False
+                    cond[j] = cond[j] and normalize_name(
+                        name=probes.iloc[j]['name'],
+                        sep=history.sep,
+                    ) == tracked_probe
 
                     # check: probe's created datetime
-                    match config.tracked_period:
-                        case TrackedPediod.ALL:
-                            pass
-
-                        case TrackedPediod.DAY:
-                            if probes.iloc[j]['datetime_created'].date() != last_record['dt'].date():
-                                cond[j] = False
-
-                        case TrackedPediod._24H:
-                            if pd.to_datetime(probes.iloc[j]['datetime_created']) < (last_record['dt'] - timedelta(days=1)):
-                                cond[j] = False
-
-                        case _:
-                            raise ValueError(f'Tracked pediod {config.tracked_period} is not supported!.')
+                    cond[j] = cond[j] and config.tracked_period.check(
+                        value=probes.iloc[j]['datetime_created'],
+                        ref=last_record['dt'],
+                    )
 
                 # parse probes
                 for probe_id in atom_data.probes.index[cond]:
