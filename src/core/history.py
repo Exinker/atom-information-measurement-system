@@ -26,7 +26,7 @@ class History:
 
     @property
     def last_analisys_name(self) -> AnalysisName:
-        """Get the last analysis name."""
+        """Получить имя последнего анализа."""
 
         # select data
         data = self.records[['analysis_name', 'datetime']].copy(deep=True)
@@ -41,7 +41,7 @@ class History:
 
     @property
     def last_record(self) -> Record | None:
-        """Get the last `Record`."""
+        """Получить последний `record` в `history`."""
 
         # select data
         data = self.records[['analysis_name', 'probe_name', 'datetime']].copy(deep=True)
@@ -56,25 +56,27 @@ class History:
 
     # --------        handler        --------
     def get_queue(self, analysis_name: AnalysisName, n: int = 1, ascending: bool = False) -> tuple[ProbeName]:
-        """Get the `n` latest probe names for a given `analysis_name`."""
+        """Получить очередь (последовательность `probe_names`) для выбранного `analysis_name` длинною не более `n`."""
 
         # select from records
-        cond = (self.records['analysis_name'] == analysis_name)
-        data = self.records[cond][['probe_name', 'datetime']].copy(deep=True)
+        data = self.records[
+            (self.records['analysis_name'] == analysis_name)
+        ][['probe_name', 'datetime']].copy(deep=True)
         data = data.set_index('datetime', drop=False)
         data = data.groupby(by='probe_name').max().sort_values(by='datetime')
 
+        #
         if data.empty:
             return tuple()
 
-        #
         probe_names = tuple(data.iloc[-n:].index)
         probe_names = probe_names if ascending else reversed(probe_names)
         return probe_names
 
     def get_paths(self) -> tuple[XMLPath]:
-        """Get filepaths of all `xml` files for a given analysis and probe's name."""
+        """Получить последовательность `filepaths` всех `xml` файлов files для выбранного `analysis_name` и `probe_name`."""
 
+        #
         if self.records.empty:
             return tuple()
 
@@ -99,7 +101,7 @@ class History:
     # --------        factory        --------
     @classmethod
     def from_path(cls, milestone: datetime, tracked_path: TrackedPath, tracked_period: TrackedPediod, sep: str, verbose: bool = False) -> 'History':
-        """Get history for a given path by iterable walk."""
+        """Получить `history` путем итеративного парсинга .xml файлов в заданной директории `tracked_path`."""
 
         records = Scraper(
             milestone=milestone,
