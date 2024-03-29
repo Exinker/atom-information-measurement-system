@@ -95,26 +95,26 @@ class TrackedPediod(Enum):
     DAY = 'day'
     TODAY = 'today'
 
-    def check(self, value: datetime, ref: datetime | None = None) -> bool:
-        ref = ref or datetime.now()  # TODO: synchronize with app now datetime!
+    def check(self, __datetime: datetime, milestone: datetime | None = None) -> bool:
+        milestone = milestone or datetime.now()
 
         if self == TrackedPediod.ALL:
             return True
 
         if self == TrackedPediod.YEAR:
-            return value > (ref - pd.offsets.DateOffset(years=1))
+            return __datetime > (milestone - pd.offsets.DateOffset(years=1))
 
         if self == TrackedPediod.MONTH:
-            return value > (ref - pd.offsets.DateOffset(months=1))
+            return __datetime > (milestone - pd.offsets.DateOffset(months=1))
 
         if self == TrackedPediod.WEEK:
-            return value > (ref - pd.offsets.DateOffset(days=1))
+            return __datetime > (milestone - pd.offsets.DateOffset(days=1))
 
         if self == TrackedPediod.DAY:
-            return value > (ref - pd.offsets.DateOffset(days=1))
+            return __datetime > (milestone - pd.offsets.DateOffset(days=1))
 
         if self == TrackedPediod.TODAY:
-            return value.date() == ref.date()
+            return __datetime.date() == milestone.date()
 
         raise ValueError(f'Tracked pediod {self} is not supported!.')
 
