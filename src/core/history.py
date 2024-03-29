@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from src.config import TrackedPath, TrackedPediod
+from src.config import DEBUG, TrackedPath, TrackedPediod
 
 from .scraper import Scraper
 from .typing import AnalysisName, Frame, ProbeName, XMLPath
@@ -17,8 +17,12 @@ class Record:
 @dataclass
 class History:
     records: Frame
+    milestone: datetime
     tracked_path: TrackedPath
+    tracked_period: TrackedPediod
     sep: str
+
+    datetime: datetime = field(default_factory=datetime.now)
 
     @property
     def last_analisys_name(self) -> AnalysisName:
@@ -33,8 +37,7 @@ class History:
         if data.empty:
             return ''
 
-        datum = data.iloc[-1]
-        return datum['analysis_name']
+        return data.iloc[-1]['analysis_name']
 
     @property
     def last_record(self) -> Record | None:
@@ -77,33 +80,43 @@ class History:
 
         return tuple(self.records['path'].unique())
 
-    # --------        factory        --------
     def select(self, analysis_name: AnalysisName, probe_name: ProbeName) -> 'History':
+        cls = self.__class__
 
-        cond = (self.records['analysis_name'] == analysis_name) & (self.records['probe_name'] == probe_name)
-        records = self.records[cond].copy(deep=True)
+        records = self.records[
+            (self.records['analysis_name'] == analysis_name) & (self.records['probe_name'] == probe_name)
+        ].copy(deep=True)
 
         #
-        return self.__class__(
+        return cls(
             records=records,
+            milestone=self.milestone,
             tracked_path=self.tracked_path,
+            tracked_period=self.tracked_period,
             sep=self.sep,
         )
 
+    # --------        factory        --------
     @classmethod
-    def from_path(cls, tracked_path: TrackedPath, tracked_period: TrackedPediod, sep: str, verbose: bool = False) -> 'History':
+    def from_path(cls, milestone: datetime, tracked_path: TrackedPath, tracked_period: TrackedPediod, sep: str, verbose: bool = False) -> 'History':
         """Get history for a given path by iterable walk."""
 
-        scraper = Scraper(
+        records = Scraper(
+            milestone=milestone,
             tracked_path=tracked_path,
             tracked_period=tracked_period,
             sep=sep,
             verbose=verbose,
-        )
+        ).parse()
+
+        if DEBUG:
+            print(records)
 
         #
         return cls(
-            records=scraper.parse(),
+            records=records,
+            milestone=milestone,
             tracked_path=tracked_path,
+            tracked_period=tracked_period,
             sep=sep,
         )

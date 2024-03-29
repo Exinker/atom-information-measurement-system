@@ -22,7 +22,7 @@ def walk(tracked_path: TrackedPath) -> Iterator[XMLPath]:
             yield filepath
 
 
-def validate_file(filepath: XMLPath, tracked_period: TrackedPediod) -> bool:
+def validate_file(filepath: XMLPath, milestone: datetime, tracked_period: TrackedPediod) -> bool:
     """Validate file to the simplest cases."""
 
     # validate file's extension
@@ -89,7 +89,8 @@ def validate_xml(xml: XML | None) -> bool:
 # --------        scraper        --------
 class Scraper:
 
-    def __init__(self, tracked_path: TrackedPath, tracked_period: TrackedPediod, sep: str, verbose: bool = False):
+    def __init__(self, milestone: datetime, tracked_path: TrackedPath, tracked_period: TrackedPediod, sep: str, verbose: bool = False):
+        self.milestone = milestone
         self.tracked_path = tracked_path
         self.tracked_period = tracked_period
         self.sep = sep
@@ -101,7 +102,7 @@ class Scraper:
         records = []
         for filepath in walk(self.tracked_path):
 
-            if validate_file(filepath, tracked_period=self.tracked_period):
+            if validate_file(filepath, milestone=self.milestone, tracked_period=self.tracked_period):
 
                 xml = load_xml(filepath)
                 if validate_xml(xml):
@@ -109,12 +110,13 @@ class Scraper:
                     probes = self._parse_probes(xml)
 
                     for probe_id in probes.index:
-                        records.append({
-                            'analysis_name': analysis_name,
-                            'probe_name': probes.loc[probe_id, 'name'],
-                            'datetime': probes.loc[probe_id, 'datetime'],
-                            'path': filepath,
-                        })
+                        if self.tracked_period.check(probes.loc[probe_id, 'datetime'], milestone=self.milestone):
+                            records.append({
+                                'analysis_name': analysis_name,
+                                'probe_name': probes.loc[probe_id, 'name'],
+                                'datetime': probes.loc[probe_id, 'datetime'],
+                                'path': filepath,
+                            })
 
         return pd.DataFrame(
             records,

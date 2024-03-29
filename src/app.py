@@ -234,15 +234,15 @@ class Application(QtWidgets.QApplication):
 
     # --------        slots        --------
     def _update_milestone(self) -> None:
-        self.milestone = datetime.now()
+        self.milestone = datetime.fromisoformat('2024-02-19')  # FIXME: replace to `datetime.now()`
 
     # @splashscreen(progress=50, info='<strong>PARSING</strong> xml files...')
     def _update_data(self) -> None:
         """Update (or parse) tracked path data."""
 
         self.data = fetch_data(
-            config=Config.from_json(),
             milestone=self.milestone,
+            config=Config.from_json(),
         )
 
     def _update_window(self) -> None:

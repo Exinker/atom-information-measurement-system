@@ -1,6 +1,6 @@
-
 import os
 from dataclasses import dataclass
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -78,6 +78,10 @@ class Datum:
             levels=self.levels[columns],
         )
 
+    def to_frame(self) -> Frame:
+        return pd.concat([pd.concat([self.meta, self.prediction], axis=1), self.targets])
+
+    # --------        factory        --------
     @classmethod
     def from_default(cls, analysis_name: AnalysisName = '', probe_name: ProbeName = '') -> 'Datum':
         """Get empty `datum`."""
@@ -137,8 +141,8 @@ class Datum:
 
                     # check: probe's created datetime
                     cond[j] = cond[j] and config.tracked_period.check(
-                        value=atom_data.probes.iloc[j]['datetime'],
-                        ref=history.last_record.datetime,
+                        atom_data.probes.iloc[j]['datetime'],
+                        milestone=history.milestone,
                     )
 
                 # parse probes
@@ -273,16 +277,10 @@ class Datum:
             levels=levels,
         )
 
-    def to_frame(self) -> Frame:
-        return pd.concat([pd.concat([self.meta, self.prediction], axis=1), self.targets])
-
 
 @dataclass
 class Data:
     items: tuple[Datum]
-
-    def __getitem__(self, i: int) -> Datum:
-        return self.items[i]
 
     @property
     def last_datum(self) -> Datum | None:
@@ -293,7 +291,7 @@ class Data:
         except IndexError:
             return Datum.from_default()
 
-    # --------        handlers        --------
+    # --------        factory        --------
     @classmethod
     def from_history(cls, history: History, config: Config) -> 'Data':
 
@@ -322,11 +320,21 @@ class Data:
             items=tuple(items),
         )
 
+    # --------        private        --------
+    def __getitem__(self, i: int) -> Datum:
+        return self.items[i]
 
-def fetch_data(config: Config) -> Data:
+
+# --------        factory        --------
+def fetch_data(milestone: datetime, config: Config) -> Data:
 
     # history
-    history = History.from_path(tracked_path=config.tracked_path, tracked_period=config.tracked_period, sep=config.sep)
+    history = History.from_path(
+        milestone=milestone,
+        tracked_path=config.tracked_path,
+        tracked_period=config.tracked_period,
+        sep=config.sep,
+    )
 
     #  data
     data = Data.from_history(
