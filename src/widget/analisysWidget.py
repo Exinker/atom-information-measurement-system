@@ -45,10 +45,12 @@ class AnalysisWidget(QtWidgets.QWidget):
 
             # update widget
             if datum is None:
+                self.tabWidget.setTabVisible(i, False)
                 self.tabWidget.setTabEnabled(i, False)
                 self.tabWidget.setTabText(i, _format_tab_label(label=''))
 
             else:
+                self.tabWidget.setTabVisible(i, True)
                 self.tabWidget.setTabEnabled(i, True)
                 self.tabWidget.setTabText(i, _format_tab_label(label=datum.probe_name))
 
