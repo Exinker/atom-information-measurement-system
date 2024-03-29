@@ -32,9 +32,9 @@ def validate_file(filepath: XMLPath, milestone: datetime, tracked_period: Tracke
     # validate file's created datetime
     filestat = os.stat(filepath)
 
-    created_at = datetime.fromtimestamp(filestat.st_ctime)
-    if not tracked_period.check(created_at):
-        return False
+    # created_at = datetime.fromtimestamp(filestat.st_ctime)
+    # if not tracked_period.check(created_at, milestone=milestone):
+    #     return False
 
     #
     return True

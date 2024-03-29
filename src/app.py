@@ -234,7 +234,7 @@ class Application(QtWidgets.QApplication):
 
     # --------        slots        --------
     def _update_milestone(self) -> None:
-        self.milestone = datetime.fromisoformat('2024-02-19')  # FIXME: replace to `datetime.now()`
+        self.milestone = datetime.now()
 
     # @splashscreen(progress=50, info='<strong>PARSING</strong> xml files...')
     def _update_data(self) -> None:
