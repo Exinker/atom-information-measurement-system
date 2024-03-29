@@ -3,9 +3,11 @@ import json
 import os
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from typing import Any
+
+import pandas as pd
 
 from spectrumapp.exception import eprint
 
@@ -87,26 +89,38 @@ class TrackedPath(str):
 
 class TrackedPediod(Enum):
     ALL = 'all'
+    YEAR = 'year'
+    MONTH = 'month'
+    WEEK = 'week'
     DAY = 'day'
-    _24H = '24h'
+    TODAY = 'today'
 
-    def check(self, dt: datetime) -> bool:
-        now = datetime.now()  # TODO: synchronize with app now datetime!
+    def check(self, __datetime: datetime, milestone: datetime | None = None) -> bool:
+        milestone = milestone or datetime.now()
 
         if self == TrackedPediod.ALL:
             return True
 
-        if self == TrackedPediod.DAY:
-            return dt.date() == now.date()
+        if self == TrackedPediod.YEAR:
+            return __datetime > (milestone - pd.offsets.DateOffset(years=1))
 
-        if self == TrackedPediod._24H:
-            return dt > (now - timedelta(days=1))
+        if self == TrackedPediod.MONTH:
+            return __datetime > (milestone - pd.offsets.DateOffset(months=1))
+
+        if self == TrackedPediod.WEEK:
+            return __datetime > (milestone - pd.offsets.DateOffset(days=1))
+
+        if self == TrackedPediod.DAY:
+            return __datetime > (milestone - pd.offsets.DateOffset(days=1))
+
+        if self == TrackedPediod.TODAY:
+            return __datetime.date() == milestone.date()
 
         raise ValueError(f'Tracked pediod {self} is not supported!.')
 
     @classmethod
     def default(cls) -> 'TrackedPediod':
-        return cls.DAY
+        return cls.TODAY
 
     @classmethod
     def from_str(cls, value: str) -> 'TrackedPediod':

@@ -12,7 +12,7 @@ from spectrumapp.window.splashScreenWindow import splashscreen
 from spectrumapp.window.window import BaseMainWindow
 
 from src import APPLICATION_NAME, APPLICATION_VERSION, ORGANIZATION_NAME
-from src.core.config import Config, DEBUG, setdefault_config
+from src.config import Config, DEBUG, setdefault_config
 from src.core.data import fetch_data
 from src.core.observer import Observer, ObserverEventHandler
 from src.core.setting import get_setting, set_setting, setdefault_setting
@@ -141,10 +141,7 @@ class MainWindow(BaseMainWindow):
         app.reset()
 
         # update title
-        datum = app.data.last_datum
-        dt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        title = f'{APPLICATION_NAME} - [{datum.analysis_name} / {datum.probe_name}] - [{dt}]'
-        self.setWindowTitle(title)
+        self._update_title()
 
         # reset windows
         for window in app.topLevelWidgets():
@@ -169,11 +166,7 @@ class MainWindow(BaseMainWindow):
         self.setVisible(visible)
 
         # update window: title
-        datum = app.data.last_datum
-        dt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-        title = f'{APPLICATION_NAME} - [{datum.analysis_name} / {datum.probe_name}] - [{dt}]' if datum else f'{APPLICATION_NAME} - [{dt}]'
-        self.setWindowTitle(title)
+        self._update_title()
 
         # update app windows
         for window in app.topLevelWidgets():
@@ -202,6 +195,28 @@ class MainWindow(BaseMainWindow):
         window = find_window('widgetWindow')
         window._onRefreshAction()
 
+    # --------        private        --------
+    def _update_title(self) -> None:
+        app = QtWidgets.QApplication.instance()
+
+        #
+        datum = app.data.last_datum
+        if datum is None:
+            title = '{application_name} - [{datetime_updated}]'.format(
+                application_name=APPLICATION_NAME,
+                datetime_updated=app.milestone.strftime('%Y-%m-%d %H:%M:%S'),
+            )
+        else:
+            title = '{application_name} - [{analysis_name} / {probe_name}] - [{datetime_updated}]'.format(
+                application_name=APPLICATION_NAME,
+                analysis_name=datum.analysis_name,
+                probe_name=datum.probe_name,
+                datetime_updated=app.milestone.strftime('%Y-%m-%d %H:%M:%S'),
+            )
+
+        #
+        self.setWindowTitle(title)
+
 
 class Application(QtWidgets.QApplication):
 
@@ -212,19 +227,32 @@ class Application(QtWidgets.QApplication):
         self.setApplicationName(APPLICATION_NAME)
         self.setApplicationVersion(APPLICATION_VERSION)
 
+        self.milestone = None
         self.data = None
         self.window = None
         self.observer = None
 
     # --------        slots        --------
+    def _update_milestone(self) -> None:
+        self.milestone = datetime.now()
+
+    # @splashscreen(progress=50, info='<strong>PARSING</strong> xml files...')
+    def _update_data(self) -> None:
+        """Update (or parse) tracked path data."""
+
+        self.data = fetch_data(
+            milestone=self.milestone,
+            config=Config.from_json(),
+        )
+
+    def _update_window(self) -> None:
+        self.window._onRefreshAppAction()
+
     # @splashscreen(progress=10, info='<strong>LOADING</strong> interface...')
     def _setup_window(self, *args, **kwargs) -> None:
         self.window = MainWindow(
             flags=QtCore.Qt.Window | QtCore.Qt.WindowStaysOnTopHint,
         )
-
-    def _update_window(self) -> None:
-        self.window._onRefreshAppAction()
 
     # @splashscreen(progress=30, info='<strong>SETTING</strong> a watcher...')
     def _setup_observer(self) -> None:
@@ -249,14 +277,6 @@ class Application(QtWidgets.QApplication):
 
         self.observer = observer
 
-    # @splashscreen(progress=50, info='<strong>PARSING</strong> xml files...')
-    def _update_data(self) -> None:
-        """Update (or parse) tracked path data."""
-
-        self.data = fetch_data(
-            config=Config.from_json(),
-        )
-
     # --------        slots        --------
     # @splashscreen()
     @wait
@@ -277,6 +297,7 @@ class Application(QtWidgets.QApplication):
         if force:
             self._setup_observer()
 
+        self._update_milestone()
         self._update_data()
         self._update_window()
 

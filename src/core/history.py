@@ -1,106 +1,112 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from .config import TrackedPath, TrackedPediod
+from src.config import DEBUG, TrackedPath, TrackedPediod
+
 from .scraper import Scraper
 from .typing import AnalysisName, Frame, ProbeName, XMLPath
 
 
-# --------        History        --------
 @dataclass
 class Record:
     analysis_name: AnalysisName = field(default='')
     probe_name: ProbeName = field(default='')
-    dt: datetime = field(default_factory=lambda: datetime.fromtimestamp(0))
+    datetime: datetime = field(default_factory=lambda: datetime.fromtimestamp(0))
 
 
 @dataclass
 class History:
     records: Frame
+    milestone: datetime
     tracked_path: TrackedPath
+    tracked_period: TrackedPediod
     sep: str
+
+    datetime: datetime = field(default_factory=datetime.now)
 
     @property
     def last_analisys_name(self) -> AnalysisName:
-        """Get the last `Record`'s analysis name."""
+        """Получить имя последнего анализа."""
 
         # select data
-        data = self.records[['analysis_name', 'dt']].copy(deep=True)
-        data = data.set_index('dt', drop=False)
+        data = self.records[['analysis_name', 'datetime']].copy(deep=True)
+        data = data.set_index('datetime', drop=False)
         data = data.sort_index()
 
         #
         if data.empty:
             return ''
 
-        datum = data.iloc[-1]
-        return datum['analysis_name']
+        return data.iloc[-1]['analysis_name']
 
     @property
-    def last_record(self) -> Record:
-        """Get the last `Record`."""
+    def last_record(self) -> Record | None:
+        """Получить последний `record` в `history`."""
 
         # select data
-        data = self.records[['analysis_name', 'probe_name', 'dt']].copy(deep=True)
-        data = data.set_index('dt', drop=False)
+        data = self.records[['analysis_name', 'probe_name', 'datetime']].copy(deep=True)
+        data = data.set_index('datetime', drop=False)
         data = data.sort_index()
 
         #
         if data.empty:
-            return Record()
+            return None
 
-        record = Record(**data.iloc[-1])
-        return record
+        return Record(**data.iloc[-1])
 
-    def add(self) -> None:
-        raise NotImplementedError
-
+    # --------        handler        --------
     def get_queue(self, analysis_name: AnalysisName, n: int = 1, ascending: bool = False) -> tuple[ProbeName]:
-        """Get the `n` latest probe names for a given `analysis_name`."""
+        """Получить очередь (последовательность `probe_names`) для выбранного `analysis_name` длинною не более `n`."""
 
         # select from records
-        cond = (self.records['analysis_name'] == analysis_name)
-        data = self.records[cond][['probe_name', 'dt']].copy(deep=True)
-        data = data.set_index('dt', drop=False)
-        data = data.groupby(by='probe_name').max().sort_values(by='dt')
+        data = self.records[
+            (self.records['analysis_name'] == analysis_name)
+        ][['probe_name', 'datetime']].copy(deep=True)
+        data = data.set_index('datetime', drop=False)
+        data = data.groupby(by='probe_name').max().sort_values(by='datetime')
 
+        #
         if data.empty:
             return tuple()
 
-        #
         probe_names = tuple(data.iloc[-n:].index)
         probe_names = probe_names if ascending else reversed(probe_names)
         return probe_names
 
-    def get_index(self, analysis_name: AnalysisName, probe_name: ProbeName) -> tuple[XMLPath]:
-        """Get filepaths of all `xml` files for a given analysis and probe's name."""
+    def get_paths(self, analysis_name: AnalysisName, probe_name: ProbeName) -> tuple[XMLPath]:
+        """Получить последовательность `filepaths` всех `xml` файлов files для выбранного `analysis_name` и `probe_name`."""
 
-        # select from records
-        cond = (self.records['analysis_name'] == analysis_name) & (self.records['probe_name'] == probe_name)
-        data = self.records[cond][['analysis_name', 'probe_name', 'path']].copy(deep=True)
+        records = self.records[
+            (self.records['analysis_name'] == analysis_name) & (self.records['probe_name'] == probe_name)
+        ].copy(deep=True)
 
         #
-        if data.empty:
+        if records.empty:
             return tuple()
 
-        paths = tuple(data['path'].unique())
-        return paths
+        return tuple(records['path'].unique())
 
-    # --------        handlers        --------
+    # --------        factory        --------
     @classmethod
-    def from_path(cls, tracked_path: TrackedPath, tracked_period: TrackedPediod, sep: str, verbose: bool = False) -> 'History':
-        """Get history for a given path by iterable walk."""
+    def from_path(cls, milestone: datetime, tracked_path: TrackedPath, tracked_period: TrackedPediod, sep: str, verbose: bool = False) -> 'History':
+        """Получить `history` путем итеративного парсинга .xml файлов в заданной директории `tracked_path`."""
 
-        scraper = Scraper(
+        records = Scraper(
+            milestone=milestone,
             tracked_path=tracked_path,
             tracked_period=tracked_period,
             sep=sep,
             verbose=verbose,
-        )
+        ).parse()
+
+        if DEBUG:
+            print(records)
 
         #
         return cls(
-            records=scraper.parse(),
+            records=records,
+            milestone=milestone,
             tracked_path=tracked_path,
+            tracked_period=tracked_period,
             sep=sep,
         )

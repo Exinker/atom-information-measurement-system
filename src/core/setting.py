@@ -8,7 +8,7 @@ from PySide6 import QtCore
 
 from spectrumapp.core.logging import log
 
-from .config import Config, DEBUG
+from src.config import Config, DEBUG
 
 
 # ---------        filtration        ---------

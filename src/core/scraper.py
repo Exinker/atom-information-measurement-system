@@ -5,7 +5,8 @@ from typing import Iterator
 
 import pandas as pd
 
-from .config import TrackedPath, TrackedPediod
+from src.config import TrackedPath, TrackedPediod
+
 from .typing import AnalysisName, Frame, XML, XMLPath
 from .utils import normalize_datetime, normalize_name
 
@@ -21,8 +22,8 @@ def walk(tracked_path: TrackedPath) -> Iterator[XMLPath]:
             yield filepath
 
 
-def validate_file(filepath: XMLPath, tracked_period: TrackedPediod) -> bool:
-    """Validate file to simplest cases."""
+def validate_file(filepath: XMLPath, milestone: datetime, tracked_period: TrackedPediod) -> bool:
+    """Validate file to the simplest cases."""
 
     # validate file's extension
     if not filepath.endswith('.xml'):
@@ -32,7 +33,7 @@ def validate_file(filepath: XMLPath, tracked_period: TrackedPediod) -> bool:
     filestat = os.stat(filepath)
 
     created_at = datetime.fromtimestamp(filestat.st_ctime)
-    if not tracked_period.check(created_at):
+    if not tracked_period.check(created_at, milestone=milestone):
         return False
 
     #
@@ -42,7 +43,6 @@ def validate_file(filepath: XMLPath, tracked_period: TrackedPediod) -> bool:
 # --------        xml        --------
 def load_xml(filepath: XMLPath) -> XML | None:
     """Load `xml` element object from file for a given `filepath`."""
-    # TODO: check Atom's xml
 
     try:
         tree = ElementTree.parse(filepath)
@@ -89,7 +89,8 @@ def validate_xml(xml: XML | None) -> bool:
 # --------        scraper        --------
 class Scraper:
 
-    def __init__(self, tracked_path: TrackedPath, tracked_period: TrackedPediod, sep: str, verbose: bool = False):
+    def __init__(self, milestone: datetime, tracked_path: TrackedPath, tracked_period: TrackedPediod, sep: str, verbose: bool = False):
+        self.milestone = milestone
         self.tracked_path = tracked_path
         self.tracked_period = tracked_period
         self.sep = sep
@@ -101,7 +102,7 @@ class Scraper:
         records = []
         for filepath in walk(self.tracked_path):
 
-            if validate_file(filepath, tracked_period=self.tracked_period):
+            if validate_file(filepath, milestone=self.milestone, tracked_period=self.tracked_period):
 
                 xml = load_xml(filepath)
                 if validate_xml(xml):
@@ -109,16 +110,17 @@ class Scraper:
                     probes = self._parse_probes(xml)
 
                     for probe_id in probes.index:
-                        records.append({
-                            'analysis_name': analysis_name,
-                            'probe_name': probes.loc[probe_id, 'name'],
-                            'dt': probes.loc[probe_id, 'dt'],
-                            'path': filepath,
-                        })
+                        if self.tracked_period.check(probes.loc[probe_id, 'datetime'], milestone=self.milestone):
+                            records.append({
+                                'analysis_name': analysis_name,
+                                'probe_name': probes.loc[probe_id, 'name'],
+                                'datetime': probes.loc[probe_id, 'datetime'],
+                                'path': filepath,
+                            })
 
         return pd.DataFrame(
             records,
-            columns=['analysis_name', 'probe_name', 'dt', 'path'],
+            columns=['analysis_name', 'probe_name', 'datetime', 'path'],
         )
 
     # --------        private        --------
@@ -137,7 +139,7 @@ class Scraper:
     def _parse_probes(self, xml: XML) -> Frame:
         """Parse probes data from given Atom's `xml`."""
         probes = pd.DataFrame(
-            columns=['id', 'name', 'dt'],
+            columns=['id', 'name', 'datetime', 'is_certified'],
         ).set_index('id', drop=False)
 
         # parse probe
@@ -150,11 +152,15 @@ class Scraper:
 
                     probes.loc[probe_id, 'id'] = probe_id
                     probes.loc[probe_id, 'name'] = normalize_name(probe.attrib['name'], sep=self.sep)
-                    probes.loc[probe_id, 'dt'] = normalize_datetime(probe.find('date[@type="last"]').text)
+                    probes.loc[probe_id, 'datetime'] = normalize_datetime(probe.find('date[@type="last"]').text)
+                    probes.loc[probe_id, 'is_certified'] = {
+                        'yes': True,
+                        'no': False,
+                    }.get(probe.attrib.get('COC', 'no'))
 
         except AttributeError:
             return pd.DataFrame(
-                columns=['id', 'name', 'dt'],
+                columns=['id', 'name', 'datetime'],
             ).set_index('id', drop=False)
 
         return probes

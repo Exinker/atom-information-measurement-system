@@ -1,14 +1,14 @@
-
 import os
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
 
+from src.config import Config, Mode
+
 from .atom_data import AtomData
 from .atom_database import MeasurementToleranceDatabase
-from .config import Config, Mode, TrackedPediod
 from .history import History
 from .scraper import load_xml
 from .setting import FilterLevel, SorterKind
@@ -30,7 +30,7 @@ class Datum:
         """Get the last recorded probe's meta `Series`."""
 
         data = self.meta.copy(deep=True)
-        data = data.set_index('datetime_created', drop=False)
+        data = data.set_index('datetime', drop=False)
         data = data.sort_index()
 
         #
@@ -78,6 +78,10 @@ class Datum:
             levels=self.levels[columns],
         )
 
+    def to_frame(self) -> Frame:
+        return pd.concat([pd.concat([self.meta, self.prediction], axis=1), self.targets])
+
+    # --------        factory        --------
     @classmethod
     def from_default(cls, analysis_name: AnalysisName = '', probe_name: ProbeName = '') -> 'Datum':
         """Get empty `datum`."""
@@ -85,39 +89,36 @@ class Datum:
         return cls(
             analysis_name=analysis_name,
             probe_name=probe_name,
-            meta=pd.DataFrame({}, columns=['file_dir', 'file_name', 'datetime_created', 'analysis_name', 'organization_name', 'device_name', 'user_name', 'probe_name', 'is_certified']),
+            meta=pd.DataFrame({}, columns=['file_dir', 'file_name', 'datetime', 'analysis_name', 'organization_name', 'device_name', 'user_name', 'probe_name', 'is_certified']),
             prediction=pd.DataFrame(),
             targets=pd.DataFrame(),
             levels=pd.Series(),
         )
 
     @classmethod
-    def from_history(cls, tracked_analysis: AnalysisName, tracked_probe: ProbeName, history: History, config: Config) -> 'Datum':
+    def from_history(cls, history: History, tracked_analysis: AnalysisName, tracked_probe: ProbeName, config: Config) -> 'Datum':
         """Get `datum` from history."""
 
-        # last record
-        cond = (history.records['analysis_name'] == tracked_analysis) & ((history.records['probe_name'] == tracked_probe))
-        records = history.records[cond]
+        # meta, prediction, reference
+        filepaths = history.get_paths(
+            analysis_name=tracked_analysis,
+            probe_name=tracked_probe,
+        )
 
-        last_record = records.iloc[-1]
+        if len(filepaths) == 0:
+            raise ValueError('List of filepaths is empty!')
 
-        #
         try:
-            # meta, prediction, reference
-            index = history.get_index(analysis_name=tracked_analysis, probe_name=tracked_probe)
-            if len(index) == 0:
-                raise ValueError('List of paths is empty!')
+            i = -1
 
             meta = []
             reference = []
             prediction = []
-            i = -1
-            for path in index:
-                filedir, filename = os.path.split(path)
-
-                xml = load_xml(path)
+            for filepath in filepaths:
 
                 # atom data
+                xml = load_xml(filepath)
+
                 atom_data = AtomData.from_xml(
                     xml=xml,
                     filtrated_by_sheet=config.filtrated_by_sheet,
@@ -125,33 +126,26 @@ class Datum:
                 )
 
                 # filtrate probes
-                probes = atom_data.probes
-                n_probes, _ = probes.shape
+                n_probes, _ = atom_data.probes.shape
 
-                cond = np.full((n_probes, ), True)
+                cond = np.full(n_probes, True)
                 for j in range(n_probes):
 
                     # check: probe's name
-                    if normalize_name(probes.iloc[j]['name'], history.sep) != tracked_probe:
-                        cond[j] = False
+                    cond[j] = cond[j] and normalize_name(
+                        name=atom_data.probes.iloc[j]['name'],
+                        sep=history.sep,
+                    ) == tracked_probe
 
                     # check: probe's created datetime
-                    match config.tracked_period:
-                        case TrackedPediod.ALL:
-                            pass
-
-                        case TrackedPediod.DAY:
-                            if probes.iloc[j]['datetime_created'].date() != last_record['dt'].date():
-                                cond[j] = False
-
-                        case TrackedPediod._24H:
-                            if pd.to_datetime(probes.iloc[j]['datetime_created']) < (last_record['dt'] - timedelta(days=1)):
-                                cond[j] = False
-
-                        case _:
-                            raise ValueError(f'Tracked pediod {config.tracked_period} is not supported!.')
+                    cond[j] = cond[j] and config.tracked_period.check(
+                        atom_data.probes.iloc[j]['datetime'],
+                        milestone=history.milestone,
+                    )
 
                 # parse probes
+                filedir, filename = os.path.split(filepath)
+
                 for probe_id in atom_data.probes.index[cond]:
                     i += 1
 
@@ -159,7 +153,7 @@ class Datum:
                         'i': i,
                         'file_dir': filedir,
                         'file_name': filename,
-                        'datetime_created': atom_data.probes.loc[probe_id, 'datetime_created'],
+                        'datetime': atom_data.probes.loc[probe_id, 'datetime'],
                         'analysis_name': atom_data.meta.analysis_name,
                         'organization_name': atom_data.meta.organization_name,
                         'device_name': atom_data.meta.device_name,
@@ -281,16 +275,10 @@ class Datum:
             levels=levels,
         )
 
-    def to_frame(self) -> Frame:
-        return pd.concat([pd.concat([self.meta, self.prediction], axis=1), self.targets])
-
 
 @dataclass
 class Data:
     items: tuple[Datum]
-
-    def __getitem__(self, i: int) -> Datum:
-        return self.items[i]
 
     @property
     def last_datum(self) -> Datum | None:
@@ -301,7 +289,7 @@ class Data:
         except IndexError:
             return Datum.from_default()
 
-    # --------        handlers        --------
+    # --------        factory        --------
     @classmethod
     def from_history(cls, history: History, config: Config) -> 'Data':
 
@@ -318,9 +306,9 @@ class Data:
         items = []
         for tracked_probe in tracked_probes:
             item = Datum.from_history(
+                history=history,
                 tracked_analysis=tracked_analysis,
                 tracked_probe=tracked_probe,
-                history=history,
                 config=config,
             )
             items.append(item)
@@ -330,11 +318,21 @@ class Data:
             items=tuple(items),
         )
 
+    # --------        private        --------
+    def __getitem__(self, i: int) -> Datum:
+        return self.items[i]
 
-def fetch_data(config: Config) -> Data:
+
+# --------        factory        --------
+def fetch_data(milestone: datetime, config: Config) -> Data:
 
     # history
-    history = History.from_path(tracked_path=config.tracked_path, tracked_period=config.tracked_period, sep=config.sep)
+    history = History.from_path(
+        milestone=milestone,
+        tracked_path=config.tracked_path,
+        tracked_period=config.tracked_period,
+        sep=config.sep,
+    )
 
     #  data
     data = Data.from_history(
