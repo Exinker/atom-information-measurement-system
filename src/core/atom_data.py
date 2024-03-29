@@ -71,6 +71,7 @@ class AtomData:
     prediction: Frame
     reference: Frame
 
+    # --------        factory        --------
     @classmethod
     def from_xml(cls, xml: XML, filtrated_by_sheet: FiltratedSheet, filtrated_by_label: FiltratedLabel) -> 'AtomData':
         """Get recorded data from Atom's .xml file."""
