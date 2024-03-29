@@ -146,7 +146,7 @@ class VerticalHeader(QtWidgets.QHeaderView):
         super().__init__(*args, orientation, **kwargs)
 
         self.setDefaultSectionSize(25)
-        self.setFixedWidth(120)
+        self.setFixedWidth(140)
         self.sectionDoubleClicked.connect(self._on_dbl_clicked)
 
     def mouseDoubleClickEvent(self, event: QtGui.QMouseEvent) -> None:
@@ -178,13 +178,14 @@ class TableView(QtWidgets.QTableView):
         n_target_columns = model._n_target_columns
         n_info_columns = len(data.columns) - n_target_columns
 
+        # style
+        self.setStyleSheet("font-size: 14px; font-weight: 500")
+
         # viewModel
         self.setModel(model)
 
         # selectionModel
         self.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
-
-        # visible
 
         # span
         self.clearSpans()
@@ -214,16 +215,12 @@ class TableView(QtWidgets.QTableView):
         # vh.hide()
 
         # geometry
-        # width = n_info_columns*120 + n_target_columns*90 + 20
-        # self.setMaximumWidth(width)
         self.setMinimumSize(QtCore.QSize(5 + 120 + 15, 240))
 
     def _update(self, model: QtCore.QAbstractTableModel):
 
         data = model._data
-        target_rows = model._target_rows
         n_target_columns = model._n_target_columns
-        n_info_columns = len(data.columns) - n_target_columns
 
         # update viewModel
         self.setModel(model)
@@ -233,21 +230,6 @@ class TableView(QtWidgets.QTableView):
 
         # span
         self.clearSpans()
-
-        # for i in np.unique([index[0] for index in data.index if isinstance(index, tuple)]):
-        #     locations = [data.index.get_loc(index) for index in data.index if isinstance(index, tuple) and index[0] == i]
-
-        #     if len(locations) > 1:
-        #         span_index = min(locations)
-        #         span_length = len(locations)
-
-        #         self.setSpan(span_index, 0, span_length, 1)
-
-        # for i, index in enumerate(data.index):
-        #     if index in target_rows:
-        #         self.setSpan(i, 0, 1, 3)
-
-        #
 
 
 class ProbeWidget(QtWidgets.QWidget):
@@ -270,11 +252,10 @@ class ProbeWidget(QtWidgets.QWidget):
         app = QtWidgets.QApplication.instance()
 
         # get datum
-        if datum is None:
-            datum = app.data.last_datum
+        datum = datum or app.data.last_datum
 
-            if datum is None:
-                return
+        if datum is None:
+            return
 
         # process datum
         datum = datum.filtrate(

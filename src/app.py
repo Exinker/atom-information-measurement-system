@@ -37,6 +37,9 @@ class CentralWidget(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent=parent)
 
+        # style
+        self.setStyleSheet("font-size: 14px; font-weight: 600")
+
         # layout
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
