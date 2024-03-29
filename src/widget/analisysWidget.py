@@ -6,7 +6,7 @@ from src.widget.probeWidget import ProbeWidget
 
 def _format_tab_label(label: str) -> str:
     """Format label to represent not empty tab's label."""
-    return f'{label:<10}'
+    return f'{label:<15}'
 
 
 class AnalysisWidget(QtWidgets.QWidget):
