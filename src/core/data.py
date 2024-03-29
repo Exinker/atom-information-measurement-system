@@ -99,27 +99,25 @@ class Datum:
     def from_history(cls, history: History, tracked_analysis: AnalysisName, tracked_probe: ProbeName, config: Config) -> 'Datum':
         """Get `datum` from history."""
 
-        # select history
-        history = history.select(
+        # meta, prediction, reference
+        filepaths = history.get_paths(
             analysis_name=tracked_analysis,
             probe_name=tracked_probe,
         )
 
-        #
+        if len(filepaths) == 0:
+            raise ValueError('List of filepaths is empty!')
+
         try:
-            # meta, prediction, reference
-            paths = history.get_paths()
-            if len(paths) == 0:
-                raise ValueError('List of paths is empty!')
+            i = -1
 
             meta = []
             reference = []
             prediction = []
-            i = -1
-            for path in paths:
+            for filepath in filepaths:
 
                 # atom data
-                xml = load_xml(path)
+                xml = load_xml(filepath)
 
                 atom_data = AtomData.from_xml(
                     xml=xml,
@@ -146,7 +144,7 @@ class Datum:
                     )
 
                 # parse probes
-                filedir, filename = os.path.split(path)
+                filedir, filename = os.path.split(filepath)
 
                 for probe_id in atom_data.probes.index[cond]:
                     i += 1

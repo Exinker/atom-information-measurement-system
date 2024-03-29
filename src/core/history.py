@@ -73,30 +73,18 @@ class History:
         probe_names = probe_names if ascending else reversed(probe_names)
         return probe_names
 
-    def get_paths(self) -> tuple[XMLPath]:
+    def get_paths(self, analysis_name: AnalysisName, probe_name: ProbeName) -> tuple[XMLPath]:
         """Получить последовательность `filepaths` всех `xml` файлов files для выбранного `analysis_name` и `probe_name`."""
-
-        #
-        if self.records.empty:
-            return tuple()
-
-        return tuple(self.records['path'].unique())
-
-    def select(self, analysis_name: AnalysisName, probe_name: ProbeName) -> 'History':
-        cls = self.__class__
 
         records = self.records[
             (self.records['analysis_name'] == analysis_name) & (self.records['probe_name'] == probe_name)
         ].copy(deep=True)
 
         #
-        return cls(
-            records=records,
-            milestone=self.milestone,
-            tracked_path=self.tracked_path,
-            tracked_period=self.tracked_period,
-            sep=self.sep,
-        )
+        if records.empty:
+            return tuple()
+
+        return tuple(records['path'].unique())
 
     # --------        factory        --------
     @classmethod
