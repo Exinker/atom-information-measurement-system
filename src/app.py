@@ -141,10 +141,7 @@ class MainWindow(BaseMainWindow):
         app.reset()
 
         # update title
-        datum = app.data.last_datum
-        dt = app.datetime.strftime('%Y-%m-%d %H:%M:%S')
-        title = f'{APPLICATION_NAME} - [{datum.analysis_name} / {datum.probe_name}] - [{dt}]'
-        self.setWindowTitle(title)
+        self._update_title()
 
         # reset windows
         for window in app.topLevelWidgets():
@@ -169,11 +166,7 @@ class MainWindow(BaseMainWindow):
         self.setVisible(visible)
 
         # update window: title
-        datum = app.data.last_datum
-        dt = app.datetime.strftime('%Y-%m-%d %H:%M:%S')
-
-        title = f'{APPLICATION_NAME} - [{datum.analysis_name} / {datum.probe_name}] - [{dt}]' if datum else f'{APPLICATION_NAME} - [{dt}]'
-        self.setWindowTitle(title)
+        self._update_title()
 
         # update app windows
         for window in app.topLevelWidgets():
@@ -201,6 +194,28 @@ class MainWindow(BaseMainWindow):
         # refresh info window
         window = find_window('widgetWindow')
         window._onRefreshAction()
+
+    # --------        private        --------
+    def _update_title(self) -> None:
+        app = QtWidgets.QApplication.instance()
+
+        #
+        datum = app.data.last_datum
+        if datum is None:
+            title = '{application_name} - [{datetime_updated}]'.format(
+                application_name=APPLICATION_NAME,
+                datetime_updated=app.milestone.strftime('%Y-%m-%d %H:%M:%S'),
+            )
+        else:
+            title = '{application_name} - [{analysis_name} / {probe_name}] - [{datetime_updated}]'.format(
+                application_name=APPLICATION_NAME,
+                analysis_name=datum.analysis_name,
+                probe_name=datum.probe_name,
+                datetime_updated=app.milestone.strftime('%Y-%m-%d %H:%M:%S'),
+            )
+
+        #
+        self.setWindowTitle(title)
 
 
 class Application(QtWidgets.QApplication):
