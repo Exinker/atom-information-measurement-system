@@ -6,9 +6,9 @@ from typing import Any
 
 from PySide6 import QtCore
 
-from spectrumapp.core.logging import log
+from spectrumapp.loggers import log
 
-from src.config import Config, DEBUG
+from aims.config import Config, DEBUG
 
 
 # ---------        filtration        ---------
@@ -47,7 +47,7 @@ def fetch_setting() -> QtCore.QSettings:
     return inner(filepath)
 
 
-@log(msg='setting: get', debug=DEBUG)
+@log(message='setting: get')
 def get_setting(key: str) -> Any:
 
     # get config values
@@ -55,7 +55,7 @@ def get_setting(key: str) -> Any:
 
     match key_category:
         case 'config':  # FIXME: to refactor (line dict obj)
-            config = Config.from_json()
+            config = Config.load()
 
             if key_name == 'directory':
                 return os.path.abspath(config.directory)
@@ -98,7 +98,7 @@ def get_setting(key: str) -> Any:
                 return value
 
 
-@log(msg='setting: set', debug=DEBUG)
+@log(message='setting: set')
 def set_setting(key: str, value: str | int | float | list) -> None:
 
     # update setting

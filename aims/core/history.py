@@ -1,10 +1,11 @@
+import os
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from src.config import DEBUG, Directory, TrackedPediod
+from aims.config import Directory, TrackedPediod
 
 from .scraper import Scraper
-from .typing import AnalysisName, Frame, ProbeName, XMLPath
+from .types import AnalysisName, Frame, ProbeName, XMLPath
 
 
 @dataclass
@@ -99,7 +100,7 @@ class History:
             verbose=verbose,
         ).parse()
 
-        if DEBUG:
+        if bool(os.environ['DEBUG']):
             print(records)
 
         #

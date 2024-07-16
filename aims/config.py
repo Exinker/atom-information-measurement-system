@@ -5,18 +5,16 @@ import sys
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any
+from typing import ClassVar, Mapping
 
 import pandas as pd
 
-from spectrumapp.exception import eprint
+from spectrumapp.config import AbstractConfig
+from spectrumapp.exceptions import eprint
 
-from src import APPLICATION_VERSION
 
+DEBUG = False
 
-# ---------        CONSTANTS        ---------
-DEBUG = True
-DEPLOY = hasattr(sys, '_MEIPASS')
 
 # ---------        EXPLORER        ---------
 match sys.platform:
@@ -254,8 +252,8 @@ class DatabasePath(str):
 
 
 # ---------        Config        ---------
-@dataclass(frozen=True)
-class Config():
+@dataclass(frozen=True, slots=True)
+class Config(AbstractConfig):
     version: str
     directory: Directory
 
@@ -272,46 +270,11 @@ class Config():
 
     database_path: DatabasePath = field(default=DatabasePath(None))
 
-    @classmethod
-    def default(cls, save: bool = False) -> 'Config':
-        """Generate default config file."""
+    FILEPATH: ClassVar[str] = field(default=os.path.join(os.getcwd(), 'config.json'))
 
-        config = cls(
-            version=APPLICATION_VERSION,
-            directory=Directory.default(),
-            tracked_mode=TrackedMode.default(),
-            tracked_period=TrackedPediod.default(),
-        )
+    def serialize(self) -> Mapping[str, str | int | float | list]:
+        """Serialize config to mapping object."""
 
-        #
-        if save:
-            config.to_json()
-
-        #
-        return config
-
-    @classmethod
-    def update(cls, key: str, value: Any, filepath: str | None = None) -> None:
-        """Update config file."""
-
-        if filepath is None:
-            filepath = os.path.join('.', 'config.json')
-
-        # load
-        with open(filepath, 'r', encoding='utf-8') as file:
-            data = json.load(file)
-
-        # update
-        data[key] = value
-
-        # dump
-        with open(filepath, 'w', encoding='utf-8') as file:
-            json.dump(data, file)
-
-    def to_json(self, filepath: str | None = 'config.json') -> None:
-        """Pull config to json."""
-
-        # serialize data
         data = {}
         for key, value in dataclasses.asdict(self).items():
             if isinstance(value, Enum):
@@ -319,49 +282,81 @@ class Config():
 
             data[key] = value
 
-        # dump data
-        with open(filepath, 'w', encoding='utf-8') as file:
-            json.dump(data, file)
+        #
+        return data
 
+    # ---------        factory        ---------
     @classmethod
-    def from_json(cls, filepath: str | None = None) -> 'Config':
-        """Push config from json."""
+    def default(cls) -> 'Config':
+        """Get config file by default."""
 
-        if filepath is None:
-            filepath = os.path.join('.', 'config.json')
+        config = cls(
+            **cls._default(),
+        )
 
-        try:
-            with open(filepath, 'r', encoding='utf-8') as file:
-                data = json.load(file)
-
-                #
-                config = Config(
-                    version=data['version'],
-                    directory=Directory(path=data['directory']),
-
-                    tracked_mode=TrackedMode.from_str(value=data['tracked_mode']),
-                    tracked_period=TrackedPediod.from_str(value=data['tracked_period']),
-                    tracked_analisys=data['tracked_analisys'],
-                    tracked_probe=data['tracked_analisys'],
-                    tracked_queue=TrackedQueue(value=data['tracked_queue']),
-
-                    filtrated_by_sheet=data['filtrated_by_sheet'],
-                    filtrated_by_label=FiltratedLabel.from_str(value=data['filtrated_by_label']),
-
-                    sep=Separator(value=data['sep']),
-
-                    database_path=DatabasePath(path=data['database_path']),
-                )
-
-        except (json.JSONDecodeError, TypeError, ValueError, KeyError):
-            eprint(msg='config: from_json')
-            config = cls.default(save=True)
-
+        #
         return config
 
+    @classmethod
+    def load(cls) -> 'Config':
+        """Load config from file (json)."""
 
-def setdefault_config() -> None:
-    """Generate default config file if needed."""
+        # load data
+        try:
+            data = cls._load()
 
-    if not os.path.exists('config.json'):
-        Config.default(save=True)
+        except FileNotFoundError as error:
+            eprint(msg=f'{cls.__name__}.load: {error}')
+
+            setdefault_config()
+            return cls.load()
+
+        # parse data
+        try:
+            config = Config(
+                version=data['version'],
+                directory=Directory(path=data['directory']),
+
+                tracked_mode=TrackedMode.from_str(value=data['tracked_mode']),
+                tracked_period=TrackedPediod.from_str(value=data['tracked_period']),
+                tracked_analisys=data['tracked_analisys'],
+                tracked_probe=data['tracked_analisys'],
+                tracked_queue=TrackedQueue(value=data['tracked_queue']),
+
+                filtrated_by_sheet=data['filtrated_by_sheet'],
+                filtrated_by_label=FiltratedLabel.from_str(value=data['filtrated_by_label']),
+
+                sep=Separator(value=data['sep']),
+
+                database_path=DatabasePath(path=data['database_path']),
+            )
+
+        except (json.JSONDecodeError, TypeError, ValueError, KeyError) as error:
+            eprint(msg=f'{cls.__name__}.load: {error}')
+
+            setdefault_config(force=True)
+            return cls.load()
+
+        #
+        return config
+
+    # ---------        private        ---------
+    @classmethod
+    def _default(cls) -> Mapping[str, str | int | float | list]:
+        """Get default serialized data."""
+
+        return {
+            'version': os.environ['APPLICATION_VERSION'],
+            'directory': Directory.default(),
+            'tracked_mode': TrackedMode.default(),
+            'tracked_period': TrackedPediod.default(),
+        }
+
+
+def setdefault_config(force: bool = False) -> None:
+    """Create default config file."""
+
+    filepath = Config.FILEPATH
+    if (not os.path.exists(filepath)) or force:
+        config = Config.default()
+        config.dump()

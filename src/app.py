@@ -115,18 +115,18 @@ class MainWindow(BaseMainWindow):
         path = QtWidgets.QFileDialog().getExistingDirectory(
             parent=self,
             caption='Выберете каталог:',
-            dir=get_setting(key='config/tracked_path'),
+            dir=get_setting(key='config/directory'),
         )
         path = os.sep.join(path.split('/'))
 
         if path == '':
             return
-        if path == get_setting(key='config/tracked_path'):
+        if path == get_setting(key='config/directory'):
             return
 
         # update: setting
         set_setting(
-            key='config/tracked_path',
+            key='config/directory',
             value=path,
         )
 
@@ -266,7 +266,7 @@ class Application(QtWidgets.QApplication):
 
         # observer's path
         path = os.path.abspath(
-            path=get_setting('config/tracked_path'),
+            path=get_setting('config/directory'),
         )
 
         # setup observer

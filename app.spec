@@ -1,13 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
 import os
 
-from src import APPLICATION_NAME, APPLICATION_VERSION
+import aims
+
 
 block_cipher = None
 
 
 a = Analysis(
-    ['src/app.py'],
+    ['aims/app.py'],
     pathex=['.'],
     binaries=[],
     datas=[
@@ -34,8 +35,8 @@ exe = EXE(
     a.datas,
     [],
     name='{name} {version} (beta)'.format(
-        name=APPLICATION_NAME,
-        version=APPLICATION_VERSION,
+        name=aims.__name__,
+        version=aims.__version__,
     ),
     debug=False,
     bootloader_ignore_signals=False,

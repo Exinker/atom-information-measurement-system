@@ -1,33 +1,33 @@
 from setuptools import find_packages, setup
 
-from src import APPLICATION_DESCRIPTION, APPLICATION_VERSION, AUTHOR_EMAIL, AUTHOR_NAME
+import aims
 
 
 setup(
     # info
-    name='src',
-    description=APPLICATION_DESCRIPTION,
+    name='aims',
+    description=aims.__doc__,
     license='MIT',
 
     # version
-    version=APPLICATION_VERSION,
+    version=aims.__version__,
 
     # author details
-    author=AUTHOR_NAME,
-    author_email=AUTHOR_EMAIL,
+    author=aims.__name__,
+    author_email=aims.__email__,
 
     # setup directories
     packages=find_packages(),
 
     # setup data
     package_data={
-        '': ['*.iso', '*.css'],
+        '': ['*.ico', '*.css'],
     },
 
     # requires
-    # install_requires=[
-    #     item.strip() for item in open('requirements.txt', 'r').readlines()
-    #     if item.strip()
-    # ],
+    install_requires=[
+        item.strip() for item in open('requirements.txt', 'r').readlines()
+        if item.strip()
+    ],
     python_requires='>=3.10',
 )
