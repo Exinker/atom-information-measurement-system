@@ -63,10 +63,10 @@ def get_setting(key: str) -> Any:
                 return config.tracked_mode
             if key_name == 'tracked_period':
                 raise NotImplementedError
-            if key_name == 'tracked_probe':
-                return config.tracked_probe
-            if key_name == 'tracked_queue':
-                return config.tracked_queue
+            if key_name == 'tracked_probe_name':
+                return config.tracked_probe_name
+            if key_name == 'tracked_queue_length':
+                return config.tracked_queue_length
             if key_name == 'filtrated_by_sheet':
                 return config.filtrated_by_sheet
             if key_name == 'filtrated_by_label':

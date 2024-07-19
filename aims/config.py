@@ -259,9 +259,9 @@ class Config(AbstractConfig):
 
     tracked_mode: TrackedMode
     tracked_period: TrackedPediod
-    tracked_analisys: str = field(default='')
-    tracked_probe: str = field(default='')
-    tracked_queue: int = field(default=5)
+    tracked_analisys_name: str = field(default='')
+    tracked_probe_name: str = field(default='')
+    tracked_queue_length: int = field(default=5)
 
     filtrated_by_sheet: FiltratedSheet = field(default=None)
     filtrated_by_label: FiltratedLabel = field(default=FiltratedLabel.default())
@@ -319,9 +319,9 @@ class Config(AbstractConfig):
 
                 tracked_mode=TrackedMode.from_str(value=data['tracked_mode']),
                 tracked_period=TrackedPediod.from_str(value=data['tracked_period']),
-                tracked_analisys=data['tracked_analisys'],
-                tracked_probe=data['tracked_analisys'],
-                tracked_queue=TrackedQueue(value=data['tracked_queue']),
+                tracked_analisys_name=data['tracked_analisys_name'],
+                tracked_probe_name=data['tracked_analisys_name'],
+                tracked_queue_length=TrackedQueue(value=data['tracked_queue_length']),
 
                 filtrated_by_sheet=data['filtrated_by_sheet'],
                 filtrated_by_label=FiltratedLabel.from_str(value=data['filtrated_by_label']),

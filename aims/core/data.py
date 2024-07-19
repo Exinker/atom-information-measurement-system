@@ -96,13 +96,13 @@ class Datum:
         )
 
     @classmethod
-    def from_history(cls, history: History, tracked_analysis: AnalysisName, tracked_probe: ProbeName, config: Config) -> 'Datum':
+    def from_history(cls, history: History, tracked_analysis: AnalysisName, tracked_probe_name: ProbeName, config: Config) -> 'Datum':
         """Get `datum` from history."""
 
         # meta, prediction, reference
         filepaths = history.get_paths(
             analysis_name=tracked_analysis,
-            probe_name=tracked_probe,
+            probe_name=tracked_probe_name,
         )
 
         if len(filepaths) == 0:
@@ -135,7 +135,7 @@ class Datum:
                     cond[j] = cond[j] and normalize_name(
                         name=atom_data.probes.iloc[j]['name'],
                         sep=history.sep,
-                    ) == tracked_probe
+                    ) == tracked_probe_name
 
                     # check: probe's created datetime
                     cond[j] = cond[j] and config.tracked_period.check(
@@ -193,7 +193,7 @@ class Datum:
 
             return Datum.from_default(
                 analysis_name=tracked_analysis,
-                probe_name=tracked_probe,
+                probe_name=tracked_probe_name,
             )
 
         # targets and levels
@@ -268,7 +268,7 @@ class Datum:
         #
         return cls(
             analysis_name=tracked_analysis,
-            probe_name=tracked_probe,
+            probe_name=tracked_probe_name,
             meta=meta,
             prediction=prediction,
             targets=targets,
@@ -294,21 +294,21 @@ class Data:
     def from_history(cls, history: History, config: Config) -> 'Data':
 
         # tracked analysis
-        tracked_analysis = config.tracked_analisys or history.last_analisys_name
+        tracked_analysis = config.tracked_analisys_name or history.last_analisys_name
 
         # tracked probes
-        if config.tracked_probe:
-            tracked_probes = (config.tracked_probe, ) + history.get_queue(analysis_name=tracked_analysis, n=config.tracked_queue - 1)
+        if config.tracked_probe_name:
+            tracked_probes = (config.tracked_probe_name, ) + history.get_queue(analysis_name=tracked_analysis, n=config.tracked_queue_length - 1)
         else:
-            tracked_probes = history.get_queue(analysis_name=tracked_analysis, n=config.tracked_queue)
+            tracked_probes = history.get_queue(analysis_name=tracked_analysis, n=config.tracked_queue_length)
 
         #
         items = []
-        for tracked_probe in tracked_probes:
+        for tracked_probe_name in tracked_probes:
             item = Datum.from_history(
                 history=history,
                 tracked_analysis=tracked_analysis,
-                tracked_probe=tracked_probe,
+                tracked_probe_name=tracked_probe_name,
                 config=config,
             )
             items.append(item)

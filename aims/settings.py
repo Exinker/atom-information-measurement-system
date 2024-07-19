@@ -44,8 +44,8 @@ def get_setting(key: str) -> Any:
 
             if key == 'directory':
                 return os.path.abspath(config.directory)
-            if key == 'tracked_queue':
-                return config.tracked_queue
+            if key == 'tracked_queue_length':
+                return config.tracked_queue_length
 
             raise ValueError(f'key {key} is not supported!')
 

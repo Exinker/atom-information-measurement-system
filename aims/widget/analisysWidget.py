@@ -14,7 +14,7 @@ class AnalysisWidget(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        n_tabs = get_setting(key='config/tracked_queue')
+        n_tabs = get_setting(key='config/tracked_queue_length')
 
         # layout
         layout = QtWidgets.QVBoxLayout(self)
