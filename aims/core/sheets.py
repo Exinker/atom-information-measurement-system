@@ -240,23 +240,11 @@ class Sheets:
         else:
             tracked_probe_names = history.get_queue(analysis_name=tracked_analysis_name, n=config.tracked_queue_length)
 
-        #
-        print(f'cpu count: {cpu_count()}')
+        # factory of sheets
+        target = partial(Sheet.from_history, history, tracked_analysis_name, config=config)
         with Pool() as pool:
-            target = partial(Sheet.from_history, history, tracked_analysis_name, config=config)
             items = pool.map(target, tracked_probe_names)
 
-        # items = []
-        # for tracked_probe_name in tracked_probe_names:
-        #     item = Sheet.from_history(
-        #         history=history,
-        #         analysis_name=tracked_analysis_name,
-        #         probe_name=tracked_probe_name,
-        #         config=config,
-        #     )
-        #     items.append(item)
-
-        #
         return cls(
             items=tuple(items),
         )
