@@ -1,7 +1,6 @@
 from PySide6 import QtWidgets
 
-from aims.core.setting import get_setting
-from aims.widget.analisysWidget import AnalysisWidget
+from aims.settings import get_setting
 from aims.widget.metaWidget import MetaWidget
 from aims.widget.sheetWidget import SheetWidget
 from aims.widget.queueWidget import QueueWidget

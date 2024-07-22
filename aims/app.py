@@ -13,8 +13,8 @@ import aims
 from aims.config import Config
 from aims.core.sheets import fetch_sheets
 from aims.core.observer import Observer, ObserverEventHandler
-from aims.core.setting import get_setting
 from aims.core.xml import Cache
+from aims.settings import get_setting
 from aims.window.mainWindow import MainWindow
 
 

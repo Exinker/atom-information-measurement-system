@@ -7,8 +7,8 @@ from spectrumapp.colors import COLOR
 from spectrumapp.numbers import format_number
 
 from aims.core.sheets import Sheet
-from aims.core.settings import get_setting
 from aims.core.utils import run_explorer
+from aims.settings import get_setting
 
 
 class TableModel(QtCore.QAbstractTableModel):

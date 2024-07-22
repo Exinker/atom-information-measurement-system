@@ -9,7 +9,7 @@ from spectrumapp.windows.splashScreenWindow import splashscreen
 from spectrumapp.windows.mainWindow import BaseMainWindow
 
 import aims
-from aims.core.setting import get_setting, set_setting
+from aims.settings import get_setting, set_setting
 from aims.widget.centralWidget import CentralWidget
 from aims.window.widgetWindow import WidgetWindow
 

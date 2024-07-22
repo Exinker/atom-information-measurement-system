@@ -1,6 +1,6 @@
 from PySide6 import QtWidgets
 
-from aims.core.settings import get_setting
+from aims.settings import get_setting
 from aims.widget.sheetWidget import SheetWidget
 
 
