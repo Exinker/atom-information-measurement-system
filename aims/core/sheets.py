@@ -82,6 +82,12 @@ class Sheet:
             levels=self.levels[columns],
         )
 
+    def select(self, index: slice) -> 'Sheet':
+        """Select from `sheet` by index."""
+        cls = self.__class__
+
+        print()
+
     def to_frame(self) -> Frame:
         return pd.concat([pd.concat([self.meta, self.prediction], axis=1), self.targets])
 
@@ -114,16 +120,47 @@ class Sheet:
 
         try:
             parser = Parser(config=config)
-            items = [parser.parse(filepath, analysis_name=analysis_name, probe_name=probe_name) for filepath in filepaths]
+
+            meta = []
+            reference = []
+            prediction = []
+            for filepath in filepaths:
+
+                # parse
+                _meta, _reference, _prediction = parser.parse(filepath)
+
+                # filtrate
+                n_probes = _meta.shape[0]
+
+                cond = np.full(n_probes, True)
+                for j in range(n_probes):
+                    pass
+
+                    # check: probe's name
+                    cond[j] = cond[j] and normalize_name(
+                        name=_meta.iloc[j]['probe_name'],
+                        sep=history.sep,
+                    ) == probe_name
+
+                    # check: probe's created datetime
+                    cond[j] = cond[j] and config.tracked_period.check(
+                        _meta.iloc[j]['datetime'],
+                        milestone=history.milestone,
+                    )
+
+                # drop and append
+                meta.append(_meta.drop(index=_meta.index[~cond]).reset_index(drop=True))
+                reference.append(_reference.drop(index=_meta.index[~cond]).reset_index(drop=True))
+                prediction.append(_prediction.drop(index=_meta.index[~cond]).reset_index(drop=True))
 
             meta = pd.DataFrame(
-                pd.concat([meta for meta, reference, prediction in items]),
+                pd.concat(meta),
             ).reset_index(drop=True)
             reference = pd.DataFrame(
-                pd.concat([reference for meta, reference, prediction in items]),
+                pd.concat(reference),
             ).reset_index(drop=True)
             prediction = pd.DataFrame(
-                pd.concat([prediction for meta, reference, prediction in items]),
+                pd.concat(prediction),
             ).reset_index(drop=True)
 
         except (ValueError, KeyError):

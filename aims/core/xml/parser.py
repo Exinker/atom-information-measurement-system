@@ -8,7 +8,7 @@ import pandas as pd
 from aims.config import Config
 from aims.core.formatters import normalize_name
 from aims.core.scraper import load_xml
-from aims.core.types import AnalysisName, Frame, ProbeName, XMLPath
+from aims.core.types import Frame, XMLPath
 
 from .data import AtomData
 
@@ -27,11 +27,11 @@ class Cache:
     def clear(cls) -> None:
         cls.storage = {}
 
-    def __call__(self, __filepath: XMLPath, *args, analysis_name: AnalysisName, probe_name: ProbeName, **kwargs):
-        key = hash((__filepath, analysis_name, probe_name))
+    def __call__(self, __filepath: XMLPath, *args, **kwargs):
+        key = hash(__filepath)
 
         if key not in self.cache:
-            self.cache[key] = self.func(self, __filepath, *args, analysis_name=analysis_name, probe_name=probe_name, **kwargs)
+            self.cache[key] = self.func(self, __filepath, *args, **kwargs)
 
             if bool(os.environ['DEBUG']):
                 print(f'parsed: {__filepath}')
@@ -43,11 +43,11 @@ def cache(func):
     cache = Cache()
 
     @functools.wraps(func)
-    def wrapped(self, __filepath: XMLPath, *args, analysis_name: AnalysisName, probe_name: ProbeName, **kwargs):
-        key = hash((__filepath, analysis_name, probe_name))
+    def wrapped(self, __filepath: XMLPath, *args, **kwargs):
+        key = hash(__filepath)
 
         if key not in cache.storage:
-            cache.storage[key] = func(self, __filepath, *args, analysis_name=analysis_name, probe_name=probe_name, **kwargs)
+            cache.storage[key] = func(self, __filepath, *args, **kwargs)
 
             if bool(os.environ['DEBUG']):
                 print(f'parsed: {__filepath}')
@@ -63,7 +63,7 @@ class Parser:
         self.config = config
 
     @cache
-    def parse(self, __filepath: XMLPath, analysis_name: AnalysisName, probe_name: ProbeName) -> tuple[Frame, Frame, Frame]:
+    def parse(self, __filepath: XMLPath) -> tuple[Frame, Frame, Frame]:
         """Парсить .xml файл для ."""
 
         # atom data
@@ -74,25 +74,6 @@ class Parser:
             filtrated_by_sheet=self.config.filtrated_by_sheet,
             filtrated_by_label=self.config.filtrated_by_label,
         )
-
-        # TODO: remove it!
-        # filtrate probes
-        # n_probes, _ = atom_data.probes.shape
-
-        # cond = np.full(n_probes, True)
-        # for j in range(n_probes):
-
-        #     # check: probe's name
-        #     cond[j] = cond[j] and normalize_name(
-        #         name=atom_data.probes.iloc[j]['name'],
-        #         sep=history.sep,
-        #     ) == probe_name
-
-        #     # check: probe's created datetime
-        #     cond[j] = cond[j] and config.tracked_period.check(
-        #         atom_data.probes.iloc[j]['datetime'],
-        #         milestone=history.milestone,
-        #     )
 
         # parse probes
         filedir, filename = os.path.split(__filepath)

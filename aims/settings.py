@@ -84,7 +84,7 @@ def set_setting(key: str, value: str | int | float | list) -> None:
     match key.split('/'):
         case 'config', key:
             config = Config.load()
-            config.update({'key': key, 'value': value})
+            config.update({key: value})
 
         case _:
             settings = load_settings()
