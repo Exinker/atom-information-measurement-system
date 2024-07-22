@@ -1,71 +1,21 @@
 from dataclasses import dataclass
+from warnings import simplefilter
 
 import pandas as pd
 
 from aims.config import FiltratedLabel, FiltratedSheet
+from aims.core.types import Frame, XML
+from aims.core.utils import normalize_datetime
 
-from .types import AnalysisName, Frame, XML
-from .utils import normalize_datetime
-
-
-# --------        Meta        --------
-@dataclass
-class Meta:
-    organization_name: str
-    device_name: str
-    user_name: str
-    analysis_name: AnalysisName
-
-    @classmethod
-    def from_xml(cls, xml: XML) -> 'Meta':
-        """Get recorded meta from Atom's .xml file."""
-
-        # parse
-        organization_name = xml.find('titul').find('organization').text
-        device_name = xml.find('titul').find('device').text
-        user_name = xml.find('titul').find('user').text
-        analysis_name = xml.find('titul').find('aname').text
-
-        return cls(
-            organization_name=organization_name,
-            device_name=device_name,
-            user_name=user_name,
-            analysis_name=analysis_name,
-        )
+from .meta import AtomMeta
 
 
-# --------        AtomData        --------
-def _find_sheets(element: XML, sheet_name: FiltratedSheet) -> list[XML]:
-    """Find sheets for a given name (or return all sheets)."""
-
-    if sheet_name is None:
-        return element.findall('sheet')
-
-    sheets = element.findall(f'sheet[@name="{sheet_name}"]')
-    if sheets:
-        return sheets
-    return element.findall('sheet')
-
-
-def _find_line_columns(element: XML, label: FiltratedLabel) -> list[XML]:
-    """Find columns for a given label."""
-
-    if label in (FiltratedLabel.NONE, ):
-        return element.findall('column[@type="line"]')
-
-    if label in (FiltratedLabel.ENGINEAR, FiltratedLabel.LABORANT, FiltratedLabel.REPORT):
-        key = {
-            'enginear': 'visible',
-        }.get(label.value, label.value)
-
-        return element.findall(f'column[@type="line"][@{key}="yes"]')
-
-    raise AssertionError(f'Filtrated label {label.value} is not used!.')
+simplefilter(action="ignore", category=pd.errors.PerformanceWarning)  # FIXME
 
 
 @dataclass
 class AtomData:
-    meta: Meta
+    meta: AtomMeta
     probes: Frame
     lines: Frame
     prediction: Frame
@@ -77,7 +27,7 @@ class AtomData:
         """Get recorded data from Atom's .xml file."""
 
         # parse meta
-        meta = Meta.from_xml(xml=xml)
+        meta = AtomMeta.from_xml(xml=xml)
 
         # parse probes
         probes = pd.DataFrame(
@@ -135,3 +85,33 @@ class AtomData:
             reference=reference,
             prediction=prediction,
         )
+
+
+# --------        private        --------
+def _find_sheets(element: XML, sheet_name: FiltratedSheet) -> list[XML]:
+    """Find sheets for a given name (or return all sheets)."""
+
+    if sheet_name is None:
+        return element.findall('sheet')
+
+    sheets = element.findall(f'sheet[@name="{sheet_name}"]')
+    if sheets:
+        return sheets
+    return element.findall('sheet')
+
+
+def _find_line_columns(element: XML, label: FiltratedLabel) -> list[XML]:
+    """Find columns for a given label."""
+
+    if label in (FiltratedLabel.NONE, ):
+        return element.findall('column[@type="line"]')
+
+    if label in (FiltratedLabel.ENGINEAR, FiltratedLabel.LABORANT, FiltratedLabel.REPORT):
+        key = {
+            'enginear': 'visible',
+        }.get(label.value, label.value)
+
+        return element.findall(f'column[@type="line"][@{key}="yes"]')
+
+    raise AssertionError(f'Filtrated label {label.value} is not used!.')
+

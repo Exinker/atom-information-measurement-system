@@ -74,7 +74,7 @@ class MainWindow(BaseMainWindow):
         app = QtWidgets.QApplication.instance()
 
         # reset app
-        app.reset()
+        app.reset(force=True)
 
         # update title
         self._update_title()

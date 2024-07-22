@@ -320,7 +320,7 @@ class Config(AbstractConfig):
                 tracked_mode=TrackedMode.from_str(value=data['tracked_mode']),
                 tracked_period=TrackedPediod.from_str(value=data['tracked_period']),
                 tracked_analisys_name=data['tracked_analisys_name'],
-                tracked_probe_name=data['tracked_analisys_name'],
+                tracked_probe_name=data['tracked_probe_name'],
                 tracked_queue_length=TrackedQueue(value=data['tracked_queue_length']),
 
                 filtrated_by_sheet=data['filtrated_by_sheet'],

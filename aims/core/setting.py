@@ -107,8 +107,7 @@ def set_setting(key: str, value: str | int | float | list) -> None:
     match key_category:
         case 'config':
             Config.update(
-                key=key_name,
-                value=value,
+                **{key_name: value},
             )
 
         case _:

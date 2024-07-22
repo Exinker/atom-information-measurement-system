@@ -100,8 +100,8 @@ class History:
             verbose=verbose,
         ).parse()
 
-        if bool(os.environ['DEBUG']):
-            print(records)
+        # if bool(os.environ['DEBUG']):
+        #     print(records)
 
         #
         return cls(

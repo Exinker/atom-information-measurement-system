@@ -1,6 +1,10 @@
 import os
+import time
 from dataclasses import dataclass
 from datetime import datetime
+
+from functools import partial
+from multiprocessing import Pool, cpu_count
 
 import numpy as np
 import pandas as pd
@@ -8,12 +12,12 @@ import pandas as pd
 from aims.config import Config, TrackedMode
 from aims.settings import FilterLevel, SorterKind
 
-from .atom_data import AtomData
 from .atom_database import MeasurementToleranceDatabase
 from .history import History
 from .scraper import load_xml
 from .types import AnalysisName, Frame, ProbeName, Series
 from .utils import normalize_name
+from .xml import Parser
 
 
 @dataclass
@@ -96,104 +100,38 @@ class Datum:
         )
 
     @classmethod
-    def from_history(cls, history: History, tracked_analysis: AnalysisName, tracked_probe_name: ProbeName, config: Config) -> 'Datum':
+    def from_history(cls, history: History, analysis_name: AnalysisName, probe_name: ProbeName, config: Config) -> 'Datum':
         """Get `datum` from history."""
 
-        # meta, prediction, reference
+        #
         filepaths = history.get_paths(
-            analysis_name=tracked_analysis,
-            probe_name=tracked_probe_name,
+            analysis_name=analysis_name,
+            probe_name=probe_name,
         )
 
         if len(filepaths) == 0:
             raise ValueError('List of filepaths is empty!')
 
         try:
-            i = -1
-
-            meta = []
-            reference = []
-            prediction = []
-            for filepath in filepaths:
-
-                # atom data
-                xml = load_xml(filepath)
-
-                atom_data = AtomData.from_xml(
-                    xml=xml,
-                    filtrated_by_sheet=config.filtrated_by_sheet,
-                    filtrated_by_label=config.filtrated_by_label,
-                )
-
-                # filtrate probes
-                n_probes, _ = atom_data.probes.shape
-
-                cond = np.full(n_probes, True)
-                for j in range(n_probes):
-
-                    # check: probe's name
-                    cond[j] = cond[j] and normalize_name(
-                        name=atom_data.probes.iloc[j]['name'],
-                        sep=history.sep,
-                    ) == tracked_probe_name
-
-                    # check: probe's created datetime
-                    cond[j] = cond[j] and config.tracked_period.check(
-                        atom_data.probes.iloc[j]['datetime'],
-                        milestone=history.milestone,
-                    )
-
-                # parse probes
-                filedir, filename = os.path.split(filepath)
-
-                for probe_id in atom_data.probes.index[cond]:
-                    i += 1
-
-                    meta.append({
-                        'i': i,
-                        'file_dir': filedir,
-                        'file_name': filename,
-                        'datetime': atom_data.probes.loc[probe_id, 'datetime'],
-                        'analysis_name': atom_data.meta.analysis_name,
-                        'organization_name': atom_data.meta.organization_name,
-                        'device_name': atom_data.meta.device_name,
-                        'user_name': atom_data.meta.user_name,
-                        'probe_name': atom_data.probes.loc[probe_id, 'name'],
-                        'is_certified': atom_data.probes.loc[probe_id, 'is_certified'],
-                    })
-
-                    reference.append(dict(
-                        **{'i': i},
-                        **{
-                            symbol: value
-                            for symbol, value in atom_data.reference.loc[probe_id].to_dict().items()
-                        },
-                    ))
-
-                    prediction.append(dict(
-                        **{'i': i},
-                        **{
-                            atom_data.lines.loc[line_id, 'symbol'] + ' ' + str(atom_data.lines.loc[line_id, 'wavelength']): values
-                            for line_id, values in atom_data.prediction.loc[probe_id].to_dict().items()
-                        },
-                    ))
+            parser = Parser(config=config)
+            items = [parser.parse(filepath, analysis_name=analysis_name, probe_name=probe_name) for filepath in filepaths]
 
             meta = pd.DataFrame(
-                meta,
-            ).set_index(['i'], drop=True)
+                pd.concat([meta for meta, reference, prediction in items]),
+            ).reset_index(drop=True)
             reference = pd.DataFrame(
-                reference,
-            ).set_index(['i'], drop=True).iloc[-1]
+                pd.concat([reference for meta, reference, prediction in items]),
+            ).reset_index(drop=True)
             prediction = pd.DataFrame(
-                prediction,
-            ).set_index(['i'], drop=True)
+                pd.concat([prediction for meta, reference, prediction in items]),
+            ).reset_index(drop=True)
 
         except (ValueError, KeyError):
             # TODO: add logging
 
             return Datum.from_default(
-                analysis_name=tracked_analysis,
-                probe_name=tracked_probe_name,
+                analysis_name=analysis_name,
+                probe_name=probe_name,
             )
 
         # targets and levels
@@ -229,7 +167,7 @@ class Datum:
 
             case TrackedMode.REFERENCE:
                 xml = load_xml(config.database_path)
-                tolerance_database = MeasurementToleranceDatabase.from_xml(xml=xml, analysis_name=tracked_analysis)
+                tolerance_database = MeasurementToleranceDatabase.from_xml(xml=xml, analysis_name=analysis_name)
 
                 #
                 n_probes = prediction.shape[0]
@@ -267,8 +205,8 @@ class Datum:
 
         #
         return cls(
-            analysis_name=tracked_analysis,
-            probe_name=tracked_probe_name,
+            analysis_name=analysis_name,
+            probe_name=probe_name,
             meta=meta,
             prediction=prediction,
             targets=targets,
@@ -294,24 +232,29 @@ class Data:
     def from_history(cls, history: History, config: Config) -> 'Data':
 
         # tracked analysis
-        tracked_analysis = config.tracked_analisys_name or history.last_analisys_name
+        tracked_analysis_name = config.tracked_analisys_name or history.last_analisys_name
 
         # tracked probes
         if config.tracked_probe_name:
-            tracked_probes = (config.tracked_probe_name, ) + history.get_queue(analysis_name=tracked_analysis, n=config.tracked_queue_length - 1)
+            tracked_probe_names = (config.tracked_probe_name, ) + history.get_queue(analysis_name=tracked_analysis_name, n=config.tracked_queue_length - 1)
         else:
-            tracked_probes = history.get_queue(analysis_name=tracked_analysis, n=config.tracked_queue_length)
+            tracked_probe_names = history.get_queue(analysis_name=tracked_analysis_name, n=config.tracked_queue_length)
 
         #
-        items = []
-        for tracked_probe_name in tracked_probes:
-            item = Datum.from_history(
-                history=history,
-                tracked_analysis=tracked_analysis,
-                tracked_probe_name=tracked_probe_name,
-                config=config,
-            )
-            items.append(item)
+        print(f'cpu count: {cpu_count()}')
+        with Pool() as pool:
+            target = partial(Datum.from_history, history, tracked_analysis_name, config=config)
+            items = pool.map(target, tracked_probe_names)
+
+        # items = []
+        # for tracked_probe_name in tracked_probe_names:
+        #     item = Datum.from_history(
+        #         history=history,
+        #         analysis_name=tracked_analysis_name,
+        #         probe_name=tracked_probe_name,
+        #         config=config,
+        #     )
+        #     items.append(item)
 
         #
         return cls(

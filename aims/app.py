@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 from datetime import datetime
 
 from PySide6 import QtCore, QtWidgets
@@ -13,6 +14,7 @@ from aims.config import Config
 from aims.core.data import fetch_data
 from aims.core.observer import Observer, ObserverEventHandler
 from aims.core.setting import get_setting
+from aims.core.xml import Cache
 from aims.window.mainWindow import MainWindow
 
 
@@ -104,7 +106,10 @@ class Application(QtWidgets.QApplication):
 
         if force:
             self._setup_observer()
+            Cache.clear()
 
         self._update_milestone()
+        start = time.perf_counter()
         self._update_data()
+        print(f'elapsed: {time.perf_counter() - start:.4f}, s')
         self._update_window()
