@@ -6,9 +6,9 @@ import numpy as np
 import pandas as pd
 
 from aims.config import Config
+from aims.core.formatters import normalize_name
 from aims.core.scraper import load_xml
 from aims.core.types import AnalysisName, Frame, ProbeName, XMLPath
-from aims.core.utils import normalize_name
 
 from .data import AtomData
 

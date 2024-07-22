@@ -4,8 +4,8 @@ from warnings import simplefilter
 import pandas as pd
 
 from aims.config import FiltratedLabel, FiltratedSheet
+from aims.core.formatters import normalize_datetime
 from aims.core.types import Frame, XML
-from aims.core.utils import normalize_datetime
 
 from .meta import AtomMeta
 
