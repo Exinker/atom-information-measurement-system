@@ -21,7 +21,7 @@ from .xml import Parser
 
 
 @dataclass
-class Datum:
+class Sheet:
     analysis_name: AnalysisName
     probe_name: ProbeName
     meta: Frame
@@ -44,8 +44,8 @@ class Datum:
         return data.iloc[-1]
 
     # --------        handlers        --------
-    def filtrate(self, level: FilterLevel) -> 'Datum':
-        """Filtrate `datum` by selected level."""
+    def filtrate(self, level: FilterLevel) -> 'Sheet':
+        """Filtrate `sheet` by selected level."""
         cls = self.__class__
 
         if self.levels.empty:  # no filtration
@@ -61,8 +61,8 @@ class Datum:
             levels=self.levels[columns],
         )
 
-    def sort(self, kind: SorterKind) -> 'Datum':
-        """Sort `datum` by selected kind."""
+    def sort(self, kind: SorterKind) -> 'Sheet':
+        """Sort `sheet` by selected kind."""
         cls = self.__class__
 
         match kind:
@@ -87,8 +87,8 @@ class Datum:
 
     # --------        factory        --------
     @classmethod
-    def from_default(cls, analysis_name: AnalysisName = '', probe_name: ProbeName = '') -> 'Datum':
-        """Get empty `datum`."""
+    def from_default(cls, analysis_name: AnalysisName = '', probe_name: ProbeName = '') -> 'Sheet':
+        """Get empty `sheet`."""
 
         return cls(
             analysis_name=analysis_name,
@@ -100,8 +100,8 @@ class Datum:
         )
 
     @classmethod
-    def from_history(cls, history: History, analysis_name: AnalysisName, probe_name: ProbeName, config: Config) -> 'Datum':
-        """Get `datum` from history."""
+    def from_history(cls, history: History, analysis_name: AnalysisName, probe_name: ProbeName, config: Config) -> 'Sheet':
+        """Get `sheet` from history."""
 
         #
         filepaths = history.get_paths(
@@ -129,7 +129,7 @@ class Datum:
         except (ValueError, KeyError):
             # TODO: add logging
 
-            return Datum.from_default(
+            return Sheet.from_default(
                 analysis_name=analysis_name,
                 probe_name=probe_name,
             )
@@ -215,21 +215,21 @@ class Datum:
 
 
 @dataclass
-class Data:
-    items: tuple[Datum]
+class Sheets:
+    items: tuple[Sheet]
 
     @property
-    def last_datum(self) -> Datum | None:
-        """Get the last recorded `datum`."""
+    def last_sheet(self) -> Sheet | None:
+        """Get the last recorded `sheet`."""
         try:
             return self.items[0]
 
         except IndexError:
-            return Datum.from_default()
+            return Sheet.from_default()
 
     # --------        factory        --------
     @classmethod
-    def from_history(cls, history: History, config: Config) -> 'Data':
+    def from_history(cls, history: History, config: Config) -> 'Sheets':
 
         # tracked analysis
         tracked_analysis_name = config.tracked_analisys_name or history.last_analisys_name
@@ -243,12 +243,12 @@ class Data:
         #
         print(f'cpu count: {cpu_count()}')
         with Pool() as pool:
-            target = partial(Datum.from_history, history, tracked_analysis_name, config=config)
+            target = partial(Sheet.from_history, history, tracked_analysis_name, config=config)
             items = pool.map(target, tracked_probe_names)
 
         # items = []
         # for tracked_probe_name in tracked_probe_names:
-        #     item = Datum.from_history(
+        #     item = Sheet.from_history(
         #         history=history,
         #         analysis_name=tracked_analysis_name,
         #         probe_name=tracked_probe_name,
@@ -262,12 +262,12 @@ class Data:
         )
 
     # --------        private        --------
-    def __getitem__(self, i: int) -> Datum:
+    def __getitem__(self, i: int) -> Sheet:
         return self.items[i]
 
 
 # --------        factory        --------
-def fetch_data(milestone: datetime, config: Config) -> Data:
+def fetch_sheets(milestone: datetime, config: Config) -> Sheets:
 
     # history
     history = History.from_path(
@@ -277,10 +277,10 @@ def fetch_data(milestone: datetime, config: Config) -> Data:
         sep=config.sep,
     )
 
-    #  data
-    data = Data.from_history(
+    # sheets
+    sheets = Sheets.from_history(
         history=history,
         config=config,
     )
 
-    return data
+    return sheets

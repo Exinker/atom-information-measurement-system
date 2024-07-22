@@ -6,27 +6,27 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from spectrumapp.colors import COLOR
 from spectrumapp.numbers import format_number
 
-from aims.core.data import Datum
+from aims.core.sheets import Sheet
 from aims.core.utils import run_explorer
 from aims.settings import get_setting
 
 
 class TableModel(QtCore.QAbstractTableModel):
 
-    def __init__(self, *args, datum: Datum, **kwargs):
+    def __init__(self, *args, sheet: Sheet, **kwargs):
         super().__init__(*args, **kwargs)
 
         #
-        _data = datum.to_frame()
+        _data = sheet.to_frame()
         # if 'datetime' in _data:
         #     _data = _data.sort_values(by='datetime', axis=0)
 
         self._data = _data
 
-        self._n_probes = len(datum.prediction.index)
-        self._target_rows = datum.targets.index.to_list()
-        self._target_columns = datum.targets.columns
-        self._n_target_columns = len(self._target_columns)
+        self._n_probes = len(sheet.prediction.index)
+        self._n_target_columns = len(sheet.targets.columns)
+        self._target_rows = sheet.targets.index.to_list()
+        self._target_columns = sheet.targets.columns
 
     def data(self, index, role):
         row = self._data.index[index.row()]
@@ -171,7 +171,7 @@ class TableView(QtWidgets.QTableView):
 
         if model is None:
             model = TableModel(
-                datum=Datum.from_default(),
+                sheet=Sheet.from_default(),
             )
 
         data = model._data
@@ -245,25 +245,25 @@ class ProbeWidget(QtWidgets.QWidget):
         layout.addWidget(self.tableView)
 
     # --------        slots        --------
-    def _onRefreshTriggered(self, datum: Datum | None = None):
+    def _onRefreshTriggered(self, sheet: Sheet | None = None):
         app = QtWidgets.QApplication.instance()
 
-        # get datum
-        datum = datum or app.data.last_datum
+        # get sheet
+        sheet = sheet or app.sheets.last_sheet
 
-        if datum is None:
+        if sheet is None:
             return
 
-        # process datum
-        datum = datum.filtrate(
+        # process sheet
+        sheet = sheet.filtrate(
             level=get_setting(key='filter/level'),
         )
-        datum = datum.sort(
+        sheet = sheet.sort(
             kind=get_setting(key='sorter/kind'),
         )
 
         # update table view
-        model = TableModel(datum=datum)
+        model = TableModel(sheet=sheet)
 
         self.tableView._update(
             model=model,

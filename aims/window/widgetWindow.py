@@ -34,16 +34,16 @@ class LastRecordFrame(QtWidgets.QFrame):
     # --------        slots        --------
     def _onRefreshTriggered(self):
         app = QtWidgets.QApplication.instance()
-        datum = app.data.last_datum
+        sheet = app.sheets.last_sheet
 
         # analysisLabel
         widget = self.findChild(QtWidgets.QLabel, 'analysisNameValueLavel')
-        widget.setText(f'{datum.analysis_name}')
+        widget.setText(f'{sheet.analysis_name}')
 
         # sampleNameLabel
         widget = self.findChild(QtWidgets.QLabel, 'sampleNameValueLavel')
         widget.setText(
-            f'{datum.probe_name}',
+            f'{sheet.probe_name}',
         )
 
 
@@ -81,11 +81,11 @@ class StatInfoFrame(QtWidgets.QFrame):
 
         #
         app = QtWidgets.QApplication.instance()
-        datum = app.data.last_datum
-        if datum is None:
+        sheet = app.sheets.last_sheet
+        if sheet is None:
             return
 
-        levels = datum.levels
+        levels = sheet.levels
 
         #
         n_columns = levels.size

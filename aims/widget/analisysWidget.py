@@ -37,14 +37,14 @@ class AnalysisWidget(QtWidgets.QWidget):
         #
         for i in range(self.tabWidget.count()):
 
-            # get datum
+            # get sheet
             try:
-                datum = app.data[i]
+                sheet = app.sheets[i]
             except IndexError:
-                datum = None
+                sheet = None
 
             # update widget
-            if datum is None:
+            if sheet is None:
                 self.tabWidget.setTabVisible(i, False)
                 self.tabWidget.setTabEnabled(i, False)
                 self.tabWidget.setTabText(i, _format_tab_label(label=''))
@@ -52,7 +52,7 @@ class AnalysisWidget(QtWidgets.QWidget):
             else:
                 self.tabWidget.setTabVisible(i, True)
                 self.tabWidget.setTabEnabled(i, True)
-                self.tabWidget.setTabText(i, _format_tab_label(label=datum.probe_name))
+                self.tabWidget.setTabText(i, _format_tab_label(label=sheet.probe_name))
 
                 widget = self.tabWidget.widget(i)
-                widget._onRefreshTriggered(datum=datum)
+                widget._onRefreshTriggered(sheet=sheet)

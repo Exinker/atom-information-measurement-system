@@ -136,8 +136,8 @@ class MainWindow(BaseMainWindow):
         app = QtWidgets.QApplication.instance()
 
         #
-        datum = app.data.last_datum
-        if datum is None:
+        sheet = app.sheets.last_sheet
+        if sheet is None:
             title = '{application_name} - [{datetime_updated}]'.format(
                 application_name=aims.__name__,
                 datetime_updated=app.milestone.strftime('%Y-%m-%d %H:%M:%S'),
@@ -145,8 +145,8 @@ class MainWindow(BaseMainWindow):
         else:
             title = '{application_name} - [{analysis_name} / {probe_name}] - [{datetime_updated}]'.format(
                 application_name=aims.__name__,
-                analysis_name=datum.analysis_name,
-                probe_name=datum.probe_name,
+                analysis_name=sheet.analysis_name,
+                probe_name=sheet.probe_name,
                 datetime_updated=app.milestone.strftime('%Y-%m-%d %H:%M:%S'),
             )
 

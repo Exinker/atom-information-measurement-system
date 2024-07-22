@@ -11,7 +11,7 @@ from spectrumapp.windows.splashScreenWindow import splashscreen
 
 import aims
 from aims.config import Config
-from aims.core.data import fetch_data
+from aims.core.sheets import fetch_sheets
 from aims.core.observer import Observer, ObserverEventHandler
 from aims.core.setting import get_setting
 from aims.core.xml import Cache
@@ -38,7 +38,7 @@ class Application(QtWidgets.QApplication):
         self.setApplicationVersion(aims.__version__)
 
         self.milestone = None
-        self.data = None
+        self.sheets = None
         self.window = None
         self.observer = None
 
@@ -48,9 +48,9 @@ class Application(QtWidgets.QApplication):
 
     @splashscreen(progress=50, info='<strong>PARSING</strong> xml files...')
     def _update_data(self) -> None:
-        """Update (or parse) tracked path data."""
+        """Update (or parse) tracked path sheets."""
 
-        self.data = fetch_data(
+        self.sheets = fetch_sheets(
             milestone=self.milestone,
             config=Config.load(),
         )
@@ -102,7 +102,7 @@ class Application(QtWidgets.QApplication):
     @splashscreen()
     @wait
     def reset(self, *args, force: bool = False, **kwargs):
-        """Reset an application: update observer (if `force == True`), data and windows."""
+        """Reset an application: update observer (if `force == True`), sheets and windows."""
 
         if force:
             self._setup_observer()
