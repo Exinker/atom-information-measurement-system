@@ -3,7 +3,8 @@ from PySide6 import QtWidgets
 from aims.core.setting import get_setting
 from aims.widget.analisysWidget import AnalysisWidget
 from aims.widget.metaWidget import MetaWidget
-from aims.widget.probeWidget import ProbeWidget
+from aims.widget.sheetWidget import SheetWidget
+from aims.widget.queueWidget import QueueWidget
 
 
 class CentralWidget(QtWidgets.QWidget):
@@ -23,11 +24,11 @@ class CentralWidget(QtWidgets.QWidget):
         self.stackedWidget = QtWidgets.QStackedWidget(parent=self)
         layout.addWidget(self.stackedWidget)
 
-        self.probeWidget = ProbeWidget(parent=self)
-        self.stackedWidget.addWidget(self.probeWidget)
+        self.sheetWidget = SheetWidget(parent=self)
+        self.stackedWidget.addWidget(self.sheetWidget)
 
-        self.analysisWidget = AnalysisWidget(parent=self)
-        self.stackedWidget.addWidget(self.analysisWidget)
+        self.queueWidget = QueueWidget(parent=self)
+        self.stackedWidget.addWidget(self.queueWidget)
 
         #
         self.metaWidget = MetaWidget(
@@ -39,7 +40,7 @@ class CentralWidget(QtWidgets.QWidget):
     def _onRefreshTriggered(self):
 
         # update current widget
-        widget = self.analysisWidget if get_setting(key='mainWindow/queue-widget') else self.probeWidget
+        widget = self.queueWidget if get_setting(key='mainWindow/queue-widget') else self.sheetWidget
         widget._onRefreshTriggered()
 
         # update stacked widget

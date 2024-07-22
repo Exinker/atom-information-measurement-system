@@ -1,7 +1,7 @@
 from PySide6 import QtWidgets
 
-from aims.settings import get_setting
-from aims.widget.probeWidget import ProbeWidget
+from aims.core.settings import get_setting
+from aims.widget.sheetWidget import SheetWidget
 
 
 def _format_tab_label(label: str) -> str:
@@ -9,12 +9,10 @@ def _format_tab_label(label: str) -> str:
     return f'{label:<15}'
 
 
-class AnalysisWidget(QtWidgets.QWidget):
+class QueueWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        n_tabs = get_setting(key='config/tracked_queue_length')
 
         # layout
         layout = QtWidgets.QVBoxLayout(self)
@@ -22,20 +20,23 @@ class AnalysisWidget(QtWidgets.QWidget):
         layout.setSpacing(10)
 
         self.tabWidget = QtWidgets.QTabWidget()
-        for _ in range(n_tabs):
-            widget = ProbeWidget(
+        for _ in range(self.n_sheets):
+            widget = SheetWidget(
                 parent=self,
             )
             self.tabWidget.addTab(widget, '')
         self.tabWidget.setCurrentIndex(0)
         layout.addWidget(self.tabWidget)
 
+    @property
+    def n_sheets(self) -> int:
+        return get_setting(key='config/tracked_queue_length')
+
     # --------        slots        --------
     def _onRefreshTriggered(self):
         app = QtWidgets.QApplication.instance()
 
-        #
-        for i in range(self.tabWidget.count()):
+        for i in range(self.n_sheets):
 
             # get sheet
             try:
