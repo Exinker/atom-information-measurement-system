@@ -109,6 +109,8 @@ def setdefault_setting() -> None:
 
         settings.setValue('sorter/kind', SorterKind.NONE.name)
 
+        settings.setValue('table/n_rows', 1)
+
         settings.sync()
 
     # setdefault config
