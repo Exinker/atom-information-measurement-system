@@ -11,6 +11,9 @@ from aims.core.utils import run_explorer
 from aims.settings import get_setting
 
 
+MAX_ROWS = 10  # TODO: remove to config
+
+
 class TableModel(QtCore.QAbstractTableModel):
 
     def __init__(self, *args, sheet: Sheet, **kwargs):
@@ -201,21 +204,19 @@ class TableView(QtWidgets.QTableView):
         for i in range(n_target_columns):
             self.setColumnWidth(n_info_columns + i, 90)
 
-        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        # self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
 
         hh = self.horizontalHeader()
         hh.setFixedHeight(25)
         hh.setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
 
-        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        # self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
 
         vh = VerticalHeader(parent=self)
         self.setVerticalHeader(vh)
 
-        # vh.hide()
-
         # geometry
-        self.setMinimumSize(QtCore.QSize(5 + 120 + 15, 240))
+        # self.setMinimumSize(QtCore.QSize(5 + 120 + 15, 90))
 
     def _update(self, model: QtCore.QAbstractTableModel):
 
@@ -228,6 +229,9 @@ class TableView(QtWidgets.QTableView):
         # span
         self.clearSpans()
 
+        # emit
+        model.layoutChanged.emit()
+
 
 class SheetWidget(QtWidgets.QWidget):
 
@@ -239,10 +243,14 @@ class SheetWidget(QtWidgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(10)
 
-        self.tableView = TableView(
-            parent=self,
-        )
-        layout.addWidget(self.tableView)
+        self.tableViews = []
+        for i in range(MAX_ROWS):
+            view = TableView(
+                parent=self,
+            )
+            layout.addWidget(view)
+
+            self.tableViews.append(view)
 
     # --------        slots        --------
     def _onRefreshTriggered(self, sheet: Sheet | None = None):
@@ -262,10 +270,20 @@ class SheetWidget(QtWidgets.QWidget):
             kind=get_setting(key='sorter/kind'),
         )
 
-        # update table view
-        model = TableModel(sheet=sheet)
+        # update table views
+        n_targets = len(sheet.targets.columns)
+        n_rows = get_setting(key='table/n_rows')
+        n_columns = int(np.ceil(n_targets / n_rows))
 
-        self.tableView._update(
-            model=model,
-        )
-        model.layoutChanged.emit()
+        for i in range(MAX_ROWS):
+            model = TableModel(
+                sheet=sheet.select(
+                    index=slice(n_columns*(i), n_columns*(i + 1)),
+                ),
+            )
+
+            view = self.tableViews[i]
+            view.setVisible(i < n_rows)
+            view._update(
+                model=model,
+            )
