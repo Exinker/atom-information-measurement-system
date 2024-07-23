@@ -15,9 +15,8 @@ from aims.settings import FilterLevel, SorterKind
 from .atom_database import MeasurementToleranceDatabase
 from .formatters import normalize_name
 from .history import History
-from .scraper import load_xml
 from .types import AnalysisName, Frame, ProbeName, Series
-from .xml import Parser
+from .xml import Parser, load_xml
 
 
 @dataclass
@@ -287,19 +286,19 @@ class Sheets:
             tracked_probe_names = history.get_queue(analysis_name=tracked_analysis_name, n=config.tracked_queue_length)
 
         # factory of sheets
-        # target = partial(Sheet.from_history, history, tracked_analysis_name, config=config)
-        # with Pool() as pool:
-        #     items = pool.map(target, tracked_probe_names)
+        target = partial(Sheet.from_history, history, tracked_analysis_name, config=config)
+        with Pool() as pool:
+            items = pool.map(target, tracked_probe_names)
 
-        items = []
-        for tracked_probe_name in tracked_probe_names:
-            item = Sheet.from_history(
-                history=history,
-                analysis_name=tracked_analysis_name,
-                probe_name=tracked_probe_name,
-                config=config,
-            )
-            items.append(item)
+        # items = []
+        # for tracked_probe_name in tracked_probe_names:
+        #     item = Sheet.from_history(
+        #         history=history,
+        #         analysis_name=tracked_analysis_name,
+        #         probe_name=tracked_probe_name,
+        #         config=config,
+        #     )
+        #     items.append(item)
 
         return cls(
             items=tuple(items),

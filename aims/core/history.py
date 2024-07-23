@@ -3,8 +3,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from aims.config import Directory, TrackedPediod
+from aims.core.xml import Scraper
 
-from .scraper import Scraper
 from .types import AnalysisName, Frame, ProbeName, XMLPath
 
 
@@ -98,7 +98,7 @@ class History:
             tracked_period=tracked_period,
             sep=sep,
             verbose=verbose,
-        ).parse()
+        ).scrape()
 
         # if bool(os.environ['DEBUG']):
         #     print(records)
