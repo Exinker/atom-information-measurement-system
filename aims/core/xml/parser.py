@@ -7,10 +7,10 @@ import pandas as pd
 
 from aims.config import Config
 from aims.core.formatters import normalize_name
-from aims.core.scraper import load_xml
 from aims.core.types import Frame, XMLPath
 
 from .data import AtomData
+from .utils import load_xml
 
 
 class Cache:

@@ -15,9 +15,8 @@ from aims.settings import FilterLevel, SorterKind
 from .atom_database import MeasurementToleranceDatabase
 from .formatters import normalize_name
 from .history import History
-from .scraper import load_xml
 from .types import AnalysisName, Frame, ProbeName, Series
-from .xml import Parser
+from .xml import Parser, load_xml
 
 
 @dataclass
