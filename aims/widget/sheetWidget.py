@@ -264,10 +264,10 @@ class SheetWidget(QtWidgets.QWidget):
 
         # process sheet
         sheet = sheet.filtrate(
-            level=get_setting(key='filter/level'),
+            level=get_setting(key='table/filter-level'),
         )
         sheet = sheet.sort(
-            kind=get_setting(key='sorter/kind'),
+            kind=get_setting(key='table/sorter-kind'),
         )
 
         # update table views
