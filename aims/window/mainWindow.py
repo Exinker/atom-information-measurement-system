@@ -104,6 +104,10 @@ class MainWindow(BaseMainWindow):
         # update window: title
         self._update_title()
 
+        # menus
+        menubar = self.menuBar()
+        menubar.setVisible(get_setting(key='mainWindow/menubar'))
+
         # update app windows
         for window in app.topLevelWidgets():
             window_name = window.objectName()

@@ -49,23 +49,25 @@ def get_setting(key: str) -> Any:
 
             raise ValueError(f'key {key} is not supported!')
 
-        case 'filter', key:
+        case 'table', key:
             settings = load_settings()
-            value = settings.value(key)
+            value = settings.value('table/{}'.format(key))
 
-            if key == 'level':
-                if FilterLevel.is_in(value):
-                    return FilterLevel[value]
-                return FilterLevel['NOTSET']
+            if key == 'n_rows':
+                try:
+                    return int(value)
+                except Exception:
+                    return 1
 
-        case 'sorter', key:
-            settings = load_settings()
-            value = settings.value(key)
-
-            if key == 'kind':
+            if key == 'sorter-kind':
                 if SorterKind.is_in(value):
                     return SorterKind[value]
                 return SorterKind['NONE']
+
+            if key == 'filter-level':
+                if FilterLevel.is_in(value):
+                    return FilterLevel[value]
+                return FilterLevel['NOTSET']
 
         case _:
             settings = load_settings()
@@ -73,7 +75,6 @@ def get_setting(key: str) -> Any:
 
             try:
                 return json.loads(value)
-
             except Exception:
                 return value
 
@@ -84,7 +85,7 @@ def set_setting(key: str, value: str | int | float | list) -> None:
     match key.split('/'):
         case 'config', key:
             config = Config.load()
-            config.update({'key': key, 'value': value})
+            config.update({key: value})
 
         case _:
             settings = load_settings()
@@ -105,9 +106,9 @@ def setdefault_setting() -> None:
 
         settings.setValue('widgetWindow/visible', False)
 
-        settings.setValue('filter/level', FilterLevel.NOTSET.name)
-
-        settings.setValue('sorter/kind', SorterKind.NONE.name)
+        settings.setValue('table/n_rows', 1)
+        settings.setValue('table/filter-level', FilterLevel.NOTSET.name)
+        settings.setValue('table/sorter-kind', SorterKind.NONE.name)
 
         settings.sync()
 
