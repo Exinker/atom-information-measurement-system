@@ -53,7 +53,7 @@ def get_setting(key: str) -> Any:
             settings = load_settings()
             value = settings.value('table/{}'.format(key))
 
-            if key == 'n_rows':
+            if key in ('n_rows_max', 'n_columns_min', ):
                 try:
                     return int(value)
                 except Exception:
@@ -106,7 +106,8 @@ def setdefault_setting() -> None:
 
         settings.setValue('widgetWindow/visible', False)
 
-        settings.setValue('table/n_rows', 1)
+        settings.setValue('table/n_rows_max', 1)
+        settings.setValue('table/n_columns_min', 10)
         settings.setValue('table/filter-level', FilterLevel.NOTSET.name)
         settings.setValue('table/sorter-kind', SorterKind.NONE.name)
 

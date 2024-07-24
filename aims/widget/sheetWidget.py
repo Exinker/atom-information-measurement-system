@@ -12,6 +12,7 @@ from aims.settings import get_setting
 
 
 MAX_ROWS = 10  # TODO: remove to config
+MAX_COLUMNS = 16  # TODO: remove to config
 
 
 class TableModel(QtCore.QAbstractTableModel):
@@ -201,16 +202,17 @@ class TableView(QtWidgets.QTableView):
         for i in range(n_info_columns - len(hidden_columns)):  # minus number of hidded columns
             self.setColumnWidth(i, 120)
 
-        for i in range(n_target_columns):
-            self.setColumnWidth(n_info_columns + i, 90)
+        # for i in range(n_target_columns):
+        #     self.setColumnWidth(n_info_columns + i, 90)
 
         # self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
 
         hh = self.horizontalHeader()
         hh.setFixedHeight(25)
+        # hh.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         hh.setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
 
-        # self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
 
         vh = VerticalHeader(parent=self)
         self.setVerticalHeader(vh)
@@ -272,18 +274,21 @@ class SheetWidget(QtWidgets.QWidget):
 
         # update table views
         n_targets = len(sheet.targets.columns)
-        n_rows = get_setting(key='table/n_rows')
-        n_columns = int(np.ceil(n_targets / n_rows))
+        n_rows_max = get_setting(key='table/n_rows_max')
+        n_columns = max(
+            get_setting(key='table/n_columns_min'),
+            int(np.ceil(n_targets / n_rows_max)),
+        )
 
         for i in range(MAX_ROWS):
+            columns = sheet.targets.columns[slice(n_columns*(i), n_columns*(i + 1))]
+
             model = TableModel(
-                sheet=sheet.select(
-                    index=slice(n_columns*(i), n_columns*(i + 1)),
-                ),
+                sheet=sheet.select(columns=columns),
             )
 
             view = self.tableViews[i]
-            view.setVisible(i < n_rows)
+            view.setVisible((i < n_rows_max) and (len(columns) > 0))
             view._update(
                 model=model,
             )
