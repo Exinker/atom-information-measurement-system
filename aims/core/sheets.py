@@ -81,11 +81,9 @@ class Sheet:
             levels=self.levels[columns],
         )
 
-    def select(self, index: slice) -> 'Sheet':
+    def select(self, columns: pd.Index) -> 'Sheet':
         """Select from `sheet` by index."""
         cls = self.__class__
-
-        columns = self.targets.columns[index]
 
         return cls(
             analysis_name=self.analysis_name,
@@ -286,19 +284,19 @@ class Sheets:
             tracked_probe_names = history.get_queue(analysis_name=tracked_analysis_name, n=config.tracked_queue_length)
 
         # factory of sheets
-        target = partial(Sheet.from_history, history, tracked_analysis_name, config=config)
-        with Pool() as pool:
-            items = pool.map(target, tracked_probe_names)
+        # target = partial(Sheet.from_history, history, tracked_analysis_name, config=config)
+        # with Pool() as pool:
+        #     items = pool.map(target, tracked_probe_names)
 
-        # items = []
-        # for tracked_probe_name in tracked_probe_names:
-        #     item = Sheet.from_history(
-        #         history=history,
-        #         analysis_name=tracked_analysis_name,
-        #         probe_name=tracked_probe_name,
-        #         config=config,
-        #     )
-        #     items.append(item)
+        items = []
+        for tracked_probe_name in tracked_probe_names:
+            item = Sheet.from_history(
+                history=history,
+                analysis_name=tracked_analysis_name,
+                probe_name=tracked_probe_name,
+                config=config,
+            )
+            items.append(item)
 
         return cls(
             items=tuple(items),
