@@ -2,7 +2,6 @@ import functools
 import os
 from datetime import datetime
 
-import numpy as np
 import pandas as pd
 
 from aims.config import Config
@@ -64,7 +63,7 @@ class Parser:
 
     @cache
     def parse(self, __filepath: XMLPath) -> tuple[Frame, Frame, Frame]:
-        """Парсить .xml файл для ."""
+        """Парсить .xml файл."""
 
         # atom data
         xml = load_xml(__filepath)
@@ -95,17 +94,17 @@ class Parser:
                 'is_certified': atom_data.probes.loc[probe_id, 'is_certified'],
             })
 
+            prediction.append(dict(
+                **{
+                    atom_data.lines.loc[line_id, 'nickname']: values
+                    for line_id, values in atom_data.prediction.loc[probe_id].to_dict().items()
+                },
+            ))
+
             reference.append(dict(
                 **{
                     symbol: value
                     for symbol, value in atom_data.reference.loc[probe_id].to_dict().items()
-                },
-            ))
-
-            prediction.append(dict(
-                **{
-                    atom_data.lines.loc[line_id, 'symbol'] + ' ' + str(atom_data.lines.loc[line_id, 'wavelength']): values
-                    for line_id, values in atom_data.prediction.loc[probe_id].to_dict().items()
                 },
             ))
 
