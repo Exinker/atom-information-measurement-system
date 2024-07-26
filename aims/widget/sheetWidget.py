@@ -11,8 +11,8 @@ from aims.core.utils import run_explorer
 from aims.settings import get_setting
 
 
-MAX_ROWS = 10  # TODO: remove to config
-MAX_COLUMNS = 16  # TODO: remove to config
+N_ROWS_MAX = 10  # TODO: remove to config
+N_COLUMNS_MAX = 16  # TODO: remove to config
 
 
 class TableModel(QtCore.QAbstractTableModel):
@@ -185,7 +185,7 @@ class TableView(QtWidgets.QTableView):
         # style
         self.setStyleSheet("font-size: 14px; font-weight: 500")
 
-        # viewModel
+        # model
         self.setModel(model)
 
         # selectionModel
@@ -205,11 +205,8 @@ class TableView(QtWidgets.QTableView):
         # for i in range(n_target_columns):
         #     self.setColumnWidth(n_info_columns + i, 90)
 
-        # self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-
         hh = self.horizontalHeader()
         hh.setFixedHeight(25)
-        # hh.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         hh.setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
 
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
@@ -222,14 +219,13 @@ class TableView(QtWidgets.QTableView):
 
     def _update(self, model: QtCore.QAbstractTableModel):
 
-        # update viewModel
+        # update model
         self.setModel(model)
 
-        # update selectionModel
-        self.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
-
-        # span
+        # update view
         self.clearSpans()
+        self.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
+        self.scrollToBottom()
 
         # emit
         model.layoutChanged.emit()
@@ -246,7 +242,7 @@ class SheetWidget(QtWidgets.QWidget):
         layout.setSpacing(10)
 
         self.tableViews = []
-        for i in range(MAX_ROWS):
+        for _ in range(N_ROWS_MAX):
             view = TableView(
                 parent=self,
             )
@@ -274,13 +270,13 @@ class SheetWidget(QtWidgets.QWidget):
 
         # update table views
         n_targets = len(sheet.targets.columns)
-        n_rows_max = get_setting(key='table/n_rows_max')
+        n_rows = get_setting(key='table/n_rows')
         n_columns = max(
-            get_setting(key='table/n_columns_min'),
-            int(np.ceil(n_targets / n_rows_max)),
+            get_setting(key='table/n_columns'),
+            int(np.ceil(n_targets / n_rows)),
         )
 
-        for i in range(MAX_ROWS):
+        for i in range(N_ROWS_MAX):
             columns = sheet.targets.columns[slice(n_columns*(i), n_columns*(i + 1))]
 
             model = TableModel(
@@ -288,7 +284,8 @@ class SheetWidget(QtWidgets.QWidget):
             )
 
             view = self.tableViews[i]
-            view.setVisible((i < n_rows_max) and (len(columns) > 0))
+            view.setVisible(i < n_rows)
+            # view.setVisible((i < n_rows) and (len(columns) > 0))
             view._update(
                 model=model,
             )
