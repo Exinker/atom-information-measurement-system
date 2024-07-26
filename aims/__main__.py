@@ -1,8 +1,10 @@
 import sys
 
-from aims.app import Application, setdefault_config, setdefault_logger, setdefault_setting
-from aims.config import DEBUG
-from aims.environ import setdefault_environ
+from aims.app import Application
+from aims.config import DEBUG, setdefault_config
+from aims.environs import setdefault_environ
+from aims.loggers import setdefault_logger
+from aims.settings import setdefault_setting
 
 
 if __name__ == '__main__':

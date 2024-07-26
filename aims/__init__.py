@@ -2,14 +2,8 @@
 
 from datetime import datetime
 
-from .app import Application
-from .config import DEBUG, setdefault_config
-from .environs import setdefault_environ
-from .loggers import setdefault_logger
-from .settings import setdefault_setting
 
-
-__version__ = '0.1.12'
+__version__ = '0.1.17'
 
 __name__ = 'Atom Information Measurement System'
 __author__ = 'Pavel Vaschenko'

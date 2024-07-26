@@ -13,7 +13,7 @@ setup(
     version=aims.__version__,
 
     # author details
-    author=aims.__name__,
+    author=aims.__author__,
     author_email=aims.__email__,
 
     # setup directories
