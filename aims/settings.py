@@ -27,7 +27,7 @@ class FilterLevel(Enum):
 # ---------        sorting        ---------
 class SorterKind(Enum):
     NONE = 'none'
-    FILTER = 'filter'
+    FILTER_LEVEL = 'filter-level'
 
     @classmethod
     def is_in(cls, item) -> bool:
@@ -53,7 +53,7 @@ def get_setting(key: str) -> Any:
             settings = load_settings()
             value = settings.value('table/{}'.format(key))
 
-            if key in ('n_rows_max', 'n_columns_min', ):
+            if key in ('n_rows', 'n_columns', ):
                 try:
                     return int(value)
                 except Exception:
@@ -85,7 +85,7 @@ def set_setting(key: str, value: str | int | float | list) -> None:
     match key.split('/'):
         case 'config', key:
             config = Config.load()
-            config.update({key: value})
+            config.update(**{key: value})
 
         case _:
             settings = load_settings()
@@ -106,8 +106,8 @@ def setdefault_setting() -> None:
 
         settings.setValue('widgetWindow/visible', False)
 
-        settings.setValue('table/n_rows_max', 1)
-        settings.setValue('table/n_columns_min', 10)
+        settings.setValue('table/n_rows', 1)
+        settings.setValue('table/n_columns', 10)
         settings.setValue('table/filter-level', FilterLevel.NOTSET.name)
         settings.setValue('table/sorter-kind', SorterKind.NONE.name)
 

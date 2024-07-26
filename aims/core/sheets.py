@@ -65,7 +65,7 @@ class Sheet:
         match kind:
             case SorterKind.NONE:
                 columns = self.targets.columns
-            case SorterKind.FILTER:
+            case SorterKind.FILTER_LEVEL:
                 columns = self.targets.columns[np.argsort(-self.levels)]
             case _:
                 raise NotImplementedError
