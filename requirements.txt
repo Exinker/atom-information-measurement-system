@@ -6,4 +6,4 @@ watchdog
 
 PySide6
 
-spectrumapp @ git+https://github.com/Exinker/spectrumapp.git@v0.2.3
+spectrumapp @ git+https://github.com/Exinker/spectrumapp.git@v0.2.4
