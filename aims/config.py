@@ -25,29 +25,6 @@ match sys.platform:
 
 
 # ---------        CONFIG PARAMS        ---------
-class TrackedMode(Enum):
-    CONVERGENCE = 'convergence-control'
-    REFERENCE = 'reference-control'
-    NONE = 'none'
-
-    @classmethod
-    def default(cls) -> 'TrackedMode':
-        return cls.CONVERGENCE
-
-    @classmethod
-    def from_str(cls, value: str) -> 'TrackedMode':
-
-        valid_values = {item.value: item for item in cls}
-        if value in valid_values:
-            return valid_values[value]
-
-        message = 'Tracked mode {mode} is not supported! Select from: {modes}.'.format(
-            mode=json.dumps(value),
-            modes=', '.join(map(json.dumps, valid_values)),
-        )
-        raise ValueError(message)
-
-
 class Directory(str):
 
     @classmethod
@@ -83,6 +60,29 @@ class Directory(str):
             raise ValueError(message)
 
         return super().__new__(cls, path)
+
+
+class TrackedMode(Enum):
+    CONVERGENCE_BY_PROBE = 'convergence-by-probe-control'
+    # REFERENCE = 'reference-control'
+    NONE = 'none'
+
+    @classmethod
+    def default(cls) -> 'TrackedMode':
+        return cls.CONVERGENCE_BY_PROBE
+
+    @classmethod
+    def from_str(cls, value: str) -> 'TrackedMode':
+
+        valid_values = {item.value: item for item in cls}
+        if value in valid_values:
+            return valid_values[value]
+
+        message = 'Tracked mode {mode} is not supported! Select from: {modes}.'.format(
+            mode=json.dumps(value),
+            modes=', '.join(map(json.dumps, valid_values)),
+        )
+        raise ValueError(message)
 
 
 class TrackedPediod(Enum):
@@ -269,6 +269,7 @@ class Config(AbstractConfig):
     sep: str = field(default='*')
 
     database_path: DatabasePath = field(default=DatabasePath(None))
+    n_workers: int = field(default=1)
 
     FILEPATH: ClassVar[str] = field(default=os.path.join(os.getcwd(), 'config.json'))
 
@@ -279,13 +280,10 @@ class Config(AbstractConfig):
         for key, value in dataclasses.asdict(self).items():
             if isinstance(value, Enum):
                 value = value.value
-
             data[key] = value
 
-        #
         return data
 
-    # ---------        factory        ---------
     @classmethod
     def default(cls) -> 'Config':
         """Get config file by default."""
@@ -293,8 +291,6 @@ class Config(AbstractConfig):
         config = cls(
             **cls._default(),
         )
-
-        #
         return config
 
     @classmethod
@@ -304,7 +300,6 @@ class Config(AbstractConfig):
         # load data
         try:
             data = cls._load()
-
         except FileNotFoundError as error:
             eprint(msg=f'{cls.__name__}.load: {error}')
 
@@ -329,18 +324,16 @@ class Config(AbstractConfig):
                 sep=Separator(value=data['sep']),
 
                 database_path=DatabasePath(path=data['database_path']),
+                n_workers=1,  # TODO: add to config
             )
-
         except (json.JSONDecodeError, TypeError, ValueError, KeyError) as error:
             eprint(msg=f'{cls.__name__}.load: {error}')
 
             setdefault_config(force=True)
             return cls.load()
 
-        #
         return config
 
-    # ---------        private        ---------
     @classmethod
     def _default(cls) -> Mapping[str, str | int | float | list]:
         """Get default serialized data."""

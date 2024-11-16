@@ -11,7 +11,7 @@ from spectrumapp.windows.splashScreenWindow import splashscreen
 
 import aims
 from aims.config import Config
-from aims.core.sheets import fetch_sheets
+from aims.core.sheets import Sheets
 from aims.core.xml import Cache
 from aims.observer import Observer, ObserverEventHandler
 from aims.settings import get_setting
@@ -50,7 +50,7 @@ class Application(QtWidgets.QApplication):
     def _update_data(self) -> None:
         """Update (or parse) tracked path sheets."""
 
-        self.sheets = fetch_sheets(
+        self.sheets = Sheets.create(
             milestone=self.milestone,
             config=Config.load(),
         )

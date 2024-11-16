@@ -6,7 +6,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from spectrumapp.colors import COLOR
 from spectrumapp.numbers import format_number
 
-from aims.core.sheets import Sheet
+from aims.core.sheets import SheetABC
 from aims.core.utils import run_explorer
 from aims.settings import get_setting
 
@@ -16,7 +16,7 @@ N_ROWS_MAX = 10
 
 class TableModel(QtCore.QAbstractTableModel):
 
-    def __init__(self, *args, sheet: Sheet, **kwargs):
+    def __init__(self, *args, sheet: SheetABC, **kwargs):
         super().__init__(*args, **kwargs)
 
         #
@@ -174,7 +174,7 @@ class TableView(QtWidgets.QTableView):
 
         if model is None:
             model = TableModel(
-                sheet=Sheet.from_default(),
+                sheet=SheetABC.from_default(),
             )
 
         data = model._data
@@ -250,7 +250,7 @@ class SheetWidget(QtWidgets.QWidget):
             self.tableViews.append(view)
 
     # --------        slots        --------
-    def _onRefreshTriggered(self, sheet: Sheet | None = None):
+    def _onRefreshTriggered(self, sheet: SheetABC | None = None):
         app = QtWidgets.QApplication.instance()
 
         # get sheet
