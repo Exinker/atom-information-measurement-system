@@ -31,7 +31,7 @@ def validate_xml(xml: XML | None) -> bool:
     if titul is None:
         return False
 
-    if any(titul.find(tag) is None for tag in ('organization', 'device', 'user', 'date', 'aname')):
+    if any(titul.find(tag) is None for tag in ['organization', 'device', 'user', 'date', 'aname']):
         return False
 
     # check probes

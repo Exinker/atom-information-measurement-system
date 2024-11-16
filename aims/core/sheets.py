@@ -235,9 +235,6 @@ class Sheet:
                     else:
                         print()
 
-                #
-                print()
-
             case TrackedMode.NONE:
                 pass
 

@@ -11,8 +11,7 @@ from aims.core.utils import run_explorer
 from aims.settings import get_setting
 
 
-N_ROWS_MAX = 10  # TODO: remove to config
-N_COLUMNS_MAX = 16  # TODO: remove to config
+N_ROWS_MAX = 10
 
 
 class TableModel(QtCore.QAbstractTableModel):
@@ -40,19 +39,19 @@ class TableModel(QtCore.QAbstractTableModel):
         try:
             if role == QtCore.Qt.DisplayRole:
 
-                if column in ('probe_name', ):
+                if column in ['probe_name']:
                     if row in self._target_rows:
                         return ''
 
                     return value
 
-                if column in ('datetime', ):
+                if column in ['datetime']:
                     if True:
                         return value.strftime('%Y-%m-%d %H:%M:%S')
                     else:
                         return value.strftime('%H:%M:%S')
 
-                if column in ('analysis_name', 'file_name'):
+                if column in ['analysis_name', 'file_name']:
                     if row in self._target_rows:
                         return ''
                     else:
@@ -102,7 +101,7 @@ class TableModel(QtCore.QAbstractTableModel):
                     return QtGui.QColor('#E3E3E3') if self._n_probes % 2 else QtGui.QColor('#F9F9F9')
 
                 else:
-                    if column in ('probe_name', ):
+                    if column in ['probe_name']:
                         is_certified = self._data.loc[index.row(), 'is_certified']
 
                         color = COLOR['green'] if is_certified else COLOR['yellow']
@@ -114,7 +113,7 @@ class TableModel(QtCore.QAbstractTableModel):
                     return QtGui.QColor('#E3E3E3') if row % 2 else QtGui.QColor('#F9F9F9')
 
             elif role == QtCore.Qt.TextAlignmentRole:
-                if column in ('datetime', ):
+                if column in ['datetime']:
                     return QtCore.Qt.AlignRight
 
                 return QtCore.Qt.AlignLeft
@@ -270,7 +269,10 @@ class SheetWidget(QtWidgets.QWidget):
 
         # update table views
         n_targets = len(sheet.targets.columns)
-        n_rows = get_setting(key='table/n_rows')
+        n_rows = min(
+            get_setting(key='table/n_rows'),
+            N_ROWS_MAX,
+        )
         n_columns = max(
             get_setting(key='table/n_columns'),
             int(np.ceil(n_targets / n_rows)),

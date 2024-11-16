@@ -53,7 +53,7 @@ def get_setting(key: str) -> Any:
             settings = load_settings()
             value = settings.value('table/{}'.format(key))
 
-            if key in ('n_rows', 'n_columns', ):
+            if key in ['n_rows', 'n_columns']:
                 try:
                     return int(value)
                 except Exception:
@@ -85,7 +85,7 @@ def set_setting(key: str, value: str | int | float | list) -> None:
     match key.split('/'):
         case 'config', key:
             config = Config.load()
-            config.update(**{key: value})
+            config.update({key: value})
 
         case _:
             settings = load_settings()

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterable, Iterator, Mapping
+from typing import Iterable
 from warnings import simplefilter
 
 import pandas as pd
@@ -101,16 +101,15 @@ def _find_columns(__xml: XML, label: FiltratedLabel) -> Iterable[XML]:
     def _filtrate_by_type(__column: XML) -> bool:
         """Filtrate column by type."""
 
-        return __column.attrib['type'] in ('line', 'commonLine')
+        return __column.attrib['type'] in ['line', 'commonLine']
 
-    
     def _filtrate_by_label(__column: XML, label: FiltratedLabel) -> bool:
         """Filtrate column by label."""
 
-        if label in (FiltratedLabel.NONE, ):
+        if label in [FiltratedLabel.NONE]:
             return True
 
-        if label in (FiltratedLabel.LABORANT, FiltratedLabel.ENGINEAR, FiltratedLabel.REPORT, ):
+        if label in [FiltratedLabel.LABORANT, FiltratedLabel.ENGINEAR, FiltratedLabel.REPORT]:
             key = {
                 'enginear': 'visible',
             }.get(label.value, label.value)
@@ -163,4 +162,3 @@ def _parse_line_nickname(__column: XML) -> str:
     """Parse `nickname` of the line."""
 
     return __column.attrib['name']
-

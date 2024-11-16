@@ -117,6 +117,6 @@ class MetaWidget(QtWidgets.QFrame):
         self.setVisible(visible)
 
         # update widgets
-        for object_name in ('lastRecordFrame', ):
+        for object_name in ['lastRecordFrame']:
             widget = self.findChild(QtWidgets.QFrame, object_name)
             widget._onRefreshTriggered()

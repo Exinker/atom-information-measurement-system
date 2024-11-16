@@ -83,7 +83,7 @@ class MainWindow(BaseMainWindow):
         for window in app.topLevelWidgets():
             window_name = window.objectName()
 
-            if window_name in ('mainWindow', ):
+            if window_name in ['mainWindow']:
                 pass
             else:
                 window.close()
@@ -112,13 +112,13 @@ class MainWindow(BaseMainWindow):
         for window in app.topLevelWidgets():
             window_name = window.objectName()
 
-            if window_name in ('mainWindow', ):
+            if window_name in ['mainWindow']:
                 window.centralWidget()._onRefreshTriggered()
 
-            if window_name in ('widgetWindow', ):
+            if window_name in ['widgetWindow']:
                 window._onRefreshTriggered()
 
-            if window_name in ('HelpWindow', 'AboutWindow'):
+            if window_name in ['HelpWindow', 'AboutWindow']:
                 pass
 
     def _onShowInfoWindowTriggered(self):
