@@ -37,7 +37,7 @@ class MeasurementToleranceDatabase:
 
     # --------        handlers        --------
     @classmethod
-    def from_xml(cls, xml: XML, analysis_name: AnalysisName) -> 'MeasurementToleranceDatabase':
+    def create(cls, xml: XML, analysis_name: AnalysisName) -> 'MeasurementToleranceDatabase':
         """Get measurement tolerance database from Atom's .xml file."""
         analysis_name = {
             'Al 2023': 'ГОСТ 7727-81 Al сплавы',  # ('ГОСТ 3221-85 Al первичный', 'ГОСТ 7727-81 Al сплавы', )

@@ -9,7 +9,7 @@ from aims.core.formatters import normalize_name
 from aims.core.history import History
 from aims.core.sheets.base_sheet import SheetABC
 from aims.core.types import AnalysisName, Frame, ProbeName, Series
-from aims.core.xml import Parser, load_xml
+from aims.core.xml import AggregateByProbeDataParser, load_xml
 from aims.settings import FilterLevel
 
 
@@ -40,7 +40,7 @@ class ReferenceSheet(SheetABC):
             raise ValueError('Sequence of filepaths is empty!')
 
         try:
-            parser = Parser(config=config)
+            parser = AggregateByProbeDataParser(config=config)
 
             meta = []
             reference = []
@@ -100,7 +100,7 @@ class ReferenceSheet(SheetABC):
         )
 
         xml = load_xml(config.database_path)
-        tolerance_database = MeasurementToleranceDatabase.from_xml(xml=xml, analysis_name=analysis_name)
+        tolerance_database = MeasurementToleranceDatabase.create(xml=xml, analysis_name=analysis_name)
 
         #
         n_probes = prediction.shape[0]

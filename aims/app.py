@@ -12,7 +12,7 @@ from spectrumapp.windows.splashScreenWindow import splashscreen
 import aims
 from aims.config import Config
 from aims.core.sheets import Sheets
-from aims.core.xml import Cache
+from aims.core.xml import ParserCache
 from aims.observer import Observer, ObserverEventHandler
 from aims.settings import get_setting
 from aims.window.mainWindow import MainWindow
@@ -106,7 +106,7 @@ class Application(QtWidgets.QApplication):
 
         if force:
             self._setup_observer()
-            Cache.clear()
+            ParserCache.clear()
 
         self._update_milestone()
         start = time.perf_counter()

@@ -1,26 +1,18 @@
-from dataclasses import dataclass
+from aims.core.meta import AtomMeta
+from aims.core.types import XML
 
-from aims.core.types import AnalysisName, XML
 
+class MetaParser():
 
-@dataclass
-class AtomMeta:
-    organization_name: str
-    device_name: str
-    user_name: str
-    analysis_name: AnalysisName
+    def parse(self, xml: XML) -> AtomMeta:
+        """Get recorded meta data from Atom's .xml file."""
 
-    @classmethod
-    def from_xml(cls, xml: XML) -> 'AtomMeta':
-        """Get recorded meta from Atom's .xml file."""
-
-        # parse
         organization_name = xml.find('titul').find('organization').text
         device_name = xml.find('titul').find('device').text
         user_name = xml.find('titul').find('user').text
         analysis_name = xml.find('titul').find('aname').text
 
-        return cls(
+        return AtomMeta(
             organization_name=organization_name,
             device_name=device_name,
             user_name=user_name,

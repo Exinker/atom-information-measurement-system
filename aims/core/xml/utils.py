@@ -1,6 +1,38 @@
+import os
 import xml.etree.ElementTree as ElementTree
+from datetime import datetime
+from typing import Iterator
 
+from aims.config import Directory, TrackedPediod
 from aims.core.types import XML, XMLPath
+
+
+def walk(directory: Directory) -> Iterator[XMLPath]:
+    """Walk iterable along for a given path."""
+
+    for filedir, _, filenames in os.walk(directory):
+        for filename in filenames:
+            filepath = os.path.join(filedir, filename)
+
+            yield filepath
+
+
+def validate_file(filepath: XMLPath, milestone: datetime, tracked_period: TrackedPediod) -> bool:
+    """Validate file to the simplest cases."""
+
+    # validate file's extension
+    if not filepath.endswith('.xml'):
+        return False
+
+    # validate file's created datetime
+    filestat = os.stat(filepath)
+
+    created_at = datetime.fromtimestamp(filestat.st_ctime)
+    if not tracked_period.check(created_at, milestone=milestone):
+        return False
+
+    #
+    return True
 
 
 def load_xml(filepath: XMLPath) -> XML | None:

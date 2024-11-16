@@ -1,49 +1,28 @@
-import os
 from datetime import datetime
-from typing import Iterator
 
 import pandas as pd
 
 from aims.config import Directory, TrackedPediod
 from aims.core.formatters import normalize_datetime, normalize_name
-from aims.core.types import AnalysisName, Frame, XML, XMLPath
-
-from .utils import load_xml, validate_xml
-
-
-# --------        file        --------
-def walk(directory: Directory) -> Iterator[XMLPath]:
-    """Walk iterable along for a given path."""
-
-    for filedir, _, filenames in os.walk(directory):
-        for filename in filenames:
-            filepath = os.path.join(filedir, filename)
-
-            yield filepath
+from aims.core.types import AnalysisName, Frame, XML
+from aims.core.xml.utils import (
+    load_xml,
+    validate_file,
+    validate_xml,
+    walk,
+)
 
 
-def validate_file(filepath: XMLPath, milestone: datetime, tracked_period: TrackedPediod) -> bool:
-    """Validate file to the simplest cases."""
-
-    # validate file's extension
-    if not filepath.endswith('.xml'):
-        return False
-
-    # validate file's created datetime
-    filestat = os.stat(filepath)
-
-    created_at = datetime.fromtimestamp(filestat.st_ctime)
-    if not tracked_period.check(created_at, milestone=milestone):
-        return False
-
-    #
-    return True
-
-
-# --------        scraper        --------
 class Scraper:
 
-    def __init__(self, milestone: datetime, directory: Directory, tracked_period: TrackedPediod, sep: str, verbose: bool = False):
+    def __init__(
+        self,
+        milestone: datetime,
+        directory: Directory,
+        tracked_period: TrackedPediod,
+        sep: str,
+        verbose: bool = False,
+    ) -> None:
         self.milestone = milestone
         self.directory = directory
         self.tracked_period = tracked_period
@@ -77,7 +56,6 @@ class Scraper:
             columns=['analysis_name', 'probe_name', 'datetime', 'path'],
         )
 
-    # --------        private        --------
     def _scrape_analysis(self, xml: XML) -> AnalysisName:
         """Parse analysis from given Atom's `xml`."""
 
