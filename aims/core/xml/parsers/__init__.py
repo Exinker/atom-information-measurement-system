@@ -1,14 +1,17 @@
 from .cache import ParserCache, cache
 from .data_parsers import (
-    AggregateByProbeDataParser,
+    AggregateByParallelsDataParser,
+    AggregateByProbesDataParser,
     DataParserABC,
     parse_data,
 )
 
 
 __all__ = [
-    AggregateByProbeDataParser,
-    parse_data,
-    ParserCache, cache,
+    AggregateByParallelsDataParser,
+    AggregateByProbesDataParser,
     DataParserABC,
+    ParserCache,
+    cache,
+    parse_data,
 ]

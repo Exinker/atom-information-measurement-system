@@ -18,7 +18,7 @@ from aims.core.xml.parsers.utils import (
 simplefilter(action="ignore", category=pd.errors.PerformanceWarning)  # FIXME
 
 
-class AggregateByProbesDataParser(DataParserABC):
+class AggregateByParallelsDataParser(DataParserABC):
 
     def __init__(self, config: Config):
         super().__init__(config=config)
@@ -44,7 +44,14 @@ class AggregateByProbesDataParser(DataParserABC):
             columns=['id', 'name', 'datetime', 'is_certified'],
         ).set_index('id', drop=False)
 
+        parallels = pd.DataFrame(
+            columns=['id', 'name', 'datetime', 'is_certified'],
+        ).set_index('id', drop=False)
+
         for probe in xml.find('probes').findall('probe'):
+
+            if len(probe.findall('spe')) > 1:
+                print('breakpoint')
 
             is_not_empty = len(probe.findall('spe')) > 0
             if is_not_empty:
@@ -58,15 +65,23 @@ class AggregateByProbesDataParser(DataParserABC):
                     'no': False,
                 }.get(probe.attrib.get('COC', 'no'))
 
+                for parallel in probe.findall('spe'):
+                    parallel_id = int(parallel.attrib['id'])
+
+                    parallels.loc[parallel_id, 'id'] = parallel_id
+                    parallels.loc[parallel_id, 'name'] = parallel.attrib.get('name', '???')
+                    parallels.loc[parallel_id, 'datetime'] = normalize_datetime(parallel.find('date').text)
+                    parallels.loc[parallel_id, 'is_certified'] = probes.loc[probe_id, 'is_certified']
+
         # parse lines, prediction, reference
         lines = []
 
         prediction = pd.DataFrame(
-            columns=['probe_id'],
-        ).set_index('probe_id', drop=True)
+            columns=['parallel_id'],
+        ).set_index('parallel_id', drop=True)
         reference = pd.DataFrame(
-            columns=['probe_id', 'symbol'],
-        ).set_index('probe_id', drop=False)
+            columns=['parallel_id', 'symbol'],
+        ).set_index('parallel_id', drop=False)
         for sheet in find_sheets(xml.find('columns'), sheet_name=filtrated_by_sheet):
             for column in find_columns(sheet, label=filtrated_by_label):
                 line = parse_column(column)
@@ -75,8 +90,11 @@ class AggregateByProbesDataParser(DataParserABC):
                 for probe in column.findall('cells/pc'):
                     probe_id = int(probe.attrib['i'])
 
-                    prediction.loc[probe_id, line['line_id']] = probe.attrib.get('v', '')
-                    reference.loc[probe_id, line['symbol']] = probe.attrib.get('cm', '')
+                    for parallel in probe.findall('cl'):
+                        parallel_id = int(parallel.attrib['i'])
+
+                        prediction.loc[parallel_id, line['line_id']] = parallel.attrib.get('v', '')
+                        reference.loc[parallel_id, line['symbol']] = probe.attrib.get('cm', '')
 
         return AtomData(
             meta=meta,

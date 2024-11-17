@@ -8,12 +8,12 @@ from aims.core.formatters import normalize_name
 from aims.core.history import History
 from aims.core.sheets.base_sheet import SheetABC
 from aims.core.types import AnalysisName, Frame, ProbeName, Series
-from aims.core.xml import AggregateByProbeDataParser, parse_data
+from aims.core.xml import AggregateByProbesDataParser, parse_data
 from aims.settings import FilterLevel
 
 
 @dataclass
-class ConvergenceByProbeSheet(SheetABC):
+class ConvergenceByProbesSheet(SheetABC):
     analysis_name: AnalysisName
     probe_name: ProbeName
     meta: Frame
@@ -28,9 +28,9 @@ class ConvergenceByProbeSheet(SheetABC):
         analysis_name: AnalysisName,
         probe_name: ProbeName,
         config: Config,
-    ) -> 'ConvergenceByProbeSheet':
+    ) -> 'ConvergenceByProbesSheet':
         """Get `sheet` from history."""
-        filepaths = history.get_paths(
+        filepaths = history.get_filepaths(
             analysis_name=analysis_name,
             probe_name=probe_name,
         )
@@ -39,7 +39,7 @@ class ConvergenceByProbeSheet(SheetABC):
             raise ValueError('Sequence of filepaths is empty!')
 
         try:
-            data_parser = AggregateByProbeDataParser(config=config)
+            data_parser = AggregateByProbesDataParser(config=config)
 
             meta = []
             reference = []

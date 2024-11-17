@@ -4,17 +4,16 @@ import numpy as np
 import pandas as pd
 
 from aims.config import Config
-from aims.core.atom_database import MeasurementToleranceDatabase
 from aims.core.formatters import normalize_name
 from aims.core.history import History
 from aims.core.sheets.base_sheet import SheetABC
 from aims.core.types import AnalysisName, Frame, ProbeName, Series
-from aims.core.xml import AggregateByProbesDataParser, load_xml
+from aims.core.xml import AggregateByParallelsDataParser, parse_data
 from aims.settings import FilterLevel
 
 
 @dataclass
-class ReferenceSheet(SheetABC):
+class ConvergenceByParallelsSheet(SheetABC):
     analysis_name: AnalysisName
     probe_name: ProbeName
     meta: Frame
@@ -29,7 +28,7 @@ class ReferenceSheet(SheetABC):
         analysis_name: AnalysisName,
         probe_name: ProbeName,
         config: Config,
-    ) -> 'ReferenceSheet':
+    ) -> 'ConvergenceByParallelsSheet':
         """Get `sheet` from history."""
         filepaths = history.get_filepaths(
             analysis_name=analysis_name,
@@ -40,7 +39,7 @@ class ReferenceSheet(SheetABC):
             raise ValueError('Sequence of filepaths is empty!')
 
         try:
-            parser = AggregateByProbesDataParser(config=config)
+            data_parser = AggregateByParallelsDataParser(config=config)
 
             meta = []
             reference = []
@@ -48,7 +47,7 @@ class ReferenceSheet(SheetABC):
             for filepath in filepaths:
 
                 # parse
-                _meta, _reference, _prediction = parser.parse(filepath)
+                _meta, _reference, _prediction = parse_data(filepath, data_parser=data_parser)
 
                 # filtrate
                 n_probes = _meta.shape[0]
@@ -99,9 +98,6 @@ class ReferenceSheet(SheetABC):
             columns=nicknames,
         )
 
-        xml = load_xml(config.database_path)
-        tolerance_database = MeasurementToleranceDatabase.create(xml=xml, analysis_name=analysis_name)
-
         #
         n_probes = prediction.shape[0]
         values = pd.DataFrame(
@@ -112,19 +108,14 @@ class ReferenceSheet(SheetABC):
             values[nickname] = pd.to_numeric(prediction[nickname], errors='coerce')
 
         targets.loc['Cред.'] = values.mean(axis=0, skipna=True)
-        targets.loc['Аттест.'] = []  # FIXME:
+        targets.loc['СКО'] = values.std(axis=0, ddof=n_probes > 1, skipna=True)
+        targets.loc['ОСКО, %'] = 100 * targets.loc['СКО', nicknames] / targets.loc['Cред.', nicknames]
 
-        values = targets.loc['Cред.']
+        values = targets.loc['ОСКО, %']
         levels = pd.Series(FilterLevel.NORMAL.value, index=values.index)
-        for column in values.index:
-            symbol, _ = column.split(' ', maxsplit=1)
-
-            tol = tolerance_database.get_tolerance(symbol=symbol, conc=targets.loc['Cред.', column])
-
-            if tol is None:
-                levels[column] = FilterLevel.NOTSET.value
-            else:
-                print()
+        levels[values.isna()] = FilterLevel.NOTSET.value
+        levels[values >= 5] = FilterLevel.WARRING.value
+        levels[values >= 10] = FilterLevel.DANGER.value
 
         return cls(
             analysis_name=analysis_name,

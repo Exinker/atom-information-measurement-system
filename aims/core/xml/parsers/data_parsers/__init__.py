@@ -6,7 +6,8 @@ from aims.core.types import Frame
 from aims.core.xml.utils import load_xml
 from aims.core.xml.parsers.cache import cache
 
-from .aggregate_by_probes_data_parser import AggregateByProbeDataParser
+from .aggregate_by_parallels_data_parser import AggregateByParallelsDataParser
+from .aggregate_by_probes_data_parser import AggregateByProbesDataParser
 from .base_data_parser import DataParserABC
 
 
@@ -15,6 +16,7 @@ def parse_data(
     __filepath: str,
     data_parser: DataParserABC,
 ) -> tuple[Frame, Frame, Frame]:
+
     xml = load_xml(__filepath)
 
     data = data_parser.parse(xml=xml)
@@ -52,7 +54,8 @@ def parse_data(
 
 
 __all__ = [
-    AggregateByProbeDataParser,
+    AggregateByParallelsDataParser,
+    AggregateByProbesDataParser,
     DataParserABC,
     parse_data,
 ]

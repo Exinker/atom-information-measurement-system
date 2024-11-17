@@ -3,7 +3,11 @@ from datetime import datetime
 
 from aims.config import Config, TrackedMode
 from aims.core.history import History
-from aims.core.sheets import ConvergenceByProbeSheet, SheetABC
+from aims.core.sheets import (
+    ConvergenceByParallelsSheet,
+    ConvergenceByProbesSheet,
+    SheetABC,
+)
 from aims.core.sheets.sheets.workers import MultiprocessingWorker, Worker, WorkerABC
 from aims.core.types import AnalysisName, ProbeName
 
@@ -31,7 +35,7 @@ class Sheets:
         config: Config,
     ) -> 'Sheets':
 
-        history = History.from_path(
+        history = History.create(
             milestone=milestone,
             directory=config.directory,
             tracked_period=config.tracked_period,
@@ -96,8 +100,10 @@ def _get_worker(
 ) -> WorkerABC:
 
     match config.tracked_mode:
-        case TrackedMode.CONVERGENCE_BY_PROBE:
-            factory = ConvergenceByProbeSheet.from_history
+        case TrackedMode.CONVERGENCE_BY_PARALLELS:
+            factory = ConvergenceByParallelsSheet.from_history
+        case TrackedMode.CONVERGENCE_BY_PROBES:
+            factory = ConvergenceByProbesSheet.from_history
         case _:
             raise NotImplementedError(f'Mode {config.tracked_mode} is not supported yet!')
 

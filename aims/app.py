@@ -46,7 +46,7 @@ class Application(QtWidgets.QApplication):
     def _update_milestone(self) -> None:
         self.milestone = datetime.now()
 
-    @splashscreen(progress=50, info='<strong>PARSING</strong> xml files...')
+    # @splashscreen(progress=50, info='<strong>PARSING</strong> xml files...')
     def _update_data(self) -> None:
         """Update (or parse) tracked path sheets."""
 
@@ -58,13 +58,13 @@ class Application(QtWidgets.QApplication):
     def _update_window(self) -> None:
         self.window._onRefreshTriggered()
 
-    @splashscreen(progress=10, info='<strong>LOADING</strong> interface...')
+    # @splashscreen(progress=10, info='<strong>LOADING</strong> interface...')
     def _setup_window(self, *args, **kwargs) -> None:
         self.window = MainWindow(
             flags=QtCore.Qt.Window | QtCore.Qt.WindowStaysOnTopHint,
         )
 
-    @splashscreen(progress=30, info='<strong>SETTING</strong> a watcher...')
+    # @splashscreen(progress=30, info='<strong>SETTING</strong> a watcher...')
     def _setup_observer(self) -> None:
         """Setup tracked path observer."""
 
@@ -88,7 +88,7 @@ class Application(QtWidgets.QApplication):
         self.observer = observer
 
     # --------        slots        --------
-    @splashscreen()
+    # @splashscreen()
     @wait
     def run(self, *args, **kwargs):
         """Run an application."""
@@ -99,7 +99,7 @@ class Application(QtWidgets.QApplication):
         self.reset(force=True)
 
     @log(message='app: reset')
-    @splashscreen()
+    # @splashscreen()
     @wait
     def reset(self, *args, force: bool = False, **kwargs):
         """Reset an application: update observer (if `force == True`), sheets and windows."""

@@ -63,13 +63,14 @@ class Directory(str):
 
 
 class TrackedMode(Enum):
-    CONVERGENCE_BY_PROBE = 'convergence-by-probe-control'
+    CONVERGENCE_BY_PROBES = 'convergence-by-probes-control'
+    CONVERGENCE_BY_PARALLELS = 'convergence-by-parallels-control'
     # REFERENCE = 'reference-control'
     NONE = 'none'
 
     @classmethod
     def default(cls) -> 'TrackedMode':
-        return cls.CONVERGENCE_BY_PROBE
+        return cls.CONVERGENCE_BY_PROBES
 
     @classmethod
     def from_str(cls, value: str) -> 'TrackedMode':

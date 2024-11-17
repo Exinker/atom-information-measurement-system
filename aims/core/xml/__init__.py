@@ -1,5 +1,6 @@
 from .parsers import (
-    AggregateByProbeDataParser,
+    AggregateByParallelsDataParser,
+    AggregateByProbesDataParser,
     ParserCache,
     parse_data,
 )
@@ -7,7 +8,8 @@ from .scrapers import Scraper
 from .utils import load_xml
 
 __all__ = [
-    AggregateByProbeDataParser,
+    AggregateByParallelsDataParser,
+    AggregateByProbesDataParser,
     ParserCache,
     Scraper,
     load_xml,
