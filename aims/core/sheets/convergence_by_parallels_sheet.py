@@ -30,6 +30,11 @@ class ConvergenceByParallelsSheet(SheetABC):
         config: Config,
     ) -> 'ConvergenceByParallelsSheet':
         """Get `sheet` from history."""
+
+        queue = history.get_queue(
+            analysis_name=analysis_name,
+            n=5,
+        )
         filepaths = history.get_filepaths(
             analysis_name=analysis_name,
             probe_name=probe_name,
@@ -44,44 +49,21 @@ class ConvergenceByParallelsSheet(SheetABC):
             meta = []
             reference = []
             prediction = []
-            for filepath in filepaths:
 
-                # parse
-                _meta, _reference, _prediction = parse_data(filepath, data_parser=data_parser)
+            filepath = filepaths[-1]
 
-                # filtrate
-                n_probes = _meta.shape[0]
-
-                cond = np.full(n_probes, True)
-                for j in range(n_probes):
-                    pass
-
-                    # check: probe's name
-                    cond[j] = cond[j] and normalize_name(
-                        name=_meta.iloc[j]['probe_name'],
-                        sep=history.sep,
-                    ) == probe_name
-
-                    # check: probe's created datetime
-                    cond[j] = cond[j] and config.tracked_period.check(
-                        _meta.iloc[j]['datetime'],
-                        milestone=history.milestone,
-                    )
-
-                # drop and append
-                meta.append(_meta.drop(index=_meta.index[~cond]).reset_index(drop=True))
-                reference.append(_reference.drop(index=_meta.index[~cond]).reset_index(drop=True))
-                prediction.append(_prediction.drop(index=_meta.index[~cond]).reset_index(drop=True))
-
+            # parse
+            meta, reference, prediction = parse_data(filepath, data_parser=data_parser)
             meta = pd.DataFrame(
-                pd.concat(meta),
+                meta,
             ).reset_index(drop=True)
             reference = pd.DataFrame(
-                pd.concat(reference),
+                reference,
             ).reset_index(drop=True)
             prediction = pd.DataFrame(
-                pd.concat(prediction),
+                prediction,
             ).reset_index(drop=True)
+
         except (ValueError, KeyError):
             return cls.from_default(
                 analysis_name=analysis_name,
@@ -99,7 +81,7 @@ class ConvergenceByParallelsSheet(SheetABC):
         )
 
         #
-        n_probes = prediction.shape[0]
+        n_parallels = prediction.shape[0]
         values = pd.DataFrame(
             {},
             columns=nicknames,
@@ -108,7 +90,7 @@ class ConvergenceByParallelsSheet(SheetABC):
             values[nickname] = pd.to_numeric(prediction[nickname], errors='coerce')
 
         targets.loc['Cред.'] = values.mean(axis=0, skipna=True)
-        targets.loc['СКО'] = values.std(axis=0, ddof=n_probes > 1, skipna=True)
+        targets.loc['СКО'] = values.std(axis=0, ddof=n_parallels > 1, skipna=True)
         targets.loc['ОСКО, %'] = 100 * targets.loc['СКО', nicknames] / targets.loc['Cред.', nicknames]
 
         values = targets.loc['ОСКО, %']

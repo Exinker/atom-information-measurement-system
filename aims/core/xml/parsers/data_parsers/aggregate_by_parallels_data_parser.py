@@ -50,9 +50,6 @@ class AggregateByParallelsDataParser(DataParserABC):
 
         for probe in xml.find('probes').findall('probe'):
 
-            if len(probe.findall('spe')) > 1:
-                print('breakpoint')
-
             is_not_empty = len(probe.findall('spe')) > 0
             if is_not_empty:
                 probe_id = int(probe.attrib['id'])
@@ -95,10 +92,11 @@ class AggregateByParallelsDataParser(DataParserABC):
 
                         prediction.loc[parallel_id, line['line_id']] = parallel.attrib.get('v', '')
                         reference.loc[parallel_id, line['symbol']] = probe.attrib.get('cm', '')
+                        reference.loc[parallel_id, 'parallel_id'] = parallel_id
 
         return AtomData(
             meta=meta,
-            probes=probes,
+            probes=parallels,
             lines=pd.DataFrame(
                 lines,
                 columns=['line_id', 'symbol', 'wavelength', 'nickname'],
