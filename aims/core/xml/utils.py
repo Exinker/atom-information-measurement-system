@@ -1,3 +1,4 @@
+import logging
 import os
 import xml.etree.ElementTree as ElementTree
 from datetime import datetime
@@ -5,6 +6,9 @@ from typing import Iterator
 
 from aims.config import Directory, TrackedPediod
 from aims.core.types import XML, XMLPath
+
+
+LOGGER = logging.getLogger('app')
 
 
 def walk(directory: Directory) -> Iterator[XMLPath]:
@@ -38,14 +42,23 @@ def validate_file(filepath: XMLPath, milestone: datetime, tracked_period: Tracke
 def load_xml(filepath: XMLPath) -> XML | None:
     """Load `xml` element object from file for a given `filepath`."""
 
+    LOGGER.debug(
+        'Load XML file: %r',
+        filepath,
+    )
+
     try:
         tree = ElementTree.parse(filepath)
         xml = tree.getroot()
-
-        return xml
-
-    except Exception:
+    except Exception as error:
+        LOGGER.warning(
+            'File load failed with error: %s',
+            error,
+        )
         return None
+    else:
+        LOGGER.debug('XML file is loaded.')
+        return xml
 
 
 def validate_xml(xml: XML | None) -> bool:
