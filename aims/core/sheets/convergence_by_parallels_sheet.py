@@ -1,21 +1,18 @@
 from dataclasses import dataclass
 
-import numpy as np
 import pandas as pd
 
 from aims.config import Config
-from aims.core.formatters import normalize_name
-from aims.core.history import History
+from aims.core.history import ConvergenceByParallelsHistory
 from aims.core.sheets.base_sheet import SheetABC
-from aims.core.types import AnalysisName, Frame, ProbeName, Series
+from aims.core.types import Frame, ProbeGUID, Series
 from aims.core.xml import AggregateByParallelsDataParser, parse_data
 from aims.settings import FilterLevel
 
 
 @dataclass
 class ConvergenceByParallelsSheet(SheetABC):
-    analysis_name: AnalysisName
-    probe_name: ProbeName
+    probe_guid: ProbeGUID
     meta: Frame
     prediction: Frame
     targets: Frame
@@ -24,9 +21,8 @@ class ConvergenceByParallelsSheet(SheetABC):
     @classmethod
     def from_history(
         cls,
-        history: History,
-        analysis_name: AnalysisName,
-        probe_name: ProbeName,
+        history: ConvergenceByParallelsHistory,
+        probe_guid: ProbeGUID,
         config: Config,
     ) -> 'ConvergenceByParallelsSheet':
         """Get `sheet` from history."""
@@ -37,7 +33,7 @@ class ConvergenceByParallelsSheet(SheetABC):
         )
         filepaths = history.get_filepaths(
             analysis_name=analysis_name,
-            probe_name=probe_name,
+            probe_name=probe_guid,
         )
 
         if len(filepaths) == 0:
@@ -67,7 +63,7 @@ class ConvergenceByParallelsSheet(SheetABC):
         except (ValueError, KeyError):
             return cls.from_default(
                 analysis_name=analysis_name,
-                probe_name=probe_name,
+                probe_name=probe_guid,
             )
 
         # targets and levels
@@ -101,7 +97,7 @@ class ConvergenceByParallelsSheet(SheetABC):
 
         return cls(
             analysis_name=analysis_name,
-            probe_name=probe_name,
+            probe_name=probe_guid,
             meta=meta,
             prediction=prediction,
             targets=targets,

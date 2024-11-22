@@ -1,21 +1,22 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 
 from aims.config import Directory, TrackedPediod
+from aims.core.types import AnalysisName, Frame, ProbeName, ProbeGUID, XMLPath
 from aims.core.xml import Scraper
-
-from .types import AnalysisName, Frame, ProbeName, XMLPath
 
 
 @dataclass
 class Record:
     analysis_name: AnalysisName = field(default='')
     probe_name: ProbeName = field(default='')
+    probe_guid: ProbeGUID = field(default='')
     datetime: datetime = field(default_factory=lambda: datetime.fromtimestamp(0))
 
 
 @dataclass
-class History:
+class HistoryABC(ABC):
     records: Frame
     milestone: datetime
     directory: Directory
@@ -40,7 +41,7 @@ class History:
     def last_record(self) -> Record | None:
         """Получить последний `record` в `history`."""
 
-        data = self.records[['analysis_name', 'probe_name', 'datetime']].copy(deep=True)
+        data = self.records[['analysis_name', 'probe_name', 'probe_guid', 'datetime']].copy(deep=True)
         data = data.set_index('datetime', drop=False)
         data = data.sort_index()
         if data.empty:
@@ -48,12 +49,40 @@ class History:
 
         return Record(**data.iloc[-1])
 
+    @abstractmethod
     def get_queue(
         self,
         analysis_name: AnalysisName,
         n: int = 1,
         ascending: bool = False,
-    ) -> tuple[ProbeName]:
+    ) -> tuple[ProbeName, ...]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_filepaths(
+        self,
+        analysis_name: AnalysisName,
+        probe_name: ProbeName,
+    ) -> tuple[XMLPath, ...]:
+        raise NotImplementedError
+
+
+@dataclass
+class ConvergenceByProbesHistory(HistoryABC):
+    records: Frame
+    milestone: datetime
+    directory: Directory
+    tracked_period: TrackedPediod
+    sep: str
+
+    datetime: datetime = field(default_factory=datetime.now)
+
+    def get_queue(
+        self,
+        analysis_name: AnalysisName,
+        n: int = 1,
+        ascending: bool = False,
+    ) -> tuple[ProbeName, ...]:
         """Получить очередь (последовательность `probe_names`) для выбранного `analysis_name` длинною не более `n`."""
 
         # select from records
@@ -67,13 +96,13 @@ class History:
 
         probe_names = tuple(data.iloc[-n:].index)
         probe_names = probe_names if ascending else reversed(probe_names)
-        return probe_names
+        return tuple(probe_names)
 
     def get_filepaths(
         self,
         analysis_name: AnalysisName,
         probe_name: ProbeName,
-    ) -> tuple[XMLPath]:
+    ) -> tuple[XMLPath, ...]:
         """Получить последовательность `filepaths` всех `xml` файлов files для выбранного `analysis_name` и `probe_name`."""
 
         records = self.records[
@@ -92,7 +121,78 @@ class History:
         tracked_period: TrackedPediod,
         sep: str,
         verbose: bool = False,
-    ) -> 'History':
+    ) -> HistoryABC:
+        """Получить `history` путем итеративного парсинга .xml файлов в заданной директории `directory`."""
+
+        records = Scraper(
+            milestone=milestone,
+            directory=directory,
+            tracked_period=tracked_period,
+            sep=sep,
+            verbose=verbose,
+        ).scrape()
+
+        return cls(
+            records=records,
+            milestone=milestone,
+            directory=directory,
+            tracked_period=tracked_period,
+            sep=sep,
+        )
+
+
+@dataclass
+class ConvergenceByParallelsHistory(HistoryABC):
+    records: Frame
+    milestone: datetime
+    directory: Directory
+    tracked_period: TrackedPediod
+    sep: str
+
+    datetime: datetime = field(default_factory=datetime.now)
+
+    def get_queue(
+        self,
+        n: int = 1,
+        ascending: bool = False,
+    ) -> tuple[ProbeGUID, ...]:
+        """Получить очередь (последовательность `probe_names`) для всех типов анализа длинною не более `n`."""
+
+        # select from records
+        data = self.records[['probe_name', 'probe_guid', 'datetime']].copy(deep=True)
+        data = data.set_index('datetime', drop=False)
+        data = data.groupby(by='probe_guid').max().sort_values(by='datetime')
+        if data.empty:
+            return tuple()
+
+        probe_guids = tuple(data.index[-n:])
+        probe_guids = probe_guids if ascending else reversed(probe_guids)
+        return tuple(probe_guids)
+
+    def get_filepaths(
+        self,
+        analysis_name: AnalysisName,
+        probe_name: ProbeName,
+    ) -> tuple[XMLPath, ...]:
+        """Получить последовательность `filepaths` всех `xml` файлов files для выбранного `analysis_name` и `probe_name`."""
+
+        records = self.records[
+            (self.records['analysis_name'] == analysis_name) & (self.records['probe_name'] == probe_name)
+        ].copy(deep=True)
+        if records.empty:
+            return tuple()
+
+        return tuple(records['path'].unique())
+
+    @classmethod
+    def create(
+        cls,
+        milestone: datetime,
+        directory: Directory,
+        tracked_period: TrackedPediod,
+        sep: str,
+        verbose: bool = False,
+    ) -> HistoryABC:
         """Получить `history` путем итеративного парсинга .xml файлов в заданной директории `directory`."""
 
         records = Scraper(

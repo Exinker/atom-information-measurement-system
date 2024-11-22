@@ -1,5 +1,6 @@
 import dataclasses
 import json
+import logging
 import os
 import sys
 from dataclasses import dataclass, field
@@ -8,15 +9,19 @@ from enum import Enum
 from typing import ClassVar, Mapping
 
 import pandas as pd
+from dotenv import load_dotenv
 
 from spectrumapp.config import AbstractConfig
 from spectrumapp.exceptions import eprint
 
 
+load_dotenv()
+
+
+# ---------        CONSTANTS        ---------
 DEBUG = False
+LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', logging.INFO)
 
-
-# ---------        EXPLORER        ---------
 match sys.platform:
     case 'win32':
         EXPLORER = os.path.join(os.getenv('WINDIR'), 'explorer.exe')

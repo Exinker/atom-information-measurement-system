@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from aims.config import Config
-from aims.core.history import History
+from aims.core.history import HistoryABC
 from aims.core.types import AnalysisName, Frame, ProbeName, Series
 from aims.settings import FilterLevel, SorterKind
 
@@ -123,7 +123,7 @@ class SheetABC:
     @abstractmethod
     def from_history(
         cls,
-        history: History,
+        history: HistoryABC,
         analysis_name: AnalysisName,
         probe_name: ProbeName,
         config: Config,

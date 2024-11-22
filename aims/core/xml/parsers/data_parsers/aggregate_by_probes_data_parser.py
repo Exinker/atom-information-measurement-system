@@ -1,3 +1,4 @@
+import logging
 from warnings import simplefilter
 
 import pandas as pd
@@ -18,6 +19,9 @@ from aims.core.xml.parsers.utils import (
 simplefilter(action="ignore", category=pd.errors.PerformanceWarning)  # FIXME
 
 
+LOGGER = logging.getLogger('app')
+
+
 class AggregateByProbesDataParser(DataParserABC):
 
     def __init__(self, config: Config):
@@ -26,11 +30,22 @@ class AggregateByProbesDataParser(DataParserABC):
     def parse(self, xml: XML) -> AtomData:
         """Get recorded data from Atom's .xml file."""
 
-        return self._parse(
-            xml=xml,
-            filtrated_by_sheet=self.config.filtrated_by_sheet,
-            filtrated_by_label=self.config.filtrated_by_label,
-        )
+        LOGGER.debug('Parse XML.')
+        try:
+            data = self._parse(
+                xml=xml,
+                filtrated_by_sheet=self.config.filtrated_by_sheet,
+                filtrated_by_label=self.config.filtrated_by_label,
+            )
+        except Exception as error:
+            LOGGER.warning(
+                'XML parse failed with error: %s',
+                error,
+            )
+            raise
+        else:
+            LOGGER.debug('XML is parsed.')
+            return data
 
     @staticmethod
     def _parse(xml: XML, filtrated_by_sheet: FiltratedSheet, filtrated_by_label: FiltratedLabel) -> AtomData:

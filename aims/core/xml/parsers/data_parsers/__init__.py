@@ -1,5 +1,5 @@
+import logging
 import os
-
 import pandas as pd
 
 from aims.core.types import Frame
@@ -9,6 +9,9 @@ from aims.core.xml.parsers.cache import cache
 from .aggregate_by_parallels_data_parser import AggregateByParallelsDataParser
 from .aggregate_by_probes_data_parser import AggregateByProbesDataParser
 from .base_data_parser import DataParserABC
+
+
+LOGGER = logging.getLogger('app')
 
 
 @cache

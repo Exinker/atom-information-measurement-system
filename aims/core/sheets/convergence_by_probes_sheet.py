@@ -5,7 +5,7 @@ import pandas as pd
 
 from aims.config import Config
 from aims.core.formatters import normalize_name
-from aims.core.history import History
+from aims.core.history import ConvergenceByProbesHistory
 from aims.core.sheets.base_sheet import SheetABC
 from aims.core.types import AnalysisName, Frame, ProbeName, Series
 from aims.core.xml import AggregateByProbesDataParser, parse_data
@@ -24,7 +24,7 @@ class ConvergenceByProbesSheet(SheetABC):
     @classmethod
     def from_history(
         cls,
-        history: History,
+        history: ConvergenceByProbesHistory,
         analysis_name: AnalysisName,
         probe_name: ProbeName,
         config: Config,

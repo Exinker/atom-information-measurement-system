@@ -1,27 +1,30 @@
+from abc import ABC, abstractmethod
 from datetime import datetime
 
-
-from aims.config import Config, TrackedMode
-from aims.core.history import History
-from aims.core.sheets import (
-    ConvergenceByParallelsSheet,
-    ConvergenceByProbesSheet,
-    SheetABC,
+from aims.config import Config
+from aims.core.history import (
+    ConvergenceByParallelsHistory,
+    ConvergenceByProbesHistory,
 )
-from aims.core.sheets.sheets.workers import MultiprocessingWorker, Worker, WorkerABC
-from aims.core.types import AnalysisName, ProbeName
+from aims.core.sheets import SheetABC
+from aims.core.sheets.sheets.utils import (
+    get_tracked_analysis_name,
+    get_tracked_probe_guids,
+    get_tracked_probe_names,
+    get_worker,
+)
 
 
-class Sheets:
+class SheetsABC(ABC):
 
     def __init__(
         self,
-        items: tuple[SheetABC],
+        items: tuple[SheetABC, ...],
     ) -> None:
         self.items = items
 
     @property
-    def last_sheet(self) -> SheetABC | None:
+    def last_sheet(self) -> SheetABC:
         """Get the last recorded `sheet`."""
         try:
             return self.items[0]
@@ -29,30 +32,45 @@ class Sheets:
             return SheetABC.from_default()
 
     @classmethod
+    @abstractmethod
     def create(
         cls,
         milestone: datetime,
         config: Config,
-    ) -> 'Sheets':
+    ) -> 'SheetsABC':
+        raise NotImplementedError
 
-        history = History.create(
+    def __getitem__(self, i: int) -> SheetABC:
+        return self.items[i]
+
+
+class ConvergenceByProbesSheets(SheetsABC):
+
+    @classmethod
+    def create(
+        cls,
+        milestone: datetime,
+        config: Config,
+    ) -> 'ConvergenceByProbesSheets':
+
+        history = ConvergenceByProbesHistory.create(
             milestone=milestone,
             directory=config.directory,
             tracked_period=config.tracked_period,
             sep=config.sep,
         )
 
-        tracked_analysis_name = _get_tracked_analysis_name(
+        tracked_analysis_name = get_tracked_analysis_name(
             history=history,
             config=config,
         )
-        tracked_probe_names = _get_tracked_probe_names(
+        tracked_probe_names = get_tracked_probe_names(
             history=history,
             config=config,
             tracked_analysis_name=tracked_analysis_name,
         )
 
-        worker = _get_worker(
+        worker = get_worker(
             config=config,
         )
         items = worker.run(
@@ -65,53 +83,36 @@ class Sheets:
             items=items,
         )
 
-    def __getitem__(self, i: int) -> SheetABC:
-        return self.items[i]
 
+class ConvergenceByParallelsSheets(SheetsABC):
 
-def _get_tracked_analysis_name(
-    history: History,
-    config: Config,
-) -> AnalysisName:
-    return config.tracked_analisys_name or history.last_analisys_name
+    @classmethod
+    def create(
+        cls,
+        milestone: datetime,
+        config: Config,
+    ) -> 'ConvergenceByParallelsSheets':
 
-
-def _get_tracked_probe_names(
-    history: History,
-    config: Config,
-    tracked_analysis_name: AnalysisName,
-) -> tuple[ProbeName]:
-
-    if config.tracked_probe_name:
-        queue = history.get_queue(
-            analysis_name=tracked_analysis_name,
-            n=config.tracked_queue_length - 1,
+        history = ConvergenceByParallelsHistory.create(
+            milestone=milestone,
+            directory=config.directory,
+            tracked_period=config.tracked_period,
+            sep=config.sep,
         )
-        return (config.tracked_probe_name, ) + queue
 
-    return history.get_queue(
-        analysis_name=tracked_analysis_name,
-        n=config.tracked_queue_length,
-    )
-
-
-def _get_worker(
-    config: Config,
-) -> WorkerABC:
-
-    match config.tracked_mode:
-        case TrackedMode.CONVERGENCE_BY_PARALLELS:
-            factory = ConvergenceByParallelsSheet.from_history
-        case TrackedMode.CONVERGENCE_BY_PROBES:
-            factory = ConvergenceByProbesSheet.from_history
-        case _:
-            raise NotImplementedError(f'Mode {config.tracked_mode} is not supported yet!')
-
-    if config.n_workers > 1:
-        return MultiprocessingWorker(
-            factory=factory,
-            n_workers=config.n_workers,
+        tracked_probe_guids = get_tracked_probe_guids(
+            history=history,
+            config=config,
         )
-    return Worker(
-        factory=factory,
-    )
+
+        worker = get_worker(
+            config=config,
+        )
+        items = worker.run(
+            history=history,
+            tracked_probe_guids=tracked_probe_guids,
+            config=config,
+        )
+        return cls(
+            items=items,
+        )

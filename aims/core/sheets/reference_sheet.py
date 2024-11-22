@@ -6,7 +6,7 @@ import pandas as pd
 from aims.config import Config
 from aims.core.atom_database import MeasurementToleranceDatabase
 from aims.core.formatters import normalize_name
-from aims.core.history import History
+from aims.core.history import HistoryABC
 from aims.core.sheets.base_sheet import SheetABC
 from aims.core.types import AnalysisName, Frame, ProbeName, Series
 from aims.core.xml import AggregateByProbesDataParser, load_xml
@@ -25,7 +25,7 @@ class ReferenceSheet(SheetABC):
     @classmethod
     def from_history(
         cls,
-        history: History,
+        history: HistoryABC,
         analysis_name: AnalysisName,
         probe_name: ProbeName,
         config: Config,

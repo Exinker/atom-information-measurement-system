@@ -5,7 +5,7 @@ from functools import partial
 from multiprocessing import Pool
 
 from aims.config import Config
-from aims.core.history import History
+from aims.core.history import HistoryABC
 from aims.core.sheets.base_sheet import SheetABC
 from aims.core.types import AnalysisName, ProbeName
 
@@ -14,18 +14,18 @@ class WorkerABC(ABC):
 
     def __init__(
         self,
-        factory: Callable[[History, AnalysisName, ProbeName, Config], SheetABC],
+        factory: Callable[[HistoryABC, AnalysisName, ProbeName, Config], SheetABC],
     ) -> None:
         self.factory = factory
 
     @abstractmethod
     def run(
         self,
-        history: History,
+        history: HistoryABC,
         tracked_analysis_name: AnalysisName,
-        tracked_probe_names: tuple[ProbeName],
+        tracked_probe_names: tuple[ProbeName, ...],
         config: Config,
-    ) -> tuple[SheetABC]:
+    ) -> tuple[SheetABC, ...]:
         raise NotImplementedError
 
 
@@ -33,17 +33,17 @@ class Worker(WorkerABC):
 
     def __init__(
         self,
-        factory: Callable[[History, AnalysisName, ProbeName, Config], SheetABC],
+        factory: Callable[[HistoryABC, AnalysisName, ProbeName, Config], SheetABC],
     ) -> None:
         super().__init__(factory=factory)
 
     def run(
         self,
-        history: History,
+        history: HistoryABC,
         tracked_analysis_name: AnalysisName,
-        tracked_probe_names: tuple[ProbeName],
+        tracked_probe_names: tuple[ProbeName, ...],
         config: Config,
-    ) -> tuple[SheetABC]:
+    ) -> tuple[SheetABC, ...]:
 
         items = []
         for tracked_probe_name in tracked_probe_names:
@@ -63,7 +63,7 @@ class MultiprocessingWorker(WorkerABC):
 
     def __init__(
         self,
-        factory: Callable[[History, AnalysisName, ProbeName, Config], SheetABC],
+        factory: Callable[[HistoryABC, AnalysisName, ProbeName, Config], SheetABC],
         n_workers: int,
     ) -> None:
         super().__init__(factory=factory)
@@ -72,11 +72,11 @@ class MultiprocessingWorker(WorkerABC):
 
     def run(
         self,
-        history: History,
+        history: HistoryABC,
         tracked_analysis_name: AnalysisName,
-        tracked_probe_names: tuple[ProbeName],
+        tracked_probe_names: tuple[ProbeName, ...],
         config: Config,
-    ) -> tuple[SheetABC]:
+    ) -> tuple[SheetABC, ...]:
 
         target = partial(
             self.factory,

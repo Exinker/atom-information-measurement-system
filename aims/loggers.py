@@ -7,6 +7,8 @@ from PySide6 import QtGui
 from spectrumapp.utils import find_window
 from spectrumapp.windows.splashScreenWindow import splashscreen
 
+from aims.config import LOGGING_LEVEL
+
 
 class ProgressWindowHandler(logging.StreamHandler):
     def __init__(self):
@@ -28,8 +30,8 @@ class ProgressWindowHandler(logging.StreamHandler):
 
             window.show()
 
-        # # flush
-        # self.flush()
+        # flush
+        self.flush()
 
 
 # @splashscreen(progress=0, info='<strong>SET DEFAULT</strong> logging...')
@@ -41,7 +43,7 @@ def setdefault_logger():
 
         'formatters': {
             'file_formatter': {
-                'format': '[%(asctime)s: %(levelname)s] %(message)s',
+                'format': '[%(asctime)s.%(msecs)04d] %(levelname)-8s %(module)-40s - %(message)s',
             },
             'progress_window_formatter': {
                 'format': '%(message)s',
@@ -51,11 +53,16 @@ def setdefault_logger():
         'handlers': {
             'file_handler': {
                 'class': 'logging.FileHandler',
-                'level': logging.DEBUG,
+                'level': logging.NOTSET,
                 'filename': os.path.join('.', 'app.log'),
                 'mode': 'a',
                 'formatter': 'file_formatter',
                 'encoding': 'utf-8',
+            },
+            'stream_handler': {
+                'class': 'logging.StreamHandler',
+                'level': logging.NOTSET,
+                'formatter': 'file_formatter',
             },
             # 'progress_window_handler': {
             #     'class': 'loggers.ProgressWindowHandler',
@@ -66,8 +73,12 @@ def setdefault_logger():
 
         'loggers': {
             'app': {
-                'level': logging.DEBUG,
-                'handlers': ['file_handler'],  # , 'progress_window_handler'
+                'level': LOGGING_LEVEL,
+                'handlers': [
+                    'file_handler',
+                    'stream_handler',
+                    # 'progress_window_handler',
+                ],
                 'propagate': False,
             },
         },
