@@ -6,8 +6,8 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from spectrumapp.colors import COLOR
 from spectrumapp.numbers import format_number
 
-from aims.core.sheets import SheetABC
-from aims.core.utils import run_explorer
+from aims.core.data.data import DatumABC
+from aims.core.utils.runners import run_explorer
 from aims.settings import get_setting
 
 
@@ -16,20 +16,19 @@ N_ROWS_MAX = 10
 
 class TableModel(QtCore.QAbstractTableModel):
 
-    def __init__(self, *args, sheet: SheetABC, **kwargs):
+    def __init__(self, *args, datum: DatumABC, **kwargs):
         super().__init__(*args, **kwargs)
 
-        #
-        _data = sheet.to_frame()
+        _data = datum.to_frame()
         # if 'datetime' in _data:
         #     _data = _data.sort_values(by='datetime', axis=0)
 
         self._data = _data
 
-        self._n_probes = len(sheet.prediction.index)
-        self._n_target_columns = len(sheet.targets.columns)
-        self._target_rows = sheet.targets.index.to_list()
-        self._target_columns = sheet.targets.columns
+        self._n_probes = len(datum.concentration.index)
+        self._n_target_columns = len(datum.targets.columns)
+        self._target_rows = datum.targets.index.to_list()
+        self._target_columns = datum.targets.columns
 
     def data(self, index, role):
         row = self._data.index[index.row()]
@@ -39,7 +38,7 @@ class TableModel(QtCore.QAbstractTableModel):
         try:
             if role == QtCore.Qt.DisplayRole:
 
-                if column in ['probe_name']:
+                if column in ['name']:
                     if row in self._target_rows:
                         return ''
 
@@ -101,7 +100,7 @@ class TableModel(QtCore.QAbstractTableModel):
                     return QtGui.QColor('#E3E3E3') if self._n_probes % 2 else QtGui.QColor('#F9F9F9')
 
                 else:
-                    if column in ['probe_name']:
+                    if column in ['name']:
                         is_certified = self._data.loc[index.row(), 'is_certified']
 
                         color = COLOR['green'] if is_certified else COLOR['yellow']
@@ -126,6 +125,9 @@ class TableModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
                 column = self._data.columns[section]
+
+                if column in ['name']:
+                    return ''
                 return column.replace('_', ' ')
 
             if orientation == QtCore.Qt.Vertical:
@@ -174,7 +176,7 @@ class TableView(QtWidgets.QTableView):
 
         if model is None:
             model = TableModel(
-                sheet=SheetABC.from_default(),
+                datum=DatumABC.from_default(),
             )
 
         data = model._data
@@ -250,25 +252,25 @@ class SheetWidget(QtWidgets.QWidget):
             self.tableViews.append(view)
 
     # --------        slots        --------
-    def _onRefreshTriggered(self, sheet: SheetABC | None = None):
+    def _onRefreshTriggered(self, datum: DatumABC | None = None):
         app = QtWidgets.QApplication.instance()
 
         # get sheet
-        sheet = sheet or app.sheets.last_sheet
+        datum = datum or app.data.last_datum
 
-        if sheet is None:
+        if datum is None:
             return
 
         # process sheet
-        sheet = sheet.filtrate(
+        datum = datum.filtrate(
             level=get_setting(key='table/filter-level'),
         )
-        sheet = sheet.sort(
+        datum = datum.sort(
             kind=get_setting(key='table/sorter-kind'),
         )
 
         # update table views
-        n_targets = len(sheet.targets.columns)
+        n_targets = len(datum.targets.columns)
         n_rows = min(
             get_setting(key='table/n_rows'),
             N_ROWS_MAX,
@@ -279,10 +281,10 @@ class SheetWidget(QtWidgets.QWidget):
         )
 
         for i in range(N_ROWS_MAX):
-            columns = sheet.targets.columns[slice(n_columns*(i), n_columns*(i + 1))]
+            columns = datum.targets.columns[slice(n_columns*(i), n_columns*(i + 1))]
 
             model = TableModel(
-                sheet=sheet.select(columns=columns),
+                datum=datum.select(columns=columns),
             )
 
             view = self.tableViews[i]

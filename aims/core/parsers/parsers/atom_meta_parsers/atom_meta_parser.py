@@ -1,8 +1,8 @@
-from aims.core.meta import AtomMeta
+from aims.core.atom_data import AtomMeta
 from aims.core.types import XML
 
 
-class MetaParser():
+class MetaParser:
 
     def parse(self, xml: XML) -> AtomMeta:
         """Get recorded meta data from Atom's .xml file."""

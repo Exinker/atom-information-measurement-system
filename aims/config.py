@@ -8,8 +8,8 @@ from datetime import datetime
 from enum import Enum
 from typing import ClassVar, Mapping
 
-import pandas as pd
 from dotenv import load_dotenv
+import pandas as pd
 
 from spectrumapp.config import AbstractConfig
 from spectrumapp.exceptions import eprint

@@ -9,6 +9,7 @@ from spectrumapp.windows.splashScreenWindow import splashscreen
 from spectrumapp.windows.mainWindow import BaseMainWindow
 
 import aims
+from aims.core.data import DataABC
 from aims.settings import get_setting, set_setting
 from aims.widget.centralWidget import CentralWidget
 from aims.window.widgetWindow import WidgetWindow
@@ -135,24 +136,25 @@ class MainWindow(BaseMainWindow):
         window = find_window('widgetWindow')
         window._onRefreshTriggered()
 
-    # --------        private        --------
-    def _update_title(self) -> None:
+    def _get_title(self) -> str:
         app = QtWidgets.QApplication.instance()
 
-        #
-        sheet = app.sheets.last_sheet
-        if sheet is None:
-            title = '{application_name} - [{datetime_updated}]'.format(
+        if isinstance(app.data, DataABC):
+            datum = app.data.last_datum
+
+            return '{application_name} - [{analysis_name} / {probe_name}] - [{datetime_updated}]'.format(
                 application_name=aims.__name__,
-                datetime_updated=app.milestone.strftime('%Y-%m-%d %H:%M:%S'),
-            )
-        else:
-            title = '{application_name} - [{analysis_name} / {probe_name}] - [{datetime_updated}]'.format(
-                application_name=aims.__name__,
-                analysis_name=sheet.analysis_name,
-                probe_name=sheet.probe_name,
+                analysis_name=getattr(datum, 'analysis_name', ''),
+                probe_name=getattr(datum, 'probe_name', ''),
                 datetime_updated=app.milestone.strftime('%Y-%m-%d %H:%M:%S'),
             )
 
-        #
+        return '{application_name} - [{datetime_updated}]'.format(
+            application_name=aims.__name__,
+            datetime_updated=app.milestone.strftime('%Y-%m-%d %H:%M:%S'),
+        )
+
+    def _update_title(self) -> None:
+
+        title = self._get_title()
         self.setWindowTitle(title)

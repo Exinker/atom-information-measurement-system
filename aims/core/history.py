@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from aims.config import Directory, TrackedPediod
-from aims.core.types import AnalysisName, Frame, ProbeName, ProbeGUID, XMLPath
-from aims.core.xml import Scraper
+from aims.config import Config, Directory, TrackedPediod
+from aims.core.scrapers import Scraper
+from aims.core.types import AnalysisName, Frame, ProbeGUID, ProbeName, XMLPath
 
 
 @dataclass
@@ -58,14 +58,6 @@ class HistoryABC(ABC):
     ) -> tuple[ProbeName, ...]:
         raise NotImplementedError
 
-    @abstractmethod
-    def get_filepaths(
-        self,
-        analysis_name: AnalysisName,
-        probe_name: ProbeName,
-    ) -> tuple[XMLPath, ...]:
-        raise NotImplementedError
-
 
 @dataclass
 class ConvergenceByProbesHistory(HistoryABC):
@@ -76,6 +68,30 @@ class ConvergenceByProbesHistory(HistoryABC):
     sep: str
 
     datetime: datetime = field(default_factory=datetime.now)
+
+    def get_tracked_analysis_name(
+        self,
+        config: Config,
+    ) -> AnalysisName:
+        return config.tracked_analisys_name or self.last_analisys_name
+
+    def get_tracked_probe_names(
+        self,
+        config: Config,
+        tracked_analysis_name: AnalysisName,
+    ) -> tuple[ProbeName, ...]:
+
+        if config.tracked_probe_name:
+            queue = self.get_queue(
+                analysis_name=tracked_analysis_name,
+                n=config.tracked_queue_length - 1,
+            )
+            return (config.tracked_probe_name, ) + queue
+
+        return self.get_queue(
+            analysis_name=tracked_analysis_name,
+            n=config.tracked_queue_length,
+        )
 
     def get_queue(
         self,
@@ -151,6 +167,15 @@ class ConvergenceByParallelsHistory(HistoryABC):
 
     datetime: datetime = field(default_factory=datetime.now)
 
+    def get_tracked_probe_guids(
+        self,
+        config: Config,
+    ) -> tuple[ProbeGUID, ...]:
+
+        return self.get_queue(
+            n=config.tracked_queue_length,
+        )
+
     def get_queue(
         self,
         n: int = 1,
@@ -169,20 +194,21 @@ class ConvergenceByParallelsHistory(HistoryABC):
         probe_guids = probe_guids if ascending else reversed(probe_guids)
         return tuple(probe_guids)
 
-    def get_filepaths(
+    def get_filepath(
         self,
-        analysis_name: AnalysisName,
-        probe_name: ProbeName,
-    ) -> tuple[XMLPath, ...]:
-        """Получить последовательность `filepaths` всех `xml` файлов files для выбранного `analysis_name` и `probe_name`."""
+        probe_guid: ProbeGUID,
+    ) -> XMLPath:
+        """Получить последовательность `filepaths` всех `xml` файлов files для выбранного `probe_guid`."""
 
         records = self.records[
-            (self.records['analysis_name'] == analysis_name) & (self.records['probe_name'] == probe_name)
+            (self.records['probe_guid'] == probe_guid)
         ].copy(deep=True)
+        records = records.set_index('datetime', drop=False)
+        records = records.groupby(by='probe_guid').max().sort_values(by='datetime')
         if records.empty:
             return tuple()
 
-        return tuple(records['path'].unique())
+        return records['path'].item()
 
     @classmethod
     def create(

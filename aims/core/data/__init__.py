@@ -5,25 +5,25 @@ from aims.config import (
     TrackedMode,
 )
 
-from .sheets import (
-    ConvergenceByParallelsSheets,
-    ConvergenceByProbesSheets,
-    SheetsABC,
+from .data import (
+    ConvergenceByParallelsData,
+    ConvergenceByProbesData,
+    DataABC,
 )
 
 
-def sheets_factory(
+def data_factory(
     milestone: datetime,
     config: Config,
-) -> SheetsABC:
+) -> DataABC:
     match config.tracked_mode:
         case TrackedMode.CONVERGENCE_BY_PROBES:
-            return ConvergenceByProbesSheets.create(
+            return ConvergenceByProbesData.create(
                 milestone=milestone,
                 config=config,
             )
         case TrackedMode.CONVERGENCE_BY_PARALLELS:
-            return ConvergenceByParallelsSheets.create(
+            return ConvergenceByParallelsData.create(
                 milestone=milestone,
                 config=config,
             )
@@ -32,7 +32,7 @@ def sheets_factory(
 
 
 __all__ = [
-    ConvergenceByParallelsSheets,
-    ConvergenceByProbesSheets,
-    sheets_factory,
+    ConvergenceByParallelsData,
+    ConvergenceByProbesData,
+    data_factory,
 ]

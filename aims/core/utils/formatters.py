@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from .types import ProbeName
+from aims.core.types import ProbeName
 
 
 def normalize_name(name: ProbeName, sep: str) -> ProbeName:

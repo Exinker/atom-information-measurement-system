@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 
 from aims.config import Config
-from aims.core.data import AtomData
+from aims.core.atom_data import AtomData
 from aims.core.types import XMLPath
 
 
-class DataParserABC(ABC):
+class AtomDataParserABC(ABC):
 
     def __init__(self, config: Config):
         self.config = config

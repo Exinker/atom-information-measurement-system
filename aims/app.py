@@ -5,17 +5,16 @@ from datetime import datetime
 
 from PySide6 import QtCore, QtWidgets
 
-from spectrumapp.loggers import log
-from spectrumapp.utils.handler import wait
-from spectrumapp.windows.splashScreenWindow import splashscreen
-
 import aims
 from aims.config import Config
-from aims.core.sheets import sheets_factory
-from aims.core.xml import ParserCache
+from aims.core.data import data_factory
+from aims.core.parsers import ParserCache
 from aims.observer import Observer, ObserverEventHandler
 from aims.settings import get_setting
 from aims.window.mainWindow import MainWindow
+from spectrumapp.loggers import log
+from spectrumapp.utils.handler import wait
+# from spectrumapp.swindows.splashScreenWindow import splashscreen
 
 
 try:  # change app id for correct icon present
@@ -38,7 +37,7 @@ class Application(QtWidgets.QApplication):
         self.setApplicationVersion(aims.__version__)
 
         self.milestone = None
-        self.sheets = None
+        self.data = None
         self.window = None
         self.observer = None
 
@@ -50,7 +49,7 @@ class Application(QtWidgets.QApplication):
     def _update_data(self) -> None:
         """Update (or parse) tracked path sheets."""
 
-        self.sheets = sheets_factory(
+        self.data = data_factory(
             milestone=self.milestone,
             config=Config.load(),
         )

@@ -40,12 +40,12 @@ class QueueWidget(QtWidgets.QWidget):
 
             # get sheet
             try:
-                sheet = app.sheets[i]
+                datum = app.data[i]
             except IndexError:
-                sheet = None
+                datum = None
 
             # update widget
-            if sheet is None:
+            if datum is None:
                 self.tabWidget.setTabVisible(i, False)
                 self.tabWidget.setTabEnabled(i, False)
                 self.tabWidget.setTabText(i, _format_tab_label(label=''))
@@ -53,7 +53,7 @@ class QueueWidget(QtWidgets.QWidget):
             else:
                 self.tabWidget.setTabVisible(i, True)
                 self.tabWidget.setTabEnabled(i, True)
-                self.tabWidget.setTabText(i, _format_tab_label(label=sheet.probe_name))
+                self.tabWidget.setTabText(i, _format_tab_label(label=getattr(datum, 'probe_name', '')))
 
                 widget = self.tabWidget.widget(i)
-                widget._onRefreshTriggered(sheet=sheet)
+                widget._onRefreshTriggered(datum=datum)

@@ -53,8 +53,8 @@ class LastRecordFrame(QtWidgets.QFrame):
     def _onRefreshTriggered(self):
         app = QtWidgets.QApplication.instance()
 
-        sheet = app.sheets.last_sheet
-        meta = sheet.last_meta
+        datum = app.data.last_datum
+        meta = datum.last_meta
 
         if meta is None:  # FIXME: remove it
             return
@@ -76,7 +76,7 @@ class LastRecordFrame(QtWidgets.QFrame):
 
         widget = self.findChild(QtWidgets.QLabel, 'probeNameLabel')
         widget.setText(
-            f'{meta.probe_name}',
+            f'{meta.name}',
         )
 
         widget = self.findChild(QtWidgets.QLabel, 'probeDateLabel')

@@ -3,14 +3,17 @@ from datetime import datetime
 import pandas as pd
 
 from aims.config import Directory, TrackedPediod
-from aims.core.formatters import normalize_datetime, normalize_name
-from aims.core.types import AnalysisName, Frame, XML
-from aims.core.xml.utils import (
-    load_xml,
+from aims.core.scrapers.utils import (
     validate_file,
     validate_xml,
     walk,
 )
+from aims.core.types import AnalysisName, Frame, XML
+from aims.core.utils.formatters import (
+    normalize_datetime,
+    normalize_name,
+)
+from aims.core.utils.loaders import load_xml
 
 
 class Scraper:
@@ -42,14 +45,14 @@ class Scraper:
                     analysis_name = self._scrape_analysis(xml)
                     probes = self._scrape_probes(xml)
 
-                    for guid in probes.index:
-                        is_tracked = self.tracked_period.check(probes.loc[guid, 'datetime'], milestone=self.milestone)
+                    for probe_guid in probes.index:
+                        is_tracked = self.tracked_period.check(probes.loc[probe_guid, 'datetime'], milestone=self.milestone)
                         if is_tracked:
                             records.append({
                                 'analysis_name': analysis_name,
-                                'probe_name': probes.loc[guid, 'name'],
-                                'probe_guid': probes.loc[guid, 'guid'],
-                                'datetime': probes.loc[guid, 'datetime'],
+                                'probe_name': probes.loc[probe_guid, 'name'],
+                                'probe_guid': probes.loc[probe_guid, 'probe_guid'],
+                                'datetime': probes.loc[probe_guid, 'datetime'],
                                 'path': filepath,
                             })
 
@@ -71,8 +74,8 @@ class Scraper:
     def _scrape_probes(self, xml: XML) -> Frame:
         """Parse probes data from given Atom's `xml`."""
         default_probes = pd.DataFrame(
-            columns=['guid', 'id', 'name', 'datetime', 'is_certified'],
-        ).set_index('guid', drop=False)
+            columns=['probe_guid', 'id', 'name', 'datetime', 'is_certified'],
+        ).set_index('probe_guid', drop=False)
 
         try:
             probes = default_probes.copy()
@@ -81,16 +84,16 @@ class Scraper:
                 is_not_empty = len(probe.findall('spe')) > 0
                 if is_not_empty:
                     try:
-                        guid = probe.find('sample/guid').text
+                        probe_guid = probe.find('sample/guid').text
                     except AttributeError:
                         # FIXME: remove capability with old version XML files!
-                        guid = probe.attrib['id']
+                        probe_guid = probe.attrib['id']
 
-                    probes.loc[guid, 'guid'] = guid
-                    probes.loc[guid, 'id'] = int(probe.attrib['id'])
-                    probes.loc[guid, 'name'] = normalize_name(probe.attrib['name'], sep=self.sep)
-                    probes.loc[guid, 'datetime'] = normalize_datetime(probe.find('date[@type="last"]').text)
-                    probes.loc[guid, 'is_certified'] = {
+                    probes.loc[probe_guid, 'probe_guid'] = probe_guid
+                    probes.loc[probe_guid, 'id'] = int(probe.attrib['id'])
+                    probes.loc[probe_guid, 'name'] = normalize_name(probe.attrib['name'], sep=self.sep)
+                    probes.loc[probe_guid, 'datetime'] = normalize_datetime(probe.find('date[@type="last"]').text)
+                    probes.loc[probe_guid, 'is_certified'] = {
                         'yes': True,
                         'no': False,
                     }.get(probe.attrib.get('COC', 'no'))

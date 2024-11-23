@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
-from aims.core.types import AnalysisName, XML
+from aims.core.types import AnalysisName, Frame, XML
 
 
 @dataclass
@@ -26,3 +26,12 @@ class AtomMeta:
             user_name=user_name,
             analysis_name=analysis_name,
         )
+
+
+@dataclass
+class AtomData:
+    meta: AtomMeta
+    rows: Frame
+    concentration: Frame
+    reference: Frame
+    statistics: Frame | None = field(default=None)

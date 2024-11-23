@@ -5,20 +5,21 @@ import pandas as pd
 
 from aims.config import Config
 from aims.core.atom_database import MeasurementToleranceDatabase
-from aims.core.formatters import normalize_name
+from aims.core.data.datum import DatumABC
 from aims.core.history import HistoryABC
-from aims.core.sheets.base_sheet import SheetABC
+from aims.core.parsers import AggregateByProbesAtomDataParser
 from aims.core.types import AnalysisName, Frame, ProbeName, Series
-from aims.core.xml import AggregateByProbesDataParser, load_xml
+from aims.core.utils.formatters import normalize_name
+from aims.core.utils.loaders import load_xml
 from aims.settings import FilterLevel
 
 
 @dataclass
-class ReferenceSheet(SheetABC):
+class ReferenceSheet(DatumABC):
     analysis_name: AnalysisName
     probe_name: ProbeName
     meta: Frame
-    prediction: Frame
+    concentration: Frame
     targets: Frame
     levels: Series
 
@@ -40,11 +41,11 @@ class ReferenceSheet(SheetABC):
             raise ValueError('Sequence of filepaths is empty!')
 
         try:
-            parser = AggregateByProbesDataParser(config=config)
+            parser = AggregateByProbesAtomDataParser(config=config)
 
             meta = []
             reference = []
-            prediction = []
+            concentration = []
             for filepath in filepaths:
 
                 # parse
@@ -59,7 +60,7 @@ class ReferenceSheet(SheetABC):
 
                     # check: probe's name
                     cond[j] = cond[j] and normalize_name(
-                        name=_meta.iloc[j]['probe_name'],
+                        name=_meta.iloc[j]['name'],
                         sep=history.sep,
                     ) == probe_name
 
@@ -72,7 +73,7 @@ class ReferenceSheet(SheetABC):
                 # drop and append
                 meta.append(_meta.drop(index=_meta.index[~cond]).reset_index(drop=True))
                 reference.append(_reference.drop(index=_meta.index[~cond]).reset_index(drop=True))
-                prediction.append(_prediction.drop(index=_meta.index[~cond]).reset_index(drop=True))
+                concentration.append(_prediction.drop(index=_meta.index[~cond]).reset_index(drop=True))
 
             meta = pd.DataFrame(
                 pd.concat(meta),
@@ -80,8 +81,8 @@ class ReferenceSheet(SheetABC):
             reference = pd.DataFrame(
                 pd.concat(reference),
             ).reset_index(drop=True)
-            prediction = pd.DataFrame(
-                pd.concat(prediction),
+            concentration = pd.DataFrame(
+                pd.concat(concentration),
             ).reset_index(drop=True)
         except (ValueError, KeyError):
             return cls.from_default(
@@ -90,7 +91,7 @@ class ReferenceSheet(SheetABC):
             )
 
         # targets and levels
-        nicknames = prediction.columns
+        nicknames = concentration.columns
 
         targets = pd.DataFrame(
             columns=nicknames,
@@ -103,13 +104,13 @@ class ReferenceSheet(SheetABC):
         tolerance_database = MeasurementToleranceDatabase.create(xml=xml, analysis_name=analysis_name)
 
         #
-        n_probes = prediction.shape[0]
+        n_probes = concentration.shape[0]
         values = pd.DataFrame(
             {},
             columns=nicknames,
         )
         for nickname in nicknames:
-            values[nickname] = pd.to_numeric(prediction[nickname], errors='coerce')
+            values[nickname] = pd.to_numeric(concentration[nickname], errors='coerce')
 
         targets.loc['Cред.'] = values.mean(axis=0, skipna=True)
         targets.loc['Аттест.'] = []  # FIXME:
@@ -130,7 +131,7 @@ class ReferenceSheet(SheetABC):
             analysis_name=analysis_name,
             probe_name=probe_name,
             meta=meta,
-            prediction=prediction,
+            concentration=concentration,
             targets=targets,
             levels=levels,
         )

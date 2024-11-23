@@ -4,10 +4,9 @@ import os
 
 from PySide6 import QtGui
 
-from spectrumapp.utils import find_window
-from spectrumapp.windows.splashScreenWindow import splashscreen
-
 from aims.config import LOGGING_LEVEL
+from spectrumapp.utils import find_window
+# from spectrumapp.windows.splashScreenWindow import splashscreen
 
 
 class ProgressWindowHandler(logging.StreamHandler):
