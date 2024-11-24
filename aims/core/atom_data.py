@@ -30,8 +30,7 @@ class AtomMeta:
 
 @dataclass
 class AtomData:
-    meta: AtomMeta
-    rows: Frame
+    meta: Frame
     concentration: Frame
-    reference: Frame
+    reference: Frame | None = field(default=None)
     statistics: Frame | None = field(default=None)

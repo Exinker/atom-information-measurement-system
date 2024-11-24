@@ -68,7 +68,7 @@ class Application(QtWidgets.QApplication):
         """Setup tracked path observer."""
 
         # observer's handler
-        handler = ObserverEventHandler(callback=self.reset, logger=logging.getLogger('app'))
+        handler = ObserverEventHandler(callback=self.reset)
 
         # observer's path
         path = os.path.abspath(

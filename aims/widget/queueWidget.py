@@ -53,7 +53,7 @@ class QueueWidget(QtWidgets.QWidget):
             else:
                 self.tabWidget.setTabVisible(i, True)
                 self.tabWidget.setTabEnabled(i, True)
-                self.tabWidget.setTabText(i, _format_tab_label(label=getattr(datum, 'probe_name', '')))
+                self.tabWidget.setTabText(i, _format_tab_label(label=datum.meta.probe_name))
 
                 widget = self.tabWidget.widget(i)
                 widget._onRefreshTriggered(datum=datum)

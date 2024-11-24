@@ -19,16 +19,13 @@ class TableModel(QtCore.QAbstractTableModel):
     def __init__(self, *args, datum: DatumABC, **kwargs):
         super().__init__(*args, **kwargs)
 
-        _data = datum.to_frame()
-        # if 'datetime' in _data:
-        #     _data = _data.sort_values(by='datetime', axis=0)
+        self._data = datum.sheet
 
-        self._data = _data
-
-        self._n_probes = len(datum.concentration.index)
-        self._n_target_columns = len(datum.targets.columns)
-        self._target_rows = datum.targets.index.to_list()
-        self._target_columns = datum.targets.columns
+        self._n_meta_rows = len(set(datum.sheet.index) - set(datum.TARGET_ROW_NAMES))
+        self._meta_columns = datum.META_COLUMN_NAMES
+        self._meta_columns_visible = datum.META_COLUMN_NAMES_VISIBLE
+        self._target_rows = datum.TARGET_ROW_NAMES
+        self._target_columns = datum.levels.index.to_list()
 
     def data(self, index, role):
         row = self._data.index[index.row()]
@@ -38,7 +35,7 @@ class TableModel(QtCore.QAbstractTableModel):
         try:
             if role == QtCore.Qt.DisplayRole:
 
-                if column in ['name']:
+                if column in ['probe_name', 'parallel_name']:
                     if row in self._target_rows:
                         return ''
 
@@ -97,11 +94,11 @@ class TableModel(QtCore.QAbstractTableModel):
 
             if role == QtCore.Qt.BackgroundRole:
                 if row in self._target_rows:
-                    return QtGui.QColor('#E3E3E3') if self._n_probes % 2 else QtGui.QColor('#F9F9F9')
+                    return QtGui.QColor('#E3E3E3') if self._n_meta_rows % 2 else QtGui.QColor('#F9F9F9')
 
                 else:
-                    if column in ['name']:
-                        is_certified = self._data.loc[index.row(), 'is_certified']
+                    if column in ['probe_name', 'parallel_name']:
+                        is_certified = self._data['is_certified'].iloc[index.row()]
 
                         color = COLOR['green'] if is_certified else COLOR['yellow']
                         color = QtGui.QColor(color)
@@ -109,7 +106,7 @@ class TableModel(QtCore.QAbstractTableModel):
 
                         return color
 
-                    return QtGui.QColor('#E3E3E3') if row % 2 else QtGui.QColor('#F9F9F9')
+                    return QtGui.QColor('#E3E3E3') if index.row() % 2 else QtGui.QColor('#F9F9F9')
 
             elif role == QtCore.Qt.TextAlignmentRole:
                 if column in ['datetime']:
@@ -122,12 +119,10 @@ class TableModel(QtCore.QAbstractTableModel):
             return value
 
     def headerData(self, section, orientation, role):
+
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
                 column = self._data.columns[section]
-
-                if column in ['name']:
-                    return ''
                 return column.replace('_', ' ')
 
             if orientation == QtCore.Qt.Vertical:
@@ -135,7 +130,7 @@ class TableModel(QtCore.QAbstractTableModel):
                 if row in self._target_rows:
                     return row
                 else:
-                    value = self._data['datetime'].loc[section]
+                    value = self._data['datetime'].iloc[section]
                     return value.strftime('%Y-%m-%d %H:%M:%S')
 
     def rowCount(self, index):
@@ -179,10 +174,6 @@ class TableView(QtWidgets.QTableView):
                 datum=DatumABC.from_default(),
             )
 
-        data = model._data
-        n_target_columns = model._n_target_columns
-        n_info_columns = len(data.columns) - n_target_columns
-
         # style
         self.setStyleSheet("font-size: 14px; font-weight: 500")
 
@@ -196,16 +187,6 @@ class TableView(QtWidgets.QTableView):
         self.clearSpans()
 
         # headers
-        hidden_columns = [0, 1, 2, 3, 4, 5, 6, 8]
-        for column in hidden_columns:
-            self.setColumnHidden(column, True)
-
-        for i in range(n_info_columns - len(hidden_columns)):  # minus number of hidded columns
-            self.setColumnWidth(i, 120)
-
-        # for i in range(n_target_columns):
-        #     self.setColumnWidth(n_info_columns + i, 90)
-
         hh = self.horizontalHeader()
         hh.setFixedHeight(25)
         hh.setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
@@ -224,6 +205,14 @@ class TableView(QtWidgets.QTableView):
         self.setModel(model)
 
         # update view
+        n_target_columns = len(model._target_columns)
+        for i, column in enumerate(model._meta_columns):
+            is_hidden = not (column in model._meta_columns_visible)
+            self.setColumnHidden(i, is_hidden)
+
+        for i in range(len(model._meta_columns_visible) + n_target_columns):  # minus number of hidded columns
+            self.setColumnWidth(i, 120)
+
         self.clearSpans()
         self.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.scrollToBottom()
@@ -270,7 +259,7 @@ class SheetWidget(QtWidgets.QWidget):
         )
 
         # update table views
-        n_targets = len(datum.targets.columns)
+        n_targets = 0  # len(datum.targets.columns)  # FIXME
         n_rows = min(
             get_setting(key='table/n_rows'),
             N_ROWS_MAX,
@@ -281,7 +270,7 @@ class SheetWidget(QtWidgets.QWidget):
         )
 
         for i in range(N_ROWS_MAX):
-            columns = datum.targets.columns[slice(n_columns*(i), n_columns*(i + 1))]
+            columns = datum.levels.index[slice(n_columns*(i), n_columns*(i + 1))]
 
             model = TableModel(
                 datum=datum.select(columns=columns),

@@ -38,13 +38,11 @@ class LastRecordFrame(QtWidgets.QFrame):
 
         # analysisLabel
         widget = self.findChild(QtWidgets.QLabel, 'analysisNameValueLavel')
-        widget.setText(getattr(datum, 'analysis_name', ''))
+        widget.setText(datum.meta.analysis_name)
 
         # sampleNameLabel
         widget = self.findChild(QtWidgets.QLabel, 'sampleNameValueLavel')
-        widget.setText(
-            getattr(datum, 'probe_name', ''),
-        )
+        widget.setText(datum.meta.probe_name)
 
 
 class StatInfoFrame(QtWidgets.QFrame):

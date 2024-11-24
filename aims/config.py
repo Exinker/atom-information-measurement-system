@@ -19,8 +19,8 @@ load_dotenv()
 
 
 # ---------        CONSTANTS        ---------
-DEBUG = False
-LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', logging.INFO)
+LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
+N_WORKERS = os.environ.get('N_WORKERS', 1)
 
 match sys.platform:
     case 'win32':
@@ -274,8 +274,7 @@ class Config(AbstractConfig):
 
     sep: str = field(default='*')
 
-    database_path: DatabasePath = field(default=DatabasePath(None))
-    n_workers: int = field(default=1)
+    # database_path: DatabasePath = field(default=DatabasePath(None))
 
     FILEPATH: ClassVar[str] = field(default=os.path.join(os.getcwd(), 'config.json'))
 
@@ -329,8 +328,7 @@ class Config(AbstractConfig):
 
                 sep=Separator(value=data['sep']),
 
-                database_path=DatabasePath(path=data['database_path']),
-                n_workers=1,  # TODO: add to config
+                # database_path=DatabasePath(path=data['database_path']),
             )
         except (json.JSONDecodeError, TypeError, ValueError, KeyError) as error:
             eprint(msg=f'{cls.__name__}.load: {error}')

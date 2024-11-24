@@ -42,7 +42,7 @@ def setdefault_logger():
 
         'formatters': {
             'file_formatter': {
-                'format': '[%(asctime)s.%(msecs)04d] %(levelname)-8s %(module)-40s - %(message)s',
+                'format': '[%(asctime)s.%(msecs)04d] %(levelname)-8s %(module)s - %(message)s',
             },
             'progress_window_formatter': {
                 'format': '%(message)s',

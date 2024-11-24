@@ -3,7 +3,7 @@ from functools import partial
 from multiprocessing import Pool
 from typing import Callable
 
-from aims.config import Config, TrackedMode
+from aims.config import Config, N_WORKERS, TrackedMode
 from aims.core.data.datum import (
     ConvergenceByParallelsDatum,
     ConvergenceByProbesDatum,
@@ -96,10 +96,10 @@ def get_worker(
         case _:
             raise NotImplementedError(f'Mode {config.tracked_mode} is not supported yet!')
 
-    if config.n_workers > 1:
+    if N_WORKERS > 1:
         return MultiprocessingWorker(
             factory=factory,
-            n_workers=config.n_workers,
+            n_workers=N_WORKERS,
         )
     return Worker(
         factory=factory,

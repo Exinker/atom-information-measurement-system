@@ -1,85 +1,57 @@
+import logging
 import os
 from dataclasses import dataclass
+from typing import ClassVar
 
 import numpy as np
 import pandas as pd
 
 from aims.config import Config
-from aims.core.data.datum import DatumABC
+from aims.core.atom_data import AtomData
+from aims.core.data.datum import (
+    DatumABC,
+    DatumMeta,
+    DatumSheet,
+)
 from aims.core.history import ConvergenceByParallelsHistory
-from aims.core.parsers.parsers import (
+from aims.core.parsers import (
     AggregateByParallelsAtomDataParser,
     cache,
 )
 from aims.core.types import Frame, ProbeGUID, Series
 from aims.core.utils.loaders import load_xml
-from aims.settings import FilterLevel, SorterKind
+from aims.settings import FilterLevel
+
+
+LOGGER = logging.getLogger('app')
+
+META_COLUMN_NAMES = [
+    'filepath',
+    'datetime',
+    'organization_name',
+    'device_name',
+    'user_name',
+    'analysis_name',
+    'probe_guid',
+    'probe_name',
+    'is_certified',
+    'parallel_name',
+]
+TARGET_ROW_NAMES = [
+    'Cред.',
+    'СКО',
+]
 
 
 @dataclass
 class ConvergenceByParallelsDatum(DatumABC):
-    probe_guid: ProbeGUID
-    meta: Frame
-    concentration: Frame
-    targets: Frame
+    sheet: DatumSheet
+    meta: DatumMeta
     levels: Series
 
-    def filtrate(self, level: FilterLevel) -> 'DatumABC':
-        """Filtrate `sheet` by selected level."""
-        cls = self.__class__
-
-        if self.levels.empty:  # no filtration
-            return self
-
-        columns = self.levels.index[self.levels >= level.value].to_list()
-        return cls(
-            probe_guid=self.probe_guid,
-            meta=self.meta,
-            concentration=self.concentration[columns],
-            targets=self.targets[columns],
-            levels=self.levels[columns],
-        )
-
-    def sort(self, kind: SorterKind) -> 'DatumABC':
-        """Sort `sheet` by selected kind."""
-        cls = self.__class__
-
-        match kind:
-            case SorterKind.NONE:
-                columns = self.targets.columns
-            case SorterKind.FILTER_LEVEL:
-                columns = self.targets.columns[np.argsort(-self.levels)]
-            case _:
-                raise NotImplementedError
-
-        return cls(
-            probe_guid=self.probe_guid,
-            meta=self.meta,
-            concentration=self.concentration[columns],
-            targets=self.targets[columns],
-            levels=self.levels[columns],
-        )
-
-    def select(self, columns: pd.Index) -> 'DatumABC':
-        """Select from `sheet` by index."""
-        cls = self.__class__
-
-        return cls(
-            probe_guid=self.probe_guid,
-            meta=self.meta,
-            concentration=self.concentration[columns],
-            targets=self.targets[columns],
-            levels=self.levels[columns],
-        )
-
-    def to_frame(self) -> Frame:
-        return pd.concat([
-            pd.concat([
-                self.meta,
-                self.concentration,
-            ], axis=1),
-            self.targets,
-        ])
+    META_COLUMN_NAMES: ClassVar = META_COLUMN_NAMES
+    META_COLUMN_NAMES_VISIBLE: ClassVar = ['parallel_name']
+    TARGET_ROW_NAMES: ClassVar = TARGET_ROW_NAMES
 
     @classmethod
     def from_history(
@@ -97,42 +69,43 @@ class ConvergenceByParallelsDatum(DatumABC):
         try:
             parser = AggregateByParallelsAtomDataParser(config=config)
 
-            meta, concentration, statistics = _parse_atom_data(filepath, parser=parser)
-            meta = pd.DataFrame(
-                meta,
-            ).reset_index(drop=True)
-            concentration = pd.DataFrame(
-                concentration,
-            ).reset_index(drop=True)
-            statistics = pd.DataFrame(
-                statistics,
-            ).reset_index(drop=True)
-        except (ValueError, KeyError):
+            # parse
+            atom_data = _parse_atom_data(filepath, parser=parser)
+
+            # filtrate
+            n_parallels = atom_data.meta.shape[0]
+
+            cond = np.full(n_parallels, True)
+            for j in range(n_parallels):
+
+                cond[j] = cond[j] and config.tracked_period.check(
+                    atom_data.meta.iloc[j]['datetime'],
+                    milestone=history.milestone,
+                )
+        except (ValueError, KeyError) as error:
+            LOGGER.warning('Atom data parse faild with error: %s', error)
             return cls.from_default()
 
-        nicknames = concentration.columns
-        levels = pd.DataFrame(
-            columns=nicknames,
-        )
-
-        values = pd.DataFrame(
-            {},
-            columns=nicknames,
-        )
-        for nickname in nicknames:
-            values[nickname] = pd.to_numeric(concentration[nickname], errors='coerce')
-
-        values = statistics.loc['ОСКО, %']
+        values = atom_data.statistics.loc['СКО']
         levels = pd.Series(FilterLevel.NORMAL.value, index=values.index)
         levels[values.isna()] = FilterLevel.NOTSET.value
-        levels[values >= 5] = FilterLevel.WARRING.value
-        levels[values >= 10] = FilterLevel.DANGER.value
 
         return cls(
-            probe_guid=probe_guid,
-            meta=meta,
-            concentration=concentration,
-            targets=statistics,
+            sheet=pd.concat([
+                pd.concat([
+                    atom_data.meta,
+                    atom_data.concentration,
+                ], axis=1),
+                atom_data.statistics,
+            ]),
+            meta=DatumMeta(
+                analysis_name=atom_data.meta['analysis_name'].unique().item(),
+                probe_name=atom_data.meta['probe_name'].unique().item(),
+                organization_name=atom_data.meta['organization_name'].unique().item(),
+                device_name=atom_data.meta['device_name'].unique().item(),
+                user_name=atom_data.meta['user_name'].unique().item(),
+                datetime=atom_data.meta['datetime'].max(),
+            ),
             levels=levels,
         )
 
@@ -141,39 +114,12 @@ class ConvergenceByParallelsDatum(DatumABC):
 def _parse_atom_data(
     __filepath: str,
     parser: AggregateByParallelsAtomDataParser,
-) -> tuple[Frame, Frame, Frame]:
-    filedir, filename = os.path.split(__filepath)
+) -> AtomData:
+
+    xml = load_xml(__filepath)
 
     atom_data = parser.parse(
-        xml=load_xml(__filepath),
+        __filepath,
+        xml=xml,
     )
-
-    meta = []
-    reference = []
-    concentration = []
-    for index in atom_data.rows.index:
-        meta.append({
-            'file_dir': filedir,
-            'file_name': filename,
-            'datetime': atom_data.rows.loc[index, 'datetime'],
-            'analysis_name': atom_data.meta.analysis_name,
-            'organization_name': atom_data.meta.organization_name,
-            'device_name': atom_data.meta.device_name,
-            'user_name': atom_data.meta.user_name,
-            'name': atom_data.rows.loc[index, 'name'],
-            'is_certified': atom_data.rows.loc[index, 'is_certified'],
-        })
-        concentration.append(dict(
-            **{
-                str(nickname): values
-                for nickname, values in atom_data.concentration.loc[index].to_dict().items()
-            },
-        ))
-        reference.append(dict(
-            **{
-                str(symbol): value
-                for symbol, value in atom_data.reference.loc[index].to_dict().items()
-            },
-        ))
-
-    return pd.DataFrame(meta), pd.DataFrame(reference), pd.DataFrame(concentration)
+    return atom_data

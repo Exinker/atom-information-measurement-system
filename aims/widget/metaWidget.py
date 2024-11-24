@@ -16,18 +16,18 @@ class LastRecordFrame(QtWidgets.QFrame):
         layout.setVerticalSpacing(0)
 
         widget = QtWidgets.QLabel(text='', parent=self)
-        widget.setObjectName('organizationLabel')
+        widget.setObjectName('organizationNameLabel')
         layout.addRow('Организация:', widget)
 
         widget = QtWidgets.QLabel(text='', parent=self)
-        widget.setObjectName('deviceLabel')
+        widget.setObjectName('deviceNameLabel')
         layout.addRow('Прибор:', widget)
 
         widget = QtWidgets.QLabel(text='', parent=self)
         layout.addRow('', widget)
 
         widget = QtWidgets.QLabel(text='', parent=self)
-        widget.setObjectName('userLabel')
+        widget.setObjectName('userNameLabel')
         layout.addRow('Оператор:', widget)
 
         widget = QtWidgets.QLabel(text='', parent=self)
@@ -39,7 +39,7 @@ class LastRecordFrame(QtWidgets.QFrame):
 
         widget = QtWidgets.QLabel(text='', parent=self)
         widget.setObjectName('probeNameLabel')
-        layout.addRow('Образц:', widget)
+        layout.addRow('Образец:', widget)
 
         widget = QtWidgets.QLabel(text='', parent=self)
         widget.setObjectName('probeDateLabel')
@@ -52,31 +52,32 @@ class LastRecordFrame(QtWidgets.QFrame):
     # --------        slots        --------
     def _onRefreshTriggered(self):
         app = QtWidgets.QApplication.instance()
-
         datum = app.data.last_datum
-        meta = datum.last_meta
+        meta = datum.meta
 
-        if meta is None:  # FIXME: remove it
-            return
-
-        widget = self.findChild(QtWidgets.QLabel, 'organizationLabel')
+        widget = self.findChild(QtWidgets.QLabel, 'organizationNameLabel')
         widget.setText(
             f'<strong>{meta.organization_name}</strong>',
         )
 
-        widget = self.findChild(QtWidgets.QLabel, 'deviceLabel')
+        widget = self.findChild(QtWidgets.QLabel, 'deviceNameLabel')
         widget.setText(
             f'<strong>{meta.device_name}</strong>',
         )
 
-        widget = self.findChild(QtWidgets.QLabel, 'userLabel')
+        widget = self.findChild(QtWidgets.QLabel, 'userNameLabel')
         widget.setText(
             f'{meta.user_name}',
         )
 
+        widget = self.findChild(QtWidgets.QLabel, 'analysisNameLabel')
+        widget.setText(
+            f'{meta.analysis_name}',
+        )
+
         widget = self.findChild(QtWidgets.QLabel, 'probeNameLabel')
         widget.setText(
-            f'{meta.name}',
+            f'{meta.probe_name}',
         )
 
         widget = self.findChild(QtWidgets.QLabel, 'probeDateLabel')
@@ -87,11 +88,6 @@ class LastRecordFrame(QtWidgets.QFrame):
         widget = self.findChild(QtWidgets.QLabel, 'probeTimeLabel')
         widget.setText(
             f'{meta.datetime.time()}',
-        )
-
-        widget = self.findChild(QtWidgets.QLabel, 'analysisNameLabel')
-        widget.setText(
-            f'{meta.analysis_name}',
         )
 
 

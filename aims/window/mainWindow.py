@@ -144,8 +144,8 @@ class MainWindow(BaseMainWindow):
 
             return '{application_name} - [{analysis_name} / {probe_name}] - [{datetime_updated}]'.format(
                 application_name=aims.__name__,
-                analysis_name=getattr(datum, 'analysis_name', ''),
-                probe_name=getattr(datum, 'probe_name', ''),
+                analysis_name=datum.meta.analysis_name,
+                probe_name=datum.meta.probe_name,
                 datetime_updated=app.milestone.strftime('%Y-%m-%d %H:%M:%S'),
             )
 

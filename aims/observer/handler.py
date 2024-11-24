@@ -7,17 +7,18 @@ from PySide6 import QtCore
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 
 
+LOGGER = logging.getLogger('app')
+
+
 class Bridge(QtCore.QObject):
     updated = QtCore.Signal(FileSystemEvent)
 
 
 class ObserverEventHandler(FileSystemEventHandler):
 
-    def __init__(self, callback: Callable, logger: Logger = None):
+    def __init__(self, callback: Callable):
         self.bridge = Bridge()
         self.bridge.updated.connect(callback)
-
-        self.logger = logger or logging.root
 
     def on_created(self, event):
         self._on_emitted(event, kind='created')
@@ -34,6 +35,6 @@ class ObserverEventHandler(FileSystemEventHandler):
             filedir, filename = os.path.split(event.src_path)
 
             if filename.endswith('.xml'):
-                self.logger.info('observer: %s file: %s', kind, event.src_path)
+                LOGGER.info('Observer: %s file %s', kind, event.src_path)
 
                 self.bridge.updated.emit(event)
