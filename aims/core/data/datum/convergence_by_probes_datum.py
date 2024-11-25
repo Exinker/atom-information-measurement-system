@@ -15,6 +15,7 @@ from aims.core.data.datum import (
 from aims.core.history import ConvergenceByProbesHistory
 from aims.core.parsers import (
     AggregateByProbesAtomDataParser,
+    ParserCache,
     cache,
 )
 from aims.core.types import AnalysisName, Frame, ProbeName, Series
@@ -142,7 +143,7 @@ class ConvergenceByProbesDatum(DatumABC):
         )
 
 
-@cache
+@cache(cache=ParserCache(method='parse'))
 def _process_atom_data(
     __filepath: str,
     parser: AggregateByProbesAtomDataParser,

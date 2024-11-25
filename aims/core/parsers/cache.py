@@ -1,33 +1,39 @@
 import functools
+import logging
+from collections import defaultdict
 
 from aims.core.types import XMLPath
 
 
+LOGGER = logging.getLogger('app')
+
+
 class ParserCache:
-    instance = None
-    storage = {}
+    storages = defaultdict(dict)
 
-    def __new__(cls) -> 'ParserCache':
-        if cls.instance is None:
-            cls.instance = super().__new__(cls)
-
-        return cls.instance
+    def __init__(self, method: str) -> None:
+        self.storage = self.storages[method]
 
     @classmethod
     def clear(cls) -> None:
-        cls.storage = {}
+        methods = cls.storages.keys()
+
+        LOGGER.info('Clear cache storages: %r.', methods)
+        for method in methods:
+            cls.storages[method].clear()
 
 
-def cache(func):
-    cache = ParserCache()
+def cache(cache: ParserCache):
 
-    @functools.wraps(func)
-    def wrapped(__filepath: XMLPath, *args, **kwargs):
-        key = hash(__filepath)
+    def inner(func):
 
-        if key not in cache.storage:
-            cache.storage[key] = func(__filepath, *args, **kwargs)
+        @functools.wraps(func)
+        def wrapped(__filepath: XMLPath, *args, **kwargs):
+            key = hash(__filepath)
+            if key not in cache.storage:
+                cache.storage[key] = func(__filepath, *args, **kwargs)
 
-        return cache.storage[key]
+            return cache.storage[key]
 
-    return wrapped
+        return wrapped
+    return inner

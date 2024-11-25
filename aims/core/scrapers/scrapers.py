@@ -1,8 +1,13 @@
 from datetime import datetime
+from typing import Any, Mapping
 
 import pandas as pd
 
 from aims.config import Directory, TrackedPediod
+from aims.core.parsers import (
+    ParserCache,
+    cache,
+)
 from aims.core.scrapers.utils import (
     validate_file,
     validate_xml,
@@ -37,67 +42,95 @@ class Scraper:
 
         records = []
         for filepath in walk(self.directory):
-
-            if validate_file(filepath, milestone=self.milestone, tracked_period=self.tracked_period):
-                xml = load_xml(filepath)
-
-                if validate_xml(xml):
-                    analysis_name = self._scrape_analysis(xml)
-                    probes = self._scrape_probes(xml)
-
-                    for probe_guid in probes.index:
-                        is_tracked = self.tracked_period.check(probes.loc[probe_guid, 'datetime'], milestone=self.milestone)
-                        if is_tracked:
-                            records.append({
-                                'analysis_name': analysis_name,
-                                'probe_name': probes.loc[probe_guid, 'name'],
-                                'probe_guid': probes.loc[probe_guid, 'probe_guid'],
-                                'datetime': probes.loc[probe_guid, 'datetime'],
-                                'path': filepath,
-                            })
+            record = _scrape_xml(
+                filepath,
+                milestone=self.milestone,
+                tracked_period=self.tracked_period,
+                sep=self.sep,
+            )
+            if record is not None:
+                records.append(record)
 
         return pd.DataFrame(
             records,
             columns=['analysis_name', 'probe_name', 'probe_guid', 'datetime', 'path'],
         )
 
-    def _scrape_analysis(self, xml: XML) -> AnalysisName:
-        """Parse analysis from given Atom's `xml`."""
 
-        try:
-            analysis_name = xml.find('titul').find('aname').text
-        except AttributeError:
-            return ''
-        else:
-            return analysis_name
+@cache(cache=ParserCache(method='scrape'))
+def _scrape_xml(
+    __filepath: str,
+    milestone: datetime,
+    tracked_period: TrackedPediod,
+    sep: str,
+) -> Mapping[str, Any]:
 
-    def _scrape_probes(self, xml: XML) -> Frame:
-        """Parse probes data from given Atom's `xml`."""
-        default_probes = pd.DataFrame(
-            columns=['probe_guid', 'id', 'name', 'datetime', 'is_certified'],
-        ).set_index('probe_guid', drop=False)
+    if validate_file(
+        __filepath,
+        milestone=milestone,
+        tracked_period=tracked_period,
+    ):
+        xml = load_xml(__filepath)
 
-        try:
-            probes = default_probes.copy()
-            for probe in xml.find('probes').findall('probe'):
+        if validate_xml(xml):
+            analysis_name = _scrape_analysis(xml)
+            probes = _scrape_probes(xml, sep=sep)
 
-                is_not_empty = len(probe.findall('spe')) > 0
-                if is_not_empty:
-                    try:
-                        probe_guid = probe.find('sample/guid').text
-                    except AttributeError:
-                        # FIXME: remove capability with old version XML files!
-                        probe_guid = probe.attrib['id']
+            for probe_guid in probes.index:
+                is_tracked = tracked_period.check(probes.loc[probe_guid, 'datetime'], milestone=milestone)
+                if is_tracked:
+                    return {
+                        'analysis_name': analysis_name,
+                        'probe_name': probes.loc[probe_guid, 'name'],
+                        'probe_guid': probes.loc[probe_guid, 'probe_guid'],
+                        'datetime': probes.loc[probe_guid, 'datetime'],
+                        'path': __filepath,
+                    }
 
-                    probes.loc[probe_guid, 'probe_guid'] = probe_guid
-                    probes.loc[probe_guid, 'id'] = int(probe.attrib['id'])
-                    probes.loc[probe_guid, 'name'] = normalize_name(probe.attrib['name'], sep=self.sep)
-                    probes.loc[probe_guid, 'datetime'] = normalize_datetime(probe.find('date[@type="last"]').text)
-                    probes.loc[probe_guid, 'is_certified'] = {
-                        'yes': True,
-                        'no': False,
-                    }.get(probe.attrib.get('COC', 'no'))
-        except AttributeError:
-            return default_probes
-        else:
-            return probes
+    return None
+
+
+def _scrape_analysis(xml: XML) -> AnalysisName:
+    """Parse analysis from given Atom's `xml`."""
+
+    try:
+        analysis_name = xml.find('titul').find('aname').text
+    except AttributeError:
+        return ''
+    else:
+        return analysis_name
+
+
+def _scrape_probes(
+    xml: XML,
+    sep: str,
+) -> Frame:
+    """Parse probes data from given Atom's `xml`."""
+    default_probes = pd.DataFrame(
+        columns=['probe_guid', 'id', 'name', 'datetime', 'is_certified'],
+    ).set_index('probe_guid', drop=False)
+
+    try:
+        probes = default_probes.copy()
+        for probe in xml.find('probes').findall('probe'):
+
+            is_not_empty = len(probe.findall('spe')) > 0
+            if is_not_empty:
+                try:
+                    probe_guid = probe.find('sample/guid').text
+                except AttributeError:
+                    # FIXME: remove capability with old version XML files!
+                    probe_guid = probe.attrib['id']
+
+                probes.loc[probe_guid, 'probe_guid'] = probe_guid
+                probes.loc[probe_guid, 'id'] = int(probe.attrib['id'])
+                probes.loc[probe_guid, 'name'] = normalize_name(probe.attrib['name'], sep=sep)
+                probes.loc[probe_guid, 'datetime'] = normalize_datetime(probe.find('date[@type="last"]').text)
+                probes.loc[probe_guid, 'is_certified'] = {
+                    'yes': True,
+                    'no': False,
+                }.get(probe.attrib.get('COC', 'no'))
+    except AttributeError:
+        return default_probes
+    else:
+        return probes

@@ -112,11 +112,29 @@ class AggregateByParallelsAtomDataParser(AtomDataParserABC):
 
                         concentration.loc[parallel_id, line['nickname']] = parallel.attrib.get('v', '')
 
-                    statistics.loc['Cред.', line['nickname']] = probe.find('am').attrib.get('v', '')
-                    statistics.loc['СКО', line['nickname']] = probe.find('sr').attrib.get('v', '')
+                    statistics.loc['Cред.', line['nickname']] = _parse_mean(probe)
+                    statistics.loc['СКО', line['nickname']] = _parse_standard_deviation(probe)
 
         return AtomData(
             meta=meta,
             concentration=concentration,
             statistics=statistics,
         )
+
+
+def _parse_mean(__probe: XML) -> str:
+
+    element = __probe.find('am')
+    if element is None:
+        return ''
+
+    return element.attrib.get('v', '')
+
+
+def _parse_standard_deviation(probe: XML) -> str:
+
+    element = probe.find('sr')
+    if element is None:
+        return ''
+
+    return element.attrib.get('v', '')

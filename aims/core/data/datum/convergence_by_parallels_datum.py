@@ -16,6 +16,7 @@ from aims.core.data.datum import (
 from aims.core.history import ConvergenceByParallelsHistory
 from aims.core.parsers import (
     AggregateByParallelsAtomDataParser,
+    ParserCache,
     cache,
 )
 from aims.core.types import Frame, ProbeGUID, Series
@@ -110,7 +111,7 @@ class ConvergenceByParallelsDatum(DatumABC):
         )
 
 
-@cache
+@cache(cache=ParserCache(method='parse'))
 def _parse_atom_data(
     __filepath: str,
     parser: AggregateByParallelsAtomDataParser,
