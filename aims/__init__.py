@@ -3,7 +3,7 @@
 from datetime import datetime
 
 
-__version__ = '0.3.1a'
+__version__ = '0.3.1'
 
 __name__ = 'Atom Information Measurement System'
 __author__ = 'Pavel Vaschenko'
