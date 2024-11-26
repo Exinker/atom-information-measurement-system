@@ -16,10 +16,7 @@ def run_explorer(path: XMLPath):
         return
 
     try:
-        LOGGER.info(
-            'Open explorer in: %r',
-            path,
-        )
+        LOGGER.info('Open explorer in: %r', path)
 
         path = os.path.normpath(path)
         if os.path.isdir(path):

@@ -12,10 +12,12 @@ from dotenv import load_dotenv
 import pandas as pd
 
 from spectrumapp.config import AbstractConfig
-from spectrumapp.exceptions import eprint
 
 
 load_dotenv()
+
+
+LOGGER = logging.getLogger('app')
 
 
 # ---------        CONSTANTS        ---------
@@ -302,16 +304,19 @@ class Config(AbstractConfig):
     def load(cls) -> 'Config':
         """Load config from file (json)."""
 
-        # load data
         try:
             data = cls._load()
         except FileNotFoundError as error:
-            eprint(msg=f'{cls.__name__}.load: {error}')
+            LOGGER.warning('Load config failed with %s: %s', type(error).__name__, error)
 
             setdefault_config()
             return cls.load()
+        except json.JSONDecodeError as error:
+            LOGGER.warning('Load config failed with %s: %s', type(error).__name__, error)
 
-        # parse data
+            setdefault_config(force=True)
+            return cls.load()
+
         try:
             config = Config(
                 version=data['version'],
@@ -330,13 +335,17 @@ class Config(AbstractConfig):
 
                 # database_path=DatabasePath(path=data['database_path']),
             )
-        except (json.JSONDecodeError, TypeError, ValueError, KeyError) as error:
-            eprint(msg=f'{cls.__name__}.load: {error}')
+        except (
+            KeyError,
+            TypeError,
+            ValueError,
+        ) as error:
+            LOGGER.warning('Load config failed with %s: %s', type(error).__name__, error)
 
             setdefault_config(force=True)
             return cls.load()
-
-        return config
+        else:
+            return config
 
     @classmethod
     def _default(cls) -> Mapping[str, str | int | float | list]:

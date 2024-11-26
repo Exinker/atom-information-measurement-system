@@ -83,7 +83,7 @@ class ConvergenceByParallelsDatum(DatumABC):
                     milestone=history.milestone,
                 )
         except Exception as error:  # add custom exceptions
-            LOGGER.warning('Atom data parse faild with error: %s', error)
+            LOGGER.warning('Atom data parse faild with %s: %s', type(error).__name__, error)
             return cls.from_default()
 
         values = atom_data.statistics.loc['СКО']

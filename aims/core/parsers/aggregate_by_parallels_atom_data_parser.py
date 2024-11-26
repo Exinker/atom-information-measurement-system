@@ -57,10 +57,7 @@ class AggregateByParallelsAtomDataParser(AtomDataParserABC):
                 filtrated_by_label=self.config.filtrated_by_label,
             )
         except Exception as error:
-            LOGGER.warning(
-                'XML parse failed with error: %s',
-                error,
-            )
+            LOGGER.warning('XML parse failed with %s: %s', type(error).__name__, error)
             raise
         else:
             LOGGER.debug('XML is parsed.')
