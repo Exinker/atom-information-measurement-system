@@ -1,3 +1,4 @@
+import logging
 from warnings import simplefilter
 
 import pandas as pd
@@ -15,6 +16,9 @@ from aims.core.utils.formatters import normalize_datetime
 
 
 simplefilter(action="ignore", category=pd.errors.PerformanceWarning)  # FIXME
+
+
+LOGGER = logging.getLogger('app')
 
 
 class AggregateByParallelsAtomDataParser(AtomDataParserABC):
@@ -44,12 +48,23 @@ class AggregateByParallelsAtomDataParser(AtomDataParserABC):
     ) -> AtomData:
         """Get recorded data from Atom's .xml file."""
 
-        return self._parse(
-            xml=xml,
-            filepath=__filepath,
-            filtrated_by_sheet=self.config.filtrated_by_sheet,
-            filtrated_by_label=self.config.filtrated_by_label,
-        )
+        LOGGER.debug('Parse XML.')
+        try:
+            data = self._parse(
+                xml=xml,
+                filepath=__filepath,
+                filtrated_by_sheet=self.config.filtrated_by_sheet,
+                filtrated_by_label=self.config.filtrated_by_label,
+            )
+        except Exception as error:
+            LOGGER.warning(
+                'XML parse failed with error: %s',
+                error,
+            )
+            raise
+        else:
+            LOGGER.debug('XML is parsed.')
+            return data
 
     @classmethod
     def _parse(

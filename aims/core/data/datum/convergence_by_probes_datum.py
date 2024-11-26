@@ -1,4 +1,4 @@
-import os
+import logging
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -18,10 +18,13 @@ from aims.core.parsers import (
     ParserCache,
     cache,
 )
-from aims.core.types import AnalysisName, Frame, ProbeName, Series
+from aims.core.types import AnalysisName, ProbeName, Series
 from aims.core.utils.formatters import normalize_name
 from aims.core.utils.loaders import load_xml
 from aims.settings import FilterLevel
+
+
+LOGGER = logging.getLogger('app')
 
 
 @dataclass
@@ -97,7 +100,8 @@ class ConvergenceByProbesDatum(DatumABC):
             concentration = pd.DataFrame(
                 pd.concat(concentration),
             ).reset_index(drop=True)
-        except (ValueError, KeyError):
+        except Exception as error:  # add custom exceptions
+            LOGGER.warning('Atom data parse faild with error: %s', error)
             return cls.from_default()
 
         # targets and levels

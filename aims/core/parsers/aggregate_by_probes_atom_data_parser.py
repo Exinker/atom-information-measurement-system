@@ -5,13 +5,13 @@ import pandas as pd
 
 from aims.config import Config, FiltratedLabel, FiltratedSheet
 from aims.core.atom_data import AtomData
-from aims.core.types import XML, XMLPath
 from aims.core.parsers.base_atom_data_parser import AtomDataParserABC
 from aims.core.parsers.utils import (
     find_columns,
     find_sheets,
     parse_column,
 )
+from aims.core.types import XML, XMLPath
 from aims.core.utils.formatters import normalize_datetime
 
 
@@ -86,11 +86,7 @@ class AggregateByProbesAtomDataParser(AtomDataParserABC):
 
             is_not_empty = len(probe.findall('spe')) > 0
             if is_not_empty:
-                try:
-                    probe_guid = probe.find('sample/guid').text
-                except AttributeError:
-                    # FIXME: remove capability with old version XML files!
-                    probe_guid = probe.attrib['id']
+                probe_guid = parse_probe_guid(probe)
 
                 meta.loc[probe_guid, 'filepath'] = filepath
                 meta.loc[probe_guid, 'organization_name'] = organization_name
@@ -123,3 +119,14 @@ class AggregateByProbesAtomDataParser(AtomDataParserABC):
             meta=meta,
             concentration=concentration,
         )
+
+
+def parse_probe_guid(__probe: XML) -> str:
+    # FIXME: remove capability with old version XML files!
+
+    try:
+        probe_guid = __probe.find('sample/guid').text
+    except AttributeError:
+        probe_guid = __probe.attrib['id']
+
+    return probe_guid

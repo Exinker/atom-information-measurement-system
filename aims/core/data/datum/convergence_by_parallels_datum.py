@@ -1,5 +1,4 @@
 import logging
-import os
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -19,7 +18,7 @@ from aims.core.parsers import (
     ParserCache,
     cache,
 )
-from aims.core.types import Frame, ProbeGUID, Series
+from aims.core.types import ProbeGUID, Series
 from aims.core.utils.loaders import load_xml
 from aims.settings import FilterLevel
 
@@ -83,7 +82,7 @@ class ConvergenceByParallelsDatum(DatumABC):
                     atom_data.meta.iloc[j]['datetime'],
                     milestone=history.milestone,
                 )
-        except (ValueError, KeyError) as error:
+        except Exception as error:  # add custom exceptions
             LOGGER.warning('Atom data parse faild with error: %s', error)
             return cls.from_default()
 
