@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 
 from PySide6 import QtCore, QtWidgets
+from watchdog.events import FileSystemEvent
 
 import aims
 from aims.config import Config
@@ -25,6 +26,9 @@ try:  # change app id for correct icon present
 
 except ImportError:
     pass
+
+
+LOGGER = logging.getLogger('app')
 
 
 class Application(QtWidgets.QApplication):
@@ -67,23 +71,18 @@ class Application(QtWidgets.QApplication):
     def _setup_observer(self) -> None:
         """Setup tracked path observer."""
 
-        # observer's handler
-        handler = ObserverEventHandler(callback=self.reset)
-
-        # observer's path
-        path = os.path.abspath(
-            path=get_setting('config/directory'),
-        )
-
-        # setup observer
-        observer = Observer()
-        observer.schedule(handler, path=path, recursive=True)
-        observer.start()
-
-        # update (if needed) current observer
         if self.observer is not None:
             self.observer.stop()
 
+        observer = Observer()
+        observer.schedule(
+            event_handler=ObserverEventHandler(callback=self.reset),
+            path=os.path.abspath(
+                path=get_setting('config/directory'),
+            ),
+            recursive=True,
+        )
+        observer.start()
         self.observer = observer
 
     # --------        slots        --------
@@ -100,15 +99,22 @@ class Application(QtWidgets.QApplication):
     @log(message='app: reset')
     # @splashscreen()
     @wait
-    def reset(self, *args, force: bool = False, **kwargs):
+    def reset(self, event: FileSystemEvent | None = None, force: bool = False, **kwargs):
         """Reset an application: update observer (if `force == True`), sheets and windows."""
+        started_at = time.perf_counter()
 
         if force:
             self._setup_observer()
             ParserCache.clear()
 
+        if event:
+            match event.event_type:
+                case 'modified':
+                    ParserCache.clear(
+                        filepath=event.src_path,
+                    )
+
         self._update_milestone()
-        start = time.perf_counter()
         self._update_data()
-        print(f'elapsed: {time.perf_counter() - start:.4f}, s')
         self._update_window()
+        LOGGER.info('Elapsed time: %s, s', time.perf_counter() - started_at)

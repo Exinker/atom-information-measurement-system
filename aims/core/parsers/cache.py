@@ -9,18 +9,27 @@ LOGGER = logging.getLogger('app')
 
 
 class ParserCache:
-    storages = defaultdict(dict)
+    storeges = defaultdict(dict)
 
-    def __init__(self, method: str) -> None:
-        self.storage = self.storages[method]
+    def __init__(self, field: str) -> None:
+        self.storage = self.storeges[field]
 
     @classmethod
-    def clear(cls) -> None:
-        methods = cls.storages.keys()
+    def clear(cls, filepath: str | None = None) -> None:
+        fields = cls.storeges.keys()
 
-        LOGGER.info('Clear cache storages: %r.', methods)
-        for method in methods:
-            cls.storages[method].clear()
+        if filepath is None:
+            LOGGER.info('Clear caches.')
+            for field in fields:
+                cls.storeges[field].clear()
+
+        else:
+            LOGGER.info('Clear caches for: %r.', filepath)
+
+            key = hash(filepath)
+            for field in fields:
+                if key in cls.storeges[field]:
+                    del cls.storeges[field][key]
 
 
 def cache(cache: ParserCache):

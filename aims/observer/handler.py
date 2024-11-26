@@ -1,6 +1,5 @@
 import logging
 import os
-from logging import Logger
 from typing import Callable, Literal
 
 from PySide6 import QtCore
@@ -36,5 +35,4 @@ class ObserverEventHandler(FileSystemEventHandler):
 
             if filename.endswith('.xml'):
                 LOGGER.info('Observer: %s file %s', kind, event.src_path)
-
                 self.bridge.updated.emit(event)

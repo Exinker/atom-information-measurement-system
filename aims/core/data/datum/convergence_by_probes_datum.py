@@ -147,7 +147,7 @@ class ConvergenceByProbesDatum(DatumABC):
         )
 
 
-@cache(cache=ParserCache(method='parse'))
+@cache(cache=ParserCache(field='parser'))
 def _process_atom_data(
     __filepath: str,
     parser: AggregateByProbesAtomDataParser,

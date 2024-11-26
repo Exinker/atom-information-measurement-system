@@ -110,7 +110,7 @@ class ConvergenceByParallelsDatum(DatumABC):
         )
 
 
-@cache(cache=ParserCache(method='parse'))
+@cache(cache=ParserCache(field='parser'))
 def _parse_atom_data(
     __filepath: str,
     parser: AggregateByParallelsAtomDataParser,

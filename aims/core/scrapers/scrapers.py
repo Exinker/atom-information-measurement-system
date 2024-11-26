@@ -57,7 +57,7 @@ class Scraper:
         )
 
 
-@cache(cache=ParserCache(method='scrape'))
+@cache(cache=ParserCache(field='scraper'))
 def _scrape_xml(
     __filepath: str,
     milestone: datetime,
