@@ -19,13 +19,23 @@ class ObserverEventHandler(FileSystemEventHandler):
         self.bridge = Bridge()
         self.bridge.updated.connect(callback)
 
-    def on_created(self, event):
+    def on_created(self, event: FileSystemEvent):
         self._on_emitted(event, kind='created')
+
+    def on_deleted(self, event: FileSystemEvent):
+        self._on_emitted(event, kind='deleted')
 
     def on_modified(self, event: FileSystemEvent):
         self._on_emitted(event, kind='modified')
 
-    def _on_emitted(self, event: FileSystemEvent, kind: Literal['created', 'modified']):
+    def on_moved(self, event: FileSystemEvent):
+        self._on_emitted(event, kind='moved')
+
+    def _on_emitted(
+        self,
+        event: FileSystemEvent,
+        kind: Literal['created', 'deleted', 'modified', 'moved'],
+    ):
 
         if event.is_directory:
             pass  # TODO: может ли добавляться папка?
@@ -34,5 +44,9 @@ class ObserverEventHandler(FileSystemEventHandler):
             filedir, filename = os.path.split(event.src_path)
 
             if filename.endswith('.xml'):
-                LOGGER.info('Observer: %s file %s', kind, event.src_path)
-                self.bridge.updated.emit(event)
+                match kind:
+                    case 'created' | 'modified':
+                        LOGGER.info('Observer: %s file %s', kind, event.src_path)
+                        self.bridge.updated.emit(event)
+                    case _:
+                        LOGGER.debug('Observer: %s file %s', kind, event.src_path)

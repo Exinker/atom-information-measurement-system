@@ -15,7 +15,6 @@ from aims.settings import get_setting
 from aims.window.mainWindow import MainWindow
 from spectrumapp.loggers import log
 from spectrumapp.utils.handler import wait
-# from spectrumapp.swindows.splashScreenWindow import splashscreen
 
 
 try:  # change app id for correct icon present
@@ -49,7 +48,6 @@ class Application(QtWidgets.QApplication):
     def _update_milestone(self) -> None:
         self.milestone = datetime.now()
 
-    # @splashscreen(progress=50, info='<strong>PARSING</strong> xml files...')
     def _update_data(self) -> None:
 
         self.data = data_factory(
@@ -60,13 +58,11 @@ class Application(QtWidgets.QApplication):
     def _update_window(self) -> None:
         self.window._onRefreshTriggered()
 
-    # @splashscreen(progress=10, info='<strong>LOADING</strong> interface...')
     def _setup_window(self, *args, **kwargs) -> None:
         self.window = MainWindow(
             flags=QtCore.Qt.Window | QtCore.Qt.WindowStaysOnTopHint,
         )
 
-    # @splashscreen(progress=30, info='<strong>SETTING</strong> a watcher...')
     def _setup_observer(self) -> None:
         """Setup observer for tracked path."""
 
@@ -81,7 +77,6 @@ class Application(QtWidgets.QApplication):
         self.observer.start()
 
     # --------        slots        --------
-    # @splashscreen()
     @wait
     def run(self, *args, **kwargs):
         """Run an application."""
@@ -92,7 +87,6 @@ class Application(QtWidgets.QApplication):
         self.update()
 
     @log(message='app: update')
-    # @splashscreen()
     @wait
     def update(self):
         started_at = time.perf_counter()
@@ -103,9 +97,13 @@ class Application(QtWidgets.QApplication):
         LOGGER.info('Update app elapsed time: %s, s.', time.perf_counter() - started_at)
 
     @log(message='app: reset')
-    # @splashscreen()
     @wait
-    def reset(self, event: FileSystemEvent | None = None, force: bool = False, **kwargs):
+    def reset(
+        self,
+        event: FileSystemEvent | None = None,  # have to be the first argument!
+        force: bool = False,
+        **kwargs,
+    ):
 
         if force:
             self.observer.stop()

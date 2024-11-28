@@ -6,7 +6,6 @@ from PySide6 import QtGui
 
 from aims.config import LOGGING_LEVEL
 from spectrumapp.utils import find_window
-# from spectrumapp.windows.splashScreenWindow import splashscreen
 
 
 class ProgressWindowHandler(logging.StreamHandler):
@@ -33,7 +32,6 @@ class ProgressWindowHandler(logging.StreamHandler):
         self.flush()
 
 
-# @splashscreen(progress=0, info='<strong>SET DEFAULT</strong> logging...')
 def setdefault_logger():
 
     config = {
