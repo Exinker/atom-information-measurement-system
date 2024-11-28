@@ -9,7 +9,7 @@ from watchdog.events import FileSystemEvent
 import aims
 from aims.config import Config
 from aims.core.data import data_factory
-from aims.core.parsers import ParserCache
+from aims.core.parsers import CacheManager
 from aims.observer import Observer, ObserverEventHandler
 from aims.settings import get_setting
 from aims.window.mainWindow import MainWindow
@@ -69,21 +69,17 @@ class Application(QtWidgets.QApplication):
 
     # @splashscreen(progress=30, info='<strong>SETTING</strong> a watcher...')
     def _setup_observer(self) -> None:
-        """Setup tracked path observer."""
+        """Setup observer for tracked path."""
 
-        if self.observer is not None:
-            self.observer.stop()
-
-        observer = Observer()
-        observer.schedule(
+        self.observer = Observer()
+        self.observer.schedule(
             event_handler=ObserverEventHandler(callback=self.reset),
             path=os.path.abspath(
                 path=get_setting('config/directory'),
             ),
             recursive=True,
         )
-        observer.start()
-        self.observer = observer
+        self.observer.start()
 
     # --------        slots        --------
     # @splashscreen()
@@ -104,13 +100,15 @@ class Application(QtWidgets.QApplication):
         started_at = time.perf_counter()
 
         if force:
+            self.observer.stop()
             self._setup_observer()
-            ParserCache.clear()
+
+            CacheManager.clear()
 
         if event:
             match event.event_type:
                 case 'modified':
-                    ParserCache.clear(
+                    CacheManager.remove(
                         filepath=event.src_path,
                     )
 
