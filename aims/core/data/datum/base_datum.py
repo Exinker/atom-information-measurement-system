@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from aims.config import Config
-from aims.core.history import HistoryABC
+from aims.core.index import IndexABC
 from aims.core.types import AnalysisName, ProbeName, Series
 from aims.settings import FilterLevel, SorterKind
 
@@ -100,13 +100,13 @@ class DatumABC:
 
     @classmethod
     @abstractmethod
-    def from_history(
+    def from_index(
         cls,
-        history: HistoryABC,
+        index: IndexABC,
         analysis_name: AnalysisName,
         probe_name: ProbeName,
         config: Config,
     ) -> 'DatumABC':
-        """Get `sheet` from history."""
+        """Get `sheet` from index."""
 
         raise NotImplementedError

@@ -4,9 +4,9 @@ from datetime import datetime
 from aims.config import Config
 from aims.core.data.datum import DatumABC
 from aims.core.data.workers import get_worker
-from aims.core.history import (
-    ConvergenceByParallelsHistory,
-    ConvergenceByProbesHistory,
+from aims.core.index import (
+    ConvergenceByParallelsIndex,
+    ConvergenceByProbesIndex,
 )
 
 
@@ -47,17 +47,17 @@ class ConvergenceByProbesData(DataABC):
         config: Config,
     ) -> 'ConvergenceByProbesData':
 
-        history = ConvergenceByProbesHistory.create(
+        index = ConvergenceByProbesIndex.create(
             milestone=milestone,
             directory=config.directory,
             tracked_period=config.tracked_period,
             sep=config.sep,
         )
 
-        tracked_analysis_name = history.get_tracked_analysis_name(
+        tracked_analysis_name = index.get_tracked_analysis_name(
             config=config,
         )
-        tracked_probe_names = history.get_tracked_probe_names(
+        tracked_probe_names = index.get_tracked_probe_names(
             config=config,
             tracked_analysis_name=tracked_analysis_name,
         )
@@ -68,7 +68,7 @@ class ConvergenceByProbesData(DataABC):
         items = worker.run(
             tracked_probe_names,
             analysis_name=tracked_analysis_name,
-            history=history,
+            index=index,
             config=config,
         )
         return cls(
@@ -85,14 +85,14 @@ class ConvergenceByParallelsData(DataABC):
         config: Config,
     ) -> 'ConvergenceByParallelsData':
 
-        history = ConvergenceByParallelsHistory.create(
+        index = ConvergenceByParallelsIndex.create(
             milestone=milestone,
             directory=config.directory,
             tracked_period=config.tracked_period,
             sep=config.sep,
         )
 
-        tracked_probe_guids = history.get_tracked_probe_guids(
+        tracked_probe_guids = index.get_tracked_probe_guids(
             config=config,
         )
 
@@ -101,7 +101,7 @@ class ConvergenceByParallelsData(DataABC):
         )
         items = worker.run(
             tracked_probe_guids,
-            history=history,
+            index=index,
             config=config,
         )
         return cls(

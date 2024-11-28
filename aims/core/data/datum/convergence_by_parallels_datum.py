@@ -7,17 +7,17 @@ import pandas as pd
 
 from aims.config import Config
 from aims.core.atom_data import AtomData
+from aims.core.cache import (
+    CacheManager,
+    cache,
+)
 from aims.core.data.datum import (
     DatumABC,
     DatumMeta,
     DatumSheet,
 )
-from aims.core.history import ConvergenceByParallelsHistory
-from aims.core.parsers import (
-    AggregateByParallelsAtomDataParser,
-    ParserCache,
-    cache,
-)
+from aims.core.index import ConvergenceByParallelsIndex
+from aims.core.parsers import AggregateByParallelsAtomDataParser
 from aims.core.types import ProbeGUID, Series
 from aims.core.utils.loaders import load_xml
 from aims.settings import FilterLevel
@@ -54,15 +54,15 @@ class ConvergenceByParallelsDatum(DatumABC):
     TARGET_ROW_NAMES: ClassVar = TARGET_ROW_NAMES
 
     @classmethod
-    def from_history(
+    def from_index(
         cls,
         probe_guid: ProbeGUID,
         /,
-        history: ConvergenceByParallelsHistory,
+        index: ConvergenceByParallelsIndex,
         config: Config,
     ) -> 'ConvergenceByParallelsDatum':
-        """Get `sheet` from history."""
-        filepath = history.get_filepath(
+        """Get `sheet` from index."""
+        filepath = index.get_filepath(
             probe_guid=probe_guid,
         )
 
@@ -80,7 +80,7 @@ class ConvergenceByParallelsDatum(DatumABC):
 
                 cond[j] = cond[j] and config.tracked_period.check(
                     atom_data.meta.iloc[j]['datetime'],
-                    milestone=history.milestone,
+                    milestone=index.milestone,
                 )
         except Exception as error:  # add custom exceptions
             LOGGER.warning('Atom data parse faild with %s: %s', type(error).__name__, error)
@@ -110,7 +110,7 @@ class ConvergenceByParallelsDatum(DatumABC):
         )
 
 
-@cache(cache=ParserCache(field='parser'))
+@cache(cache=CacheManager(field='parser'))
 def _parse_atom_data(
     __filepath: str,
     parser: AggregateByParallelsAtomDataParser,

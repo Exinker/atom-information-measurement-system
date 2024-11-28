@@ -8,8 +8,8 @@ from watchdog.events import FileSystemEvent
 
 import aims
 from aims.config import Config
+from aims.core.cache import CacheManager
 from aims.core.data import data_factory
-from aims.core.parsers import CacheManager
 from aims.observer import Observer, ObserverEventHandler
 from aims.settings import get_setting
 from aims.window.mainWindow import MainWindow
@@ -51,7 +51,6 @@ class Application(QtWidgets.QApplication):
 
     # @splashscreen(progress=50, info='<strong>PARSING</strong> xml files...')
     def _update_data(self) -> None:
-        """Update (or parse) tracked path sheets."""
 
         self.data = data_factory(
             milestone=self.milestone,
@@ -88,16 +87,25 @@ class Application(QtWidgets.QApplication):
         """Run an application."""
 
         self._setup_window()
+        self._setup_observer()
 
-        #
-        self.reset(force=True)
+        self.update()
+
+    @log(message='app: update')
+    # @splashscreen()
+    @wait
+    def update(self):
+        started_at = time.perf_counter()
+
+        self._update_milestone()
+        self._update_data()
+        self._update_window()
+        LOGGER.info('Update app elapsed time: %s, s.', time.perf_counter() - started_at)
 
     @log(message='app: reset')
     # @splashscreen()
     @wait
     def reset(self, event: FileSystemEvent | None = None, force: bool = False, **kwargs):
-        """Reset an application: update observer (if `force == True`), sheets and windows."""
-        started_at = time.perf_counter()
 
         if force:
             self.observer.stop()
@@ -112,7 +120,4 @@ class Application(QtWidgets.QApplication):
                         filepath=event.src_path,
                     )
 
-        self._update_milestone()
-        self._update_data()
-        self._update_window()
-        LOGGER.info('Elapsed time: %s, s', time.perf_counter() - started_at)
+        self.update()

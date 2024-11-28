@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -8,15 +8,7 @@ from aims.core.types import AnalysisName, Frame, ProbeGUID, ProbeName, XMLPath
 
 
 @dataclass
-class Record:
-    analysis_name: AnalysisName = field(default='')
-    probe_name: ProbeName = field(default='')
-    probe_guid: ProbeGUID = field(default='')
-    datetime: datetime = field(default_factory=lambda: datetime.fromtimestamp(0))
-
-
-@dataclass
-class HistoryABC(ABC):
+class IndexABC:
     records: Frame
     milestone: datetime
     directory: Directory
@@ -37,37 +29,45 @@ class HistoryABC(ABC):
 
         return data.iloc[-1]['analysis_name']
 
-    @property
-    def last_record(self) -> Record | None:
-        """Получить последний `record` в `history`."""
-
-        data = self.records[['analysis_name', 'probe_name', 'probe_guid', 'datetime']].copy(deep=True)
-        data = data.set_index('datetime', drop=False)
-        data = data.sort_index()
-        if data.empty:
-            return None
-
-        return Record(**data.iloc[-1])
-
     @abstractmethod
     def get_queue(
         self,
         analysis_name: AnalysisName,
         n: int = 1,
-        ascending: bool = False,
-    ) -> tuple[ProbeName, ...]:
+    ) -> tuple[str, ...]:
         raise NotImplementedError
+
+    @classmethod
+    def create(
+        cls,
+        milestone: datetime,
+        directory: Directory,
+        tracked_period: TrackedPediod,
+        sep: str,
+        verbose: bool = False,
+    ) -> 'IndexABC':
+        """Получить `index` путем итеративного парсинга .xml файлов в заданной директории `directory`."""
+
+        scraper = Scraper(
+            milestone=milestone,
+            directory=directory,
+            tracked_period=tracked_period,
+            sep=sep,
+            verbose=verbose,
+        )
+
+        records = scraper.scrape()
+        return cls(
+            records=records,
+            milestone=milestone,
+            directory=directory,
+            tracked_period=tracked_period,
+            sep=sep,
+        )
 
 
 @dataclass
-class ConvergenceByProbesHistory(HistoryABC):
-    records: Frame
-    milestone: datetime
-    directory: Directory
-    tracked_period: TrackedPediod
-    sep: str
-
-    datetime: datetime = field(default_factory=datetime.now)
+class ConvergenceByProbesIndex(IndexABC):
 
     def get_tracked_analysis_name(
         self,
@@ -97,7 +97,6 @@ class ConvergenceByProbesHistory(HistoryABC):
         self,
         analysis_name: AnalysisName,
         n: int = 1,
-        ascending: bool = False,
     ) -> tuple[ProbeName, ...]:
         """Получить очередь (последовательность `probe_names`) для выбранного `analysis_name` длинною не более `n`."""
 
@@ -111,7 +110,7 @@ class ConvergenceByProbesHistory(HistoryABC):
             return tuple()
 
         probe_names = tuple(data.iloc[-n:].index)
-        probe_names = probe_names if ascending else reversed(probe_names)
+        probe_names = reversed(probe_names)
         return tuple(probe_names)
 
     def get_filepaths(
@@ -129,43 +128,9 @@ class ConvergenceByProbesHistory(HistoryABC):
 
         return tuple(records['path'].unique())
 
-    @classmethod
-    def create(
-        cls,
-        milestone: datetime,
-        directory: Directory,
-        tracked_period: TrackedPediod,
-        sep: str,
-        verbose: bool = False,
-    ) -> HistoryABC:
-        """Получить `history` путем итеративного парсинга .xml файлов в заданной директории `directory`."""
-
-        records = Scraper(
-            milestone=milestone,
-            directory=directory,
-            tracked_period=tracked_period,
-            sep=sep,
-            verbose=verbose,
-        ).scrape()
-
-        return cls(
-            records=records,
-            milestone=milestone,
-            directory=directory,
-            tracked_period=tracked_period,
-            sep=sep,
-        )
-
 
 @dataclass
-class ConvergenceByParallelsHistory(HistoryABC):
-    records: Frame
-    milestone: datetime
-    directory: Directory
-    tracked_period: TrackedPediod
-    sep: str
-
-    datetime: datetime = field(default_factory=datetime.now)
+class ConvergenceByParallelsIndex(IndexABC):
 
     def get_tracked_probe_guids(
         self,
@@ -179,7 +144,6 @@ class ConvergenceByParallelsHistory(HistoryABC):
     def get_queue(
         self,
         n: int = 1,
-        ascending: bool = False,
     ) -> tuple[ProbeGUID, ...]:
         """Получить очередь (последовательность `probe_names`) для всех типов анализа длинною не более `n`."""
 
@@ -191,7 +155,7 @@ class ConvergenceByParallelsHistory(HistoryABC):
             return tuple()
 
         probe_guids = tuple(data.index[-n:])
-        probe_guids = probe_guids if ascending else reversed(probe_guids)
+        probe_guids = reversed(probe_guids)
         return tuple(probe_guids)
 
     def get_filepath(
@@ -209,30 +173,3 @@ class ConvergenceByParallelsHistory(HistoryABC):
             return tuple()
 
         return records['path'].item()
-
-    @classmethod
-    def create(
-        cls,
-        milestone: datetime,
-        directory: Directory,
-        tracked_period: TrackedPediod,
-        sep: str,
-        verbose: bool = False,
-    ) -> HistoryABC:
-        """Получить `history` путем итеративного парсинга .xml файлов в заданной директории `directory`."""
-
-        records = Scraper(
-            milestone=milestone,
-            directory=directory,
-            tracked_period=tracked_period,
-            sep=sep,
-            verbose=verbose,
-        ).scrape()
-
-        return cls(
-            records=records,
-            milestone=milestone,
-            directory=directory,
-            tracked_period=tracked_period,
-            sep=sep,
-        )

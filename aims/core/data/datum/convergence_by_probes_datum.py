@@ -7,17 +7,17 @@ import pandas as pd
 
 from aims.config import Config
 from aims.core.atom_data import AtomData
+from aims.core.cache import (
+    CacheManager,
+    cache,
+)
 from aims.core.data.datum import (
     DatumABC,
     DatumMeta,
     DatumSheet,
 )
-from aims.core.history import ConvergenceByProbesHistory
-from aims.core.parsers import (
-    AggregateByProbesAtomDataParser,
-    ParserCache,
-    cache,
-)
+from aims.core.index import ConvergenceByProbesIndex
+from aims.core.parsers import AggregateByProbesAtomDataParser
 from aims.core.types import AnalysisName, ProbeName, Series
 from aims.core.utils.formatters import normalize_name
 from aims.core.utils.loaders import load_xml
@@ -42,16 +42,16 @@ class ConvergenceByProbesDatum(DatumABC):
     ]
 
     @classmethod
-    def from_history(
+    def from_index(
         cls,
         probe_name: ProbeName,
         /,
         analysis_name: AnalysisName,
-        history: ConvergenceByProbesHistory,
+        index: ConvergenceByProbesIndex,
         config: Config,
     ) -> 'ConvergenceByProbesDatum':
-        """Get `sheet` from history."""
-        filepaths = history.get_filepaths(
+        """Get `sheet` from index."""
+        filepaths = index.get_filepaths(
             analysis_name=analysis_name,
             probe_name=probe_name,
         )
@@ -81,13 +81,13 @@ class ConvergenceByProbesDatum(DatumABC):
                     # check: probe's name
                     cond[j] = cond[j] and normalize_name(
                         name=atom_data.meta.iloc[j]['probe_name'],
-                        sep=history.sep,
+                        sep=index.sep,
                     ) == probe_name
 
                     # check: probe's created datetime
                     cond[j] = cond[j] and config.tracked_period.check(
                         atom_data.meta.iloc[j]['datetime'],
-                        milestone=history.milestone,
+                        milestone=index.milestone,
                     )
 
                 # drop and append
@@ -147,7 +147,7 @@ class ConvergenceByProbesDatum(DatumABC):
         )
 
 
-@cache(cache=ParserCache(field='parser'))
+@cache(cache=CacheManager(field='parser'))
 def _process_atom_data(
     __filepath: str,
     parser: AggregateByProbesAtomDataParser,

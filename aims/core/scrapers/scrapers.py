@@ -4,8 +4,8 @@ from typing import Any, Mapping
 import pandas as pd
 
 from aims.config import Directory, TrackedPediod
-from aims.core.parsers import (
-    ParserCache,
+from aims.core.cache import (
+    CacheManager,
     cache,
 )
 from aims.core.scrapers.utils import (
@@ -57,7 +57,7 @@ class Scraper:
         )
 
 
-@cache(cache=ParserCache(field='scraper'))
+@cache(cache=CacheManager(field='scraper'))
 def _scrape_xml(
     __filepath: str,
     milestone: datetime,

@@ -90,9 +90,9 @@ def get_worker(
 
     match config.tracked_mode:
         case TrackedMode.CONVERGENCE_BY_PROBES:
-            factory = ConvergenceByProbesDatum.from_history
+            factory = ConvergenceByProbesDatum.from_index
         case TrackedMode.CONVERGENCE_BY_PARALLELS:
-            factory = ConvergenceByParallelsDatum.from_history
+            factory = ConvergenceByParallelsDatum.from_index
         case _:
             raise NotImplementedError(f'Mode {config.tracked_mode} is not supported yet!')
 

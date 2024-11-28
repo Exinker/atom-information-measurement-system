@@ -6,7 +6,7 @@ import pandas as pd
 from aims.config import Config
 from aims.core.atom_database import MeasurementToleranceDatabase
 from aims.core.data.datum import DatumABC
-from aims.core.history import HistoryABC
+from aims.core.index import IndexABC
 from aims.core.parsers import AggregateByProbesAtomDataParser
 from aims.core.types import AnalysisName, Frame, ProbeName, Series
 from aims.core.utils.formatters import normalize_name
@@ -24,15 +24,15 @@ class ReferenceSheet(DatumABC):
     levels: Series
 
     @classmethod
-    def from_history(
+    def from_index(
         cls,
-        history: HistoryABC,
+        index: IndexABC,
         analysis_name: AnalysisName,
         probe_name: ProbeName,
         config: Config,
     ) -> 'ReferenceSheet':
-        """Get `sheet` from history."""
-        filepaths = history.get_filepaths(
+        """Get `sheet` from index."""
+        filepaths = index.get_filepaths(
             analysis_name=analysis_name,
             probe_name=probe_name,
         )
@@ -61,13 +61,13 @@ class ReferenceSheet(DatumABC):
                     # check: probe's name
                     cond[j] = cond[j] and normalize_name(
                         name=_meta.iloc[j]['name'],
-                        sep=history.sep,
+                        sep=index.sep,
                     ) == probe_name
 
                     # check: probe's created datetime
                     cond[j] = cond[j] and config.tracked_period.check(
                         _meta.iloc[j]['datetime'],
-                        milestone=history.milestone,
+                        milestone=index.milestone,
                     )
 
                 # drop and append
