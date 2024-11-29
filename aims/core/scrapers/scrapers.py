@@ -47,24 +47,22 @@ class Scraper:
         records = []
         for filepath in walk(self.directory):
 
-            items = []
-            for item in _scrape_xml(
+            _records = _scrape_xml(
                 filepath,
                 milestone=self.milestone,
                 tracked_period=self.tracked_period,
                 sep=self.sep,
-            ):
-                items.append(item)
+            )
+            records.extend(_records)
 
-            records.extend(items)
             if LOGGER.isEnabledFor(level=logging.DEBUG):
-                items = pd.DataFrame(
-                    items,
+                probe_names = pd.DataFrame(
+                    _records,
                     columns=['analysis_name', 'probe_name', 'probe_guid', 'datetime', 'path'],
-                )
+                )['probe_name'].unique().tolist()
                 LOGGER.debug(
                     'Probes %s were scraped from %r',
-                    ', '.join(map(repr, items['probe_name'].unique().tolist())),
+                    ', '.join(map(repr, probe_names)),
                     filepath,
                 )
 
@@ -94,6 +92,7 @@ def _scrape_xml(
             analysis_name = _scrape_analysis(xml)
             probes = _scrape_probes(xml, sep=sep)
 
+            records = []
             for probe_guid in probes.index:
                 is_tracked = tracked_period.check(probes.loc[probe_guid, 'datetime'], milestone=milestone)
                 if is_tracked:
@@ -104,9 +103,13 @@ def _scrape_xml(
                         'datetime': probes.loc[probe_guid, 'datetime'],
                         'path': __filepath,
                     }
-                    yield record
+                    records.append(record)
+            return records
+
         else:
             LOGGER.warning('XML %s is not validated!')
+
+    return []
 
 
 def _scrape_analysis(xml: XML) -> AnalysisName:

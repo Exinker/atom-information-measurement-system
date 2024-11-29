@@ -126,7 +126,7 @@ class TrackedPediod(Enum):
 
     @classmethod
     def default(cls) -> 'TrackedPediod':
-        return cls.TODAY
+        return cls.ALL
 
     @classmethod
     def from_str(cls, value: str) -> 'TrackedPediod':

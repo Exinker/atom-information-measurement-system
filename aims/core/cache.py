@@ -16,7 +16,7 @@ class CacheManager:
 
     @classmethod
     def remove(cls, filepath: str | None = None) -> None:
-        key = hash(filepath)
+        key = filepath
 
         for field in cls.storeges.keys():
             if key in cls.storeges[field]:
@@ -37,7 +37,7 @@ def cache(cache: CacheManager):
 
         @functools.wraps(func)
         def wrapped(__filepath: XMLPath, *args, **kwargs):
-            key = hash(__filepath)
+            key = __filepath
 
             if key not in cache.storage:
                 cache.storage[key] = func(__filepath, *args, **kwargs)
