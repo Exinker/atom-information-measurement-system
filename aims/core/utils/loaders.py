@@ -19,5 +19,4 @@ def load_xml(filepath: XMLPath) -> XML | None:
         LOGGER.warning('File load failed with %s: %s', type(error).__name__, error)
         return None
     else:
-        LOGGER.debug('XML file is loaded.')
         return xml

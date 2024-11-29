@@ -48,7 +48,7 @@ class AggregateByParallelsAtomDataParser(AtomDataParserABC):
     ) -> AtomData:
         """Get recorded data from Atom's .xml file."""
 
-        LOGGER.debug('Parse XML.')
+        LOGGER.debug('Parse XML file: %r', __filepath)
         try:
             data = self._parse(
                 xml=xml,
@@ -60,7 +60,6 @@ class AggregateByParallelsAtomDataParser(AtomDataParserABC):
             LOGGER.warning('XML parse failed with %s: %s', type(error).__name__, error)
             raise
         else:
-            LOGGER.debug('XML is parsed.')
             return data
 
     @classmethod

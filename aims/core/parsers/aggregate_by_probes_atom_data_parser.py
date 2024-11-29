@@ -46,7 +46,7 @@ class AggregateByProbesAtomDataParser(AtomDataParserABC):
     ) -> AtomData:
         """Get recorded data from Atom's .xml file."""
 
-        LOGGER.debug('Parse XML.')
+        LOGGER.debug('Parse XML: %r', __filepath)
         try:
             data = self._parse(
                 xml=xml,
@@ -58,7 +58,11 @@ class AggregateByProbesAtomDataParser(AtomDataParserABC):
             LOGGER.warning('XML parse failed with %s: %s', type(error).__name__, error)
             raise
         else:
-            LOGGER.debug('XML is parsed.')
+            LOGGER.debug(
+                'Probes: %s were parsed from %r',
+                ', '.join(map(repr, data.meta['probe_name'].to_list())),
+                __filepath,
+            )
             return data
 
     @classmethod
