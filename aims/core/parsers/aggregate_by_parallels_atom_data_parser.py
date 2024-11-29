@@ -102,7 +102,7 @@ class AggregateByParallelsAtomDataParser(AtomDataParserABC):
                     meta.loc[parallel_id, 'probe_guid'] = probe_guid
                     meta.loc[parallel_id, 'probe_id'] = int(probe.attrib['id'])
                     meta.loc[parallel_id, 'probe_name'] = probe_name
-                    meta.loc[parallel_id, 'datetime'] = normalize_datetime(probe.find('date[@type="last"]').text)
+                    meta.loc[parallel_id, 'datetime'] = normalize_datetime(parallel.find('date').text)
                     meta.loc[parallel_id, 'is_certified'] = is_certified
                     meta.loc[parallel_id, 'parallel_id'] = parallel_id
                     meta.loc[parallel_id, 'parallel_name'] = parallel.attrib.get('name', '???')
