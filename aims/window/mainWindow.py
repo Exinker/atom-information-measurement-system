@@ -139,18 +139,20 @@ class MainWindow(BaseMainWindow):
     def _get_title(self) -> str:
         app = QtWidgets.QApplication.instance()
 
-        if isinstance(app.data, DataABC):
+        if len(app.data):
             datum = app.data.last_datum
 
-            return '{application_name} - [{analysis_name} / {probe_name}] - [{datetime_updated}]'.format(
+            return '{application_name} {application_version} - [{analysis_name} / {probe_name}] - [{datetime_updated}]'.format(
                 application_name=aims.__name__,
+                application_version=aims.__version__,
                 analysis_name=datum.meta.analysis_name,
                 probe_name=datum.meta.probe_name,
                 datetime_updated=app.milestone.strftime('%Y-%m-%d %H:%M:%S'),
             )
 
-        return '{application_name} - [{datetime_updated}]'.format(
+        return '{application_name} {application_version} - [{datetime_updated}]'.format(
             application_name=aims.__name__,
+            application_version=aims.__version__,
             datetime_updated=app.milestone.strftime('%Y-%m-%d %H:%M:%S'),
         )
 

@@ -37,6 +37,9 @@ class DataABC(ABC):
     def __getitem__(self, i: int) -> DatumABC:
         return self.items[i]
 
+    def __len__(self) -> int:
+        return len(self.items)
+
 
 class ConvergenceByProbesData(DataABC):
 
