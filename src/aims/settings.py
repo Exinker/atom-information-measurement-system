@@ -6,10 +6,9 @@ from typing import Any
 
 from PySide6 import QtCore
 
+from aims.config import Config
 from spectrumapp.loggers import log
 from spectrumapp.settings import load_settings
-
-from aims.config import Config
 
 
 # ---------        filtration        ---------
@@ -85,7 +84,7 @@ def set_setting(key: str, value: str | int | float | list) -> None:
     match key.split('/'):
         case 'config', key:
             config = Config.load()
-            config.update({key: value})
+            config.update(**{key: value})
 
         case _:
             settings = load_settings()
@@ -104,7 +103,7 @@ def setdefault_setting() -> None:
         settings.setValue('mainWindow/queue-widget', True)
         settings.setValue('mainWindow/meta-widget', False)
 
-        settings.setValue('widgetWindow/visible', False)
+        # settings.setValue('widgetWindow/visible', False)
 
         settings.setValue('table/n_rows', 1)
         settings.setValue('table/n_columns', 10)

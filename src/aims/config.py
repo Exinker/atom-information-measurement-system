@@ -8,10 +8,14 @@ from datetime import datetime
 from enum import Enum
 from typing import ClassVar, Mapping
 
-from dotenv import load_dotenv
 import pandas as pd
+from dotenv import load_dotenv
 
-from spectrumapp.config import AbstractConfig
+from spectrumapp.colors import RedOrangeYellowGreenColorset
+from spectrumapp.config import (
+    AbstractConfig,
+    LOGGING_LEVEL_MAP,
+)
 
 
 load_dotenv()
@@ -20,8 +24,12 @@ load_dotenv()
 LOGGER = logging.getLogger('app')
 
 
-# ---------        CONSTANTS        ---------
-LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
+# ---------        ENV        ---------
+LOGGING_LEVEL = LOGGING_LEVEL_MAP.get(os.environ.get('LOGGING_LEVEL'), logging.DEBUG)
+LOGGING_MAX_BYTES = int(os.environ.get('LOGGING_MAX_BYTES', 1000 * 1000))  # 1 MByte
+
+WIDGET_IS_ENABLE = os.environ.get('WIDGET_IS_ENABLE', 'False') == 'True'
+
 N_WORKERS = os.environ.get('N_WORKERS', 1)
 
 match sys.platform:
@@ -29,6 +37,16 @@ match sys.platform:
         EXPLORER = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
     case _:
         EXPLORER = ''
+
+
+# ---------        ENV        ---------
+COLOR = {
+    'red': RedOrangeYellowGreenColorset.RED.value,
+    'orange': RedOrangeYellowGreenColorset.ORANGE.value,
+    'yellow': RedOrangeYellowGreenColorset.YELLOW.value,
+    'green': RedOrangeYellowGreenColorset.GREEN.value,
+    'black': 'black',
+}
 
 
 # ---------        CONFIG PARAMS        ---------

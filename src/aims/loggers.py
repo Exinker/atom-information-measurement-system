@@ -2,33 +2,42 @@ import logging
 import logging.config
 import os
 
-from PySide6 import QtGui
+from PySide6 import QtGui, QtWidgets
 
-from aims.config import LOGGING_LEVEL
+from aims.config import (
+    LOGGING_LEVEL,
+    LOGGING_MAX_BYTES,
+)
 from spectrumapp.helpers import find_window
+from spectrumapp.windows.progressWindow.progressWindow import ProgressWindow
 
 
 class ProgressWindowHandler(logging.StreamHandler):
+
+    WINDOW_NAME = 'progressWindow'
+
     def __init__(self):
         super().__init__(self)
 
     def emit(self, record):
-        message = self.format(record)
 
-        # init window
-        window_name = 'progressWindow'
+        return None
 
-        window = find_window(window_name)
+        if record.msg != 'Parse XML: %r':
+            return None
+
+        window = find_window(self.WINDOW_NAME)
         if window is not None:
-
-            view = window.loggingPlainText
-            if view:
-                view.moveCursor(QtGui.QTextCursor.End)
-                view.appendHtml(f'\t{message}')
-
             window.show()
+        else:
+            window = ProgressWindow()
 
-        # flush
+        widget = window.findChild(QtWidgets.QPlainTextEdit, 'loggingPlainText')
+        widget.moveCursor(QtGui.QTextCursor.End)
+        widget.appendHtml(f'\t{record.message}')
+
+        window.show()
+
         self.flush()
 
 
@@ -48,35 +57,45 @@ def setdefault_logger():
         },
 
         'handlers': {
-            'file_handler': {
-                'class': 'logging.FileHandler',
-                'level': logging.NOTSET,
-                'filename': os.path.join('.', 'app.log'),
-                'mode': 'a',
-                'formatter': 'file_formatter',
-                'encoding': 'utf-8',
-            },
             'stream_handler': {
                 'class': 'logging.StreamHandler',
-                'level': logging.NOTSET,
+                'level': logging.DEBUG,
                 'formatter': 'file_formatter',
             },
-            # 'progress_window_handler': {
-            #     'class': 'loggers.ProgressWindowHandler',
-            #     'level': logging.INFO,
-            #     'formatter': 'progress_window_formatter',
-            # },
+            'file_handler': {
+                'class': 'logging.handlers.RotatingFileHandler',
+                'level': LOGGING_LEVEL,
+                'formatter': 'file_formatter',
+                'filename': os.path.join('.', 'app.log'),
+                'mode': 'a',
+                'maxBytes': LOGGING_MAX_BYTES,
+                'backupCount': 3,
+                'encoding': 'utf-8',
+            },
+            'progress_window_handler': {
+                'class': 'aims.loggers.ProgressWindowHandler',
+                'level': logging.DEBUG,
+                'formatter': 'progress_window_formatter',
+            },
         },
 
         'loggers': {
             'app': {
-                'level': LOGGING_LEVEL,
+                'level': logging.DEBUG,
+                'handlers': [
+                    'stream_handler',
+                    'file_handler',
+                    'progress_window_handler',
+                ],
+                'propagate': True,
+            },
+            'spectrumapp': {
+                'level': logging.DEBUG,
                 'handlers': [
                     'file_handler',
                     'stream_handler',
-                    # 'progress_window_handler',
                 ],
-                'propagate': False,
+                'propagate': True,
             },
         },
     }
