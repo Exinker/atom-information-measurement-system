@@ -1,0 +1,13 @@
+[run]
+branch = True
+omit = 
+	tests/
+
+[report]
+exclude_lines =
+    import *
+    from * import *
+    def __init__
+    def __repr__
+    raise NotImplementedError
+    if __name__ == '__main__':

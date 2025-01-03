@@ -16,6 +16,7 @@ class Bridge(QtCore.QObject):
 class WatcherEventHandler(FileSystemEventHandler):
 
     def __init__(self, callback: Callable):
+
         self.bridge = Bridge()
         self.bridge.updated.connect(callback)
 

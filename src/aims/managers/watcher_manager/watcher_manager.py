@@ -1,4 +1,5 @@
 import os
+from functools import partial
 from typing import Callable
 
 from watchdog.events import FileSystemEvent
@@ -19,7 +20,9 @@ class WatcherManager:
     ) -> None:
 
         self.data_manager = data_manager
-        self.callback = callback
+        self.event_handler = WatcherEventHandler(
+            callback=partial(self.middleware, callback),
+        )
 
         self.observer = None
 
@@ -30,19 +33,21 @@ class WatcherManager:
 
         self.observer = Observer()
         self.observer.schedule(
-            event_handler=WatcherEventHandler(callback=self.middleware),
-            path=os.path.abspath(
-                path=path,
-            ),
+            event_handler=self.event_handler,
+            path=os.path.abspath(path),
             recursive=True,
         )
         self.observer.start()
 
-    def middleware(self, event: FileSystemEvent | None = None) -> None:
+    def middleware(
+        self,
+        callback: Callable,
+        event: FileSystemEvent | None = None,
+    ) -> None:
 
         if event.event_type == 'modified':
             CacheManager.remove(
                 filepath=event.src_path,
             )
 
-        self.callback()
+        callback()
