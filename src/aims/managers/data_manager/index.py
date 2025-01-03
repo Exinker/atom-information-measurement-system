@@ -118,7 +118,7 @@ class ConvergenceByProbesIndex(IndexABC):
         analysis_name: AnalysisName,
         probe_name: ProbeName,
     ) -> tuple[XMLPath, ...]:
-        """Получить последовательность `filepaths` всех `xml` файлов files для выбранного `analysis_name` и `probe_name`."""
+        """Получить последовательность `filepaths` всех `xml` файлов files для выбранного `analysis_name` и `probe_name`."""  # noqa: E501
 
         records = self.records[
             (self.records['analysis_name'] == analysis_name) & (self.records['probe_name'] == probe_name)

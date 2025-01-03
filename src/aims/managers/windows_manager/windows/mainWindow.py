@@ -8,7 +8,6 @@ from aims.managers.data_manager import DataManager
 from aims.managers.windows_manager.widgets.centralWidget import CentralWidget
 from aims.managers.windows_manager.windows.widgetWindow import WidgetWindow
 from aims.settings import get_setting, set_setting
-
 from spectrumapp.decorators import wait
 from spectrumapp.helpers import find_action, find_window
 from spectrumapp.loggers import log

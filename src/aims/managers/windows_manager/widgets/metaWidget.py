@@ -54,7 +54,9 @@ class LastRecordFrame(QtWidgets.QFrame):
 
     # --------        slots        --------
     def _on_refresh_triggered(self):
-        datum = self.data_manager.last_datum
+        pass
+
+        # datum = self.data_manager.last_datum
         # meta = datum.meta
 
         # widget = self.findChild(QtWidgets.QLabel, 'organizationNameLabel')

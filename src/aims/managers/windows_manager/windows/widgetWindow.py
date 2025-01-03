@@ -226,16 +226,16 @@ class WidgetWindow(BaseWindow):
         self.widget._on_refresh_triggered()
 
     # --------        events        --------
-    def mouseDoubleClickEvent(self, event: QtGui.QMouseEvent) -> None:
+    def mouseDoubleClickEvent(self, event: QtGui.QMouseEvent) -> None:  # noqa: N802
         window = find_window('mainWindow')
         window.showNormal()
 
         event.accept()
 
-    def mousePressEvent(self, event: QtGui.QMouseEvent):
+    def mousePressEvent(self, event: QtGui.QMouseEvent):  # noqa: N802
         self._beginPos = event.globalPos()
 
-    def mouseMoveEvent(self, event: QtGui.QMouseEvent):
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent):  # noqa: N802
         delta = QtCore.QPoint(event.globalPos() - self._beginPos)
         self.move(
             self.x() + delta.x(),
@@ -244,7 +244,7 @@ class WidgetWindow(BaseWindow):
 
         self._beginPos = event.globalPos()
 
-    def closeEvent(self, event: QtCore.QEvent):
+    def closeEvent(self, event: QtCore.QEvent):  # noqa: N802
 
         # update setting
         set_setting(

@@ -4,10 +4,9 @@ from typing import Callable
 from watchdog.events import FileSystemEvent
 from watchdog.observers import Observer
 
-from aims.managers.data_manager.cache import CacheManager
 from aims.managers.data_manager import DataManager
+from aims.managers.data_manager.cache import CacheManager
 from aims.managers.watcher_manager.handlers import WatcherEventHandler
-
 from spectrumapp.types import DirPath
 
 

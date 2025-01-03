@@ -185,7 +185,7 @@ class TableModel(QtCore.QAbstractTableModel):
             value = self._data.iloc[index.row()][column]
             return value
 
-    def headerData(self, section, orientation, role):
+    def headerData(self, section, orientation, role):  # noqa: N802
 
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
@@ -200,10 +200,10 @@ class TableModel(QtCore.QAbstractTableModel):
                     value = self._data['datetime'].iloc[section]
                     return value.strftime('%Y-%m-%d %H:%M:%S')
 
-    def rowCount(self, index):
+    def rowCount(self, index):  # noqa: N802
         return self._data.shape[0]
 
-    def columnCount(self, index):
+    def columnCount(self, index):  # noqa: N802
         return self._data.shape[1]
 
 
@@ -221,7 +221,7 @@ class VerticalHeader(QtWidgets.QHeaderView):
         self.setFixedWidth(140)
         self.sectionDoubleClicked.connect(self._on_dbl_clicked)
 
-    def mouseDoubleClickEvent(self, event: QtGui.QMouseEvent) -> None:
+    def mouseDoubleClickEvent(self, event: QtGui.QMouseEvent) -> None:  # noqa: N802
 
         if event.button() == QtCore.Qt.MouseButton.LeftButton:
             return super().mouseDoubleClickEvent(event)

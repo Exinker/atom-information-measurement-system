@@ -21,7 +21,7 @@ QLabel {
 }
 
 QProgressBar {
-	background-color: rgb(220, 220, 220); 
+	background-color: rgb(220, 220, 220);
 	border-style: none;
 	border-radius: 10px;
 	margin-left: 30px;
@@ -30,7 +30,7 @@ QProgressBar {
 	text-align: center;
 }
 QProgressBar::chunk {
-	background-color: qlineargradient(spread:pad, x1:0, y1:0.739, x2:1, y2:0, stop:0 rgba(31, 111, 235, 50), stop:1 rgba(31, 111, 235, 255)); 
+	background-color: qlineargradient(spread:pad, x1:0, y1:0.739, x2:1, y2:0, stop:0 rgba(31, 111, 235, 50), stop:1 rgba(31, 111, 235, 255));
 	border-style: none;
 	border-radius: 10px;
 
