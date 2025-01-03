@@ -3,7 +3,7 @@ import os
 import numpy as np
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from spectrumapp.colors import COLOR
+from spectrumapp.colors import RedOrangeYellowGreenColorset
 from spectrumapp.numbers import format_number
 
 from aims.core.data.data import DatumABC
@@ -88,9 +88,9 @@ class TableModel(QtCore.QAbstractTableModel):
                         value = self._data.loc[row, column]
 
                         if value >= 10:  # FIXME:
-                            return QtGui.QColor(COLOR['red'])
+                            return QtGui.QColor(RedOrangeYellowGreenColorset.RED.value)
                         if value >= 5:  # FIXME:
-                            return QtGui.QColor(COLOR['orange'])
+                            return QtGui.QColor(RedOrangeYellowGreenColorset.ORANGE.value)
 
             if role == QtCore.Qt.BackgroundRole:
                 if row in self._target_rows:
@@ -100,7 +100,10 @@ class TableModel(QtCore.QAbstractTableModel):
                     if column in ['probe_name', 'parallel_name']:
                         is_certified = self._data['is_certified'].iloc[index.row()]
 
-                        color = COLOR['green'] if is_certified else COLOR['yellow']
+                        color = {
+                            True: RedOrangeYellowGreenColorset.GREEN.value,
+                            False: RedOrangeYellowGreenColorset.YELLOW.value,
+                        }[is_certified]
                         color = QtGui.QColor(color)
                         color.setAlphaF(.2)
 

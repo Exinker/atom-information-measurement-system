@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aims"
+version = "0.4.1"
+authors = [
+    {name = "Pavel Vaschenko", email="vaschenko@vmk.ru"},
+]
+maintainers = [
+    {name = "Pavel Vaschenko", email="vaschenko@vmk.ru"},
+]
+readme = "README.md"
+license = {text = "MIT License"}
+dependencies = [
+    "setuptools>=75.6.0",
+    "spectrumapp",
+    "tqdm==4.66.4",
+    "watchdog==4.0.1",
+]
+requires-python = ">=3.12"
+
+[dependency-groups]
+lints = [
+    "flake8",
+    "flake8-commas",
+    "flake8-import-order",
+    "flake8-bugbear",
+    "flake8-builtins",
+    "pep8-naming",
+]
+tests = [
+    "pytest",
+    "pytest-cov",
+    "pytest-flake8",
+    "pytest-qt",
+]
+installation = [
+    "pyinstaller==5.10.1",
+]
+dev = [
+    {include-group = "lints"},
+    {include-group = "tests"},
+    {include-group = "installation"},
+]
+
+[tool.uv.sources]
+spectrumapp = { git = "https://github.com/Exinker/spectrumapp", rev = "1.0.0" }

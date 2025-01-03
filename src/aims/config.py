@@ -280,7 +280,7 @@ class Config(AbstractConfig):
 
     FILEPATH: ClassVar[str] = field(default=os.path.join(os.getcwd(), 'config.json'))
 
-    def serialize(self) -> Mapping[str, str | int | float | list]:
+    def dumps(self) -> Mapping[str, str | int | float | list]:
         """Serialize config to mapping object."""
 
         data = {}

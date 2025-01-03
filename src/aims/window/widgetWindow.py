@@ -3,10 +3,10 @@ import os
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from spectrumapp.colors import COLOR
+from spectrumapp.colors import RedOrangeYellowGreenColorset
+from spectrumapp.helpers import find_window
 from spectrumapp.paths import pave
 from spectrumapp.settings import set_setting
-from spectrumapp.utils import find_window
 from spectrumapp.windows.window import BaseWindow
 
 from aims.settings import get_setting
@@ -97,9 +97,9 @@ class StatInfoFrame(QtWidgets.QFrame):
         # warningNumberLabel
         style = 'color: {color}; font-weight: {weight};'
         if n_warrings > 0:
-            style = style.format(color=COLOR.get('orange', 'orange'), weight=600)
+            style = style.format(color=RedOrangeYellowGreenColorset.ORANGE.value, weight=600)
         else:
-            style = style.format(color=COLOR.get('black', 'black'), weight=400)
+            style = style.format(color='black', weight=400)
 
         widget = self.findChild(QtWidgets.QLabel, 'warningLabelLabel')
         widget.setStyleSheet(style)
@@ -111,9 +111,9 @@ class StatInfoFrame(QtWidgets.QFrame):
         # errorNumberLabel
         style = 'color: {color}; font-weight: {weight};'
         if n_errors > 0:
-            style = style.format(color=COLOR.get('red', 'red'), weight=600)
+            style = style.format(color=RedOrangeYellowGreenColorset.RED.value, weight=600)
         else:
-            style = style.format(color=COLOR.get('black', 'black'), weight=400)
+            style = style.format(color='black', weight=400)
 
         widget = self.findChild(QtWidgets.QLabel, 'errorLabelLabel')
         widget.setStyleSheet(style)

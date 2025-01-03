@@ -5,7 +5,7 @@ import os
 from PySide6 import QtGui
 
 from aims.config import LOGGING_LEVEL
-from spectrumapp.utils import find_window
+from spectrumapp.helpers import find_window
 
 
 class ProgressWindowHandler(logging.StreamHandler):

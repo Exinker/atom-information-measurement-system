@@ -2,9 +2,9 @@ import os
 
 from PySide6 import QtWidgets
 
+from spectrumapp.decorators import wait
+from spectrumapp.helpers import find_window
 from spectrumapp.loggers import log
-from spectrumapp.utils.finder import find_window
-from spectrumapp.utils.handler import wait
 from spectrumapp.windows.splashScreenWindow import splashscreen
 from spectrumapp.windows.mainWindow import BaseMainWindow
 

@@ -13,8 +13,8 @@ from aims.core.data import data_factory
 from aims.observer import Observer, ObserverEventHandler
 from aims.settings import get_setting
 from aims.window.mainWindow import MainWindow
+from spectrumapp.decorators import wait
 from spectrumapp.loggers import log
-from spectrumapp.utils.handler import wait
 
 
 try:  # change app id for correct icon present
