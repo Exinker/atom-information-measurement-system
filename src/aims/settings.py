@@ -101,7 +101,7 @@ def setdefault_setting() -> None:
         settings.setValue('mainWindow/visible', True)
         settings.setValue('mainWindow/menubar', False)
         settings.setValue('mainWindow/queue-widget', True)
-        settings.setValue('mainWindow/meta-widget', False)
+        # settings.setValue('mainWindow/meta-widget', False)
 
         # settings.setValue('widgetWindow/visible', False)
 

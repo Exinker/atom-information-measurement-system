@@ -1,6 +1,8 @@
 [run]
 branch = True
-omit = 
+omit =
+	src/**/__init__.py
+	src/**/_*.py
 	tests/
 
 [report]

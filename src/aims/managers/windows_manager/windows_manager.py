@@ -1,7 +1,7 @@
 from PySide6 import QtCore
 
 from aims.managers.data_manager import DataManager
-from aims.managers.windows_manager.windows.mainWindow import MainWindow
+from aims.managers.windows_manager.windows.main_window import MainWindow
 
 
 class WindowsManager:

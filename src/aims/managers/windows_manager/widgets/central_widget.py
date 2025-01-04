@@ -1,15 +1,14 @@
 from PySide6 import QtWidgets
 
+from aims import settings
 from aims.managers.data_manager import DataManager
-from aims.managers.windows_manager.widgets.metaWidget import MetaWidget
-from aims.managers.windows_manager.widgets.sheetQueueWidget import SheetQueueWidget
-from aims.managers.windows_manager.widgets.sheetWidget import SheetWidget
-from aims.settings import get_setting
+from aims.managers.windows_manager.widgets.sheet_queue_widget import SheetQueueWidget
+from aims.managers.windows_manager.widgets.sheet_widget import SheetWidget
 
 
 class CentralWidget(QtWidgets.QWidget):
 
-    def __init__(self, data_manager: DataManager, parent):
+    def __init__(self, data_manager: DataManager, parent: QtWidgets.QWidget | None):
         super().__init__(parent=parent)
 
         self.data_manager = data_manager
@@ -38,21 +37,10 @@ class CentralWidget(QtWidgets.QWidget):
         )
         self.stackedWidget.addWidget(self.sheetQueueWidget)
 
-        # meta widget
-        self.metaWidget = MetaWidget(
-            parent=self,
-            data_manager=self.data_manager,
-        )
-        layout.addWidget(self.metaWidget)
-
-    # --------        slots        --------
     def _on_refresh_triggered(self):
 
         # update stacked widget
-        widget = self.sheetQueueWidget if get_setting(key='mainWindow/queue-widget') else self.sheetWidget
+        widget = self.sheetQueueWidget if settings.get_setting(key='mainWindow/queue-widget') else self.sheetWidget
         widget._on_refresh_triggered()
 
         self.stackedWidget.setCurrentWidget(widget)
-
-        # update info widget
-        self.metaWidget._on_refresh_triggered()

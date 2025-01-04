@@ -1,7 +1,7 @@
 from PySide6 import QtWidgets
 
 from aims.managers.data_manager import DataManager
-from aims.managers.windows_manager.widgets.sheetWidget import SheetWidget
+from aims.managers.windows_manager.widgets.sheet_widget import SheetWidget
 from aims.settings import get_setting
 
 
