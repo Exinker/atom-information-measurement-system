@@ -3,7 +3,6 @@ from PySide6 import QtWidgets
 from pytest import MonkeyPatch
 from pytestqt.qtbot import QtBot
 
-import aims
 from aims.managers.data_manager import DataManager
 from aims.managers.windows_manager.widgets.central_widget import CentralWidget
 from aims.managers.windows_manager.widgets.sheet_queue_widget import SheetQueueWidget
@@ -28,7 +27,7 @@ def test_central_widget_refresh(
     fake_settings = FakeSettings(
         data={'mainWindow/queue-widget': value},
     )
-    monkeypatch.setattr(aims.settings, 'get_setting', fake_settings.get_settings)
+    monkeypatch.setattr('aims.managers.windows_manager.widgets.central_widget.get_setting', fake_settings.get_settings)
     central_widget = CentralWidget(
         data_manager=data_manager,
         parent=None,

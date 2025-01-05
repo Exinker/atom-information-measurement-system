@@ -1,9 +1,9 @@
 from PySide6 import QtWidgets
 
-from aims import settings
 from aims.managers.data_manager import DataManager
 from aims.managers.windows_manager.widgets.sheet_queue_widget import SheetQueueWidget
 from aims.managers.windows_manager.widgets.sheet_widget import SheetWidget
+from aims.settings import get_setting
 
 
 class CentralWidget(QtWidgets.QWidget):
@@ -40,7 +40,7 @@ class CentralWidget(QtWidgets.QWidget):
     def _on_refresh_triggered(self):
 
         # update stacked widget
-        widget = self.sheetQueueWidget if settings.get_setting(key='mainWindow/queue-widget') else self.sheetWidget
+        widget = self.sheetQueueWidget if get_setting(key='mainWindow/queue-widget') else self.sheetWidget
         widget._on_refresh_triggered()
 
         self.stackedWidget.setCurrentWidget(widget)
