@@ -9,7 +9,7 @@ from aims.config import (
     LOGGING_MAX_BYTES,
 )
 from spectrumapp.helpers import find_window
-from spectrumapp.windows.progressWindow.progressWindow import ProgressWindow
+from spectrumapp.windows.progress_window import ProgressWindow
 
 
 class ProgressWindowHandler(logging.StreamHandler):

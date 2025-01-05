@@ -7,7 +7,6 @@ from PySide6 import QtWidgets
 from pytest import MonkeyPatch
 from pytestqt.qtbot import QtBot
 
-import aims
 from aims.managers.data_manager import DataManager
 from aims.managers.windows_manager.windows.main_window import MainWindow
 from tests.fakes.settings import FakeSettings
@@ -48,7 +47,7 @@ def test_cancel_pressed(
     fake_settings = FakeSettings(
         data={'config/directory': directory},
     )
-    monkeypatch.setattr(aims.settings, 'get_setting', fake_settings.get_settings)
+    monkeypatch.setattr('aims.managers.windows_manager.windows.main_window.get_setting', fake_settings.get_settings)
     monkeypatch.setattr(QtWidgets.QFileDialog, 'getExistingDirectory', fake_file_dialog(
         path='',
     ))
@@ -56,7 +55,7 @@ def test_cancel_pressed(
         data_manager=data_manager,
     )
 
-    main_window._on_open_triggered()
+    main_window.on_directory_opened()
 
     assert fake_settings.data['config/directory'] == directory
 
@@ -71,7 +70,7 @@ def test_same_path_selected(
     fake_settings = FakeSettings(
         data={'config/directory': directory},
     )
-    monkeypatch.setattr(aims.settings, 'get_setting', fake_settings.get_settings)
+    monkeypatch.setattr('aims.managers.windows_manager.windows.main_window.get_setting', fake_settings.get_settings)
     monkeypatch.setattr(QtWidgets.QFileDialog, 'getExistingDirectory', fake_file_dialog(
         path=directory,
     ))
@@ -79,7 +78,7 @@ def test_same_path_selected(
         data_manager=data_manager,
     )
 
-    main_window._on_open_triggered()
+    main_window.on_directory_opened()
 
     assert fake_settings.data['config/directory'] == directory
 
@@ -96,8 +95,8 @@ def test_new_path_selected(
     fake_settings = FakeSettings(
         data={'config/directory': old_directory},
     )
-    monkeypatch.setattr(aims.settings, 'get_setting', fake_settings.get_settings)
-    monkeypatch.setattr(aims.settings, 'set_setting', fake_settings.set_settings)
+    monkeypatch.setattr('aims.managers.windows_manager.windows.main_window.get_setting', fake_settings.get_settings)
+    monkeypatch.setattr('aims.managers.windows_manager.windows.main_window.set_setting', fake_settings.set_settings)
     monkeypatch.setattr(QtWidgets.QFileDialog, 'getExistingDirectory', fake_file_dialog(
         path=new_directory,
     ))
@@ -105,7 +104,7 @@ def test_new_path_selected(
         data_manager=data_manager,
     )
 
-    main_window._on_open_triggered()
+    main_window.on_directory_opened()
 
     assert fake_settings.data['config/directory'] == new_directory
 

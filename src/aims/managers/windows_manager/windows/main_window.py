@@ -1,18 +1,16 @@
 import os
 
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtWidgets
 
 import aims
-from aims import settings
-from aims.config import SHOW_WIDGET_IS_ENABLE
 from aims.managers.data_manager import DataManager
 from aims.managers.windows_manager.widgets.central_widget import CentralWidget
 from aims.managers.windows_manager.windows.widget_window import WidgetWindow
+from aims.settings import get_setting, set_setting
 from spectrumapp.decorators import wait
-from spectrumapp.helpers import find_action, find_window
 from spectrumapp.loggers import log
-from spectrumapp.windows.mainWindow import BaseMainWindow
-from spectrumapp.windows.splashScreenWindow import splashscreen
+from spectrumapp.windows.main_window import BaseMainWindow
+from spectrumapp.windows.splash_screen_window import splashscreen
 
 
 class MainWindow(BaseMainWindow):
@@ -32,72 +30,33 @@ class MainWindow(BaseMainWindow):
         )
 
         # update title
-        self._update_title()
+        self.on_title_updated()
 
         # widget window
         self.widgetWindow = WidgetWindow()
 
-        # actions
-        if SHOW_WIDGET_IS_ENABLE:
-            action = QtGui.QAction('&Open Info', self)
-            action.setEnabled(True)
-            action.setCheckable(True)
-            action.setChecked(settings.get_setting('widgetWindow/visible'))
-            action.setShortcut('Ctrl+I')
-            action.setShortcutContext(QtCore.Qt.ApplicationShortcut)
-            action.toggled.connect(self._on_show_widget_window_triggered)
-            self.addAction(action)
-
-    # --------        slots        --------
-    @log(message='window: open action')
-    @wait
-    def _on_open_triggered(self, *args, **kwargs):
-        app = QtWidgets.QApplication.instance()
-
-        # update path
-        path = QtWidgets.QFileDialog().getExistingDirectory(
-            parent=self,
-            caption='Выберете каталог:',
-            dir=settings.get_setting(key='config/directory'),
-        )
-        path = os.sep.join(path.split('/'))
-
-        if path == '':
-            return
-        if path == settings.get_setting(key='config/directory'):
-            return
-
-        # update setting
-        settings.set_setting(
-            key='config/directory',
-            value=path,
-        )
-
-        # reset app
-        app.reset(force=True)
-
     @log(message='window: refresh action')
     @wait
-    def _on_refresh_triggered(self, *args, **kwargs):
+    def on_refreshed(self, *args, **kwargs):
         app = QtWidgets.QApplication.instance()
 
         # visible
         if all([
-            not settings.get_setting(key='mainWindow/visible'),
-            not settings.get_setting(key='widgetWindow/visible'),
+            not get_setting(key='mainWindow/visible'),
+            not get_setting(key='widgetWindow/visible'),
         ]):
             visible = True
         else:
-            visible = settings.get_setting(key='mainWindow/visible')
+            visible = get_setting(key='mainWindow/visible')
 
         self.setVisible(visible)
 
         # update title
-        self._update_title()
+        self.on_title_updated()
 
         # menus
         menubar = self.menuBar()
-        menubar.setVisible(settings.get_setting(key='mainWindow/menubar'))
+        menubar.setVisible(get_setting(key='mainWindow/menubar'))
 
         # update app windows
         for window in app.topLevelWidgets():
@@ -112,7 +71,7 @@ class MainWindow(BaseMainWindow):
     @log(message='window: reset action')
     @wait
     @splashscreen(delay=1)
-    def _on_reset_triggered(self, *args, **kwargs):
+    def on_resetted(self, *args, **kwargs):
         '''An action occurs due to change file.'''
         app = QtWidgets.QApplication.instance()
 
@@ -120,7 +79,7 @@ class MainWindow(BaseMainWindow):
         app.reset(force=True)
 
         # update title
-        self._update_title()
+        self.on_title_updated()
 
         # reset windows
         for window in app.topLevelWidgets():
@@ -131,22 +90,34 @@ class MainWindow(BaseMainWindow):
             else:
                 window.close()
 
-    @log(message='window: show/hide widget action')
+    @log(message='window: open action')
     @wait
-    def _on_show_widget_window_triggered(self, *args, **kwargs):
-        action = find_action(self, text='&Open Info')
-        visible = action.isChecked()
+    def on_directory_opened(self, *args, **kwargs):
+        app = QtWidgets.QApplication.instance()
 
-        settings.set_setting(
-            key='widgetWindow/visible',
-            value=visible,
+        # update path
+        path = QtWidgets.QFileDialog().getExistingDirectory(
+            parent=self,
+            caption='Выберете каталог:',
+            dir=get_setting(key='config/directory'),
+        )
+        path = os.sep.join(path.split('/'))
+
+        if path == '':
+            return
+        if path == get_setting(key='config/directory'):
+            return
+
+        # update setting
+        set_setting(
+            key='config/directory',
+            value=path,
         )
 
-        # refresh info window
-        window = find_window('widgetWindow')
-        window._on_refresh_triggered()
+        # reset app
+        app.reset(force=True)
 
-    def _update_title(self) -> None:
+    def on_title_updated(self) -> None:
 
         title = get_title(
             data_manager=self.data_manager,

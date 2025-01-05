@@ -29,7 +29,7 @@ pytz==2024.2
 setuptools==75.6.0
 shiboken6==6.8.1
 six==1.17.0
-spectrumapp @ git+https://github.com/Exinker/spectrumapp@b31150a7445917203199b8e87856a4760e1cb79b
+spectrumapp @ git+https://github.com/Exinker/spectrumapp@258c84c12a7be45f315298245a1870e456538508
 telepot==12.7
 tqdm==4.66.4
 tzdata==2024.2

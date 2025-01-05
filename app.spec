@@ -34,7 +34,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='{name} {version} (beta)'.format(
+    name='{name} {version}'.format(
         name=aims.__name__,
         version=aims.__version__,
     ),

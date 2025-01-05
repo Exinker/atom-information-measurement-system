@@ -21,4 +21,4 @@ class WindowsManager:
 
     def update(self) -> None:
 
-        self.window._on_refresh_triggered()
+        self.window.on_refreshed()

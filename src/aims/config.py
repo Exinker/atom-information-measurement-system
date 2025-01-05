@@ -28,8 +28,6 @@ LOGGER = logging.getLogger('app')
 LOGGING_LEVEL = LOGGING_LEVEL_MAP.get(os.environ.get('LOGGING_LEVEL'), logging.DEBUG)
 LOGGING_MAX_BYTES = int(os.environ.get('LOGGING_MAX_BYTES', 1000 * 1000))  # 1 MByte
 
-SHOW_WIDGET_IS_ENABLE = os.environ.get('SHOW_WIDGET_IS_ENABLE', 'False') == 'True'
-
 N_WORKERS = os.environ.get('N_WORKERS', 1)
 
 match sys.platform:
