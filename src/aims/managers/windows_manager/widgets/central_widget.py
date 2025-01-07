@@ -13,9 +13,6 @@ class CentralWidget(QtWidgets.QWidget):
 
         self.data_manager = data_manager
 
-        # style
-        self.setStyleSheet("font-size: 14px; font-weight: 600")
-
         # layout
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
@@ -38,6 +35,13 @@ class CentralWidget(QtWidgets.QWidget):
         self.stackedWidget.addWidget(self.sheetQueueWidget)
 
     def _on_refresh_triggered(self):
+
+        # update style
+        style = 'font-size: {font_size}px; font-weight: {font_weight}'.format(
+            font_size=get_setting(key='style/font-size'),
+            font_weight='600',
+        )
+        self.setStyleSheet(style)
 
         # update stacked widget
         widget = self.sheetQueueWidget if get_setting(key='mainWindow/queue-widget') else self.sheetWidget

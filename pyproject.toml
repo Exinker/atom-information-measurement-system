@@ -47,4 +47,4 @@ dev = [
 ]
 
 [tool.uv.sources]
-spectrumapp = { git = "https://github.com/Exinker/spectrumapp", rev = "1.0.1" }
+spectrumapp = { git = "https://github.com/Exinker/spectrumapp", rev = "master" }

@@ -251,9 +251,6 @@ class TableView(QtWidgets.QTableView):
                 datum=DatumABC.from_default(),
             )
 
-        # style
-        self.setStyleSheet("font-size: 14px; font-weight: 500")
-
         # model
         self.setModel(model)
 
@@ -277,6 +274,13 @@ class TableView(QtWidgets.QTableView):
         # self.setMinimumSize(QtCore.QSize(5 + 120 + 15, 90))
 
     def _update(self, model: QtCore.QAbstractTableModel):
+
+        # update style
+        style = 'font-size: {font_size}px; font-weight: {font_weight}'.format(
+            font_size=get_setting(key='style/font-size'),
+            font_weight=get_setting(key='style/font-weight'),
+        )
+        self.setStyleSheet(style)
 
         # update model
         self.setModel(model)

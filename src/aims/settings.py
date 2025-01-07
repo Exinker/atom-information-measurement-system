@@ -11,7 +11,10 @@ from spectrumapp.loggers import log
 from spectrumapp.settings import load_settings
 
 
-# ---------        filtration        ---------
+DEFAULT_FONT_SIZE = 14
+DEFAULT_FONT_WEIGHT = 500
+
+
 class FilterLevel(Enum):
     NOTSET = 0
     NORMAL = 1
@@ -23,7 +26,6 @@ class FilterLevel(Enum):
         return item in cls._member_names_
 
 
-# ---------        sorting        ---------
 class SorterKind(Enum):
     NONE = 'none'
     FILTER_LEVEL = 'filter-level'
@@ -33,40 +35,53 @@ class SorterKind(Enum):
         return item in cls._member_names_
 
 
-# ---------        settings        ---------
 @log(message='setting: get')
 def get_setting(key: str) -> Any:
 
     match key.split('/'):
-        case 'config', key:
+        case 'config', field:
             config = Config.load()
 
-            if key == 'directory':
+            if field == 'directory':
                 return os.path.abspath(config.directory)
-            if key == 'tracked_queue_length':
+            if field == 'tracked_queue_length':
                 return config.tracked_queue_length
 
-            raise ValueError(f'key {key} is not supported!')
+            raise ValueError(f'Field {field} is not supported!')
 
-        case 'table', key:
+        case 'table', field:
             settings = load_settings()
-            value = settings.value('table/{}'.format(key))
+            value = settings.value('table/{}'.format(field))
 
-            if key in ['n_rows', 'n_columns']:
+            if field in ['n_rows', 'n_columns']:
                 try:
                     return int(value)
                 except Exception:
                     return 1
 
-            if key == 'sorter-kind':
+            if field == 'sorter-kind':
                 if SorterKind.is_in(value):
                     return SorterKind[value]
                 return SorterKind['NONE']
 
-            if key == 'filter-level':
+            if field == 'filter-level':
                 if FilterLevel.is_in(value):
                     return FilterLevel[value]
                 return FilterLevel['NOTSET']
+
+        case 'style', field:
+            settings = load_settings()
+            value = settings.value('style/{}'.format(field))
+
+            if field == 'font-size':
+                if value in ['12', '14', '16']:
+                    return value
+                return DEFAULT_FONT_SIZE
+
+            if field == 'font-weight':
+                if value in ['400', '500', '600']:
+                    return value
+                return DEFAULT_FONT_WEIGHT
 
         case _:
             settings = load_settings()
@@ -109,6 +124,9 @@ def setdefault_setting() -> None:
         settings.setValue('table/n_columns', 10)
         settings.setValue('table/filter-level', FilterLevel.NOTSET.name)
         settings.setValue('table/sorter-kind', SorterKind.NONE.name)
+
+        settings.setValue('style/font-size', 14)
+        settings.setValue('style/font-weight', 500)
 
         settings.sync()
 
