@@ -2,17 +2,13 @@
 import json
 import os
 from enum import Enum
-from typing import Any
+from typing import Any, Literal, get_args
 
 from PySide6 import QtCore
 
 from aims.config import Config
 from spectrumapp.loggers import log
 from spectrumapp.settings import load_settings
-
-
-DEFAULT_FONT_SIZE = 14
-DEFAULT_FONT_WEIGHT = 500
 
 
 class FilterLevel(Enum):
@@ -22,7 +18,7 @@ class FilterLevel(Enum):
     DANGER = 3
 
     @classmethod
-    def is_in(cls, item) -> bool:
+    def is_contains(cls, item: str) -> bool:
         return item in cls._member_names_
 
 
@@ -31,8 +27,26 @@ class SorterKind(Enum):
     FILTER_LEVEL = 'filter-level'
 
     @classmethod
-    def is_in(cls, item) -> bool:
+    def is_contains(cls, item: str) -> bool:
         return item in cls._member_names_
+
+
+class FontSize:
+    VALUES = Literal['12', '14', '16']
+    DEFAULT = '14'
+
+    @classmethod
+    def is_contains(cls, item: str) -> bool:
+        return item in get_args(cls.VALUES)
+
+
+class FontWeight:
+    VALUES = Literal['400', '500', '600']
+    DEFAULT = '400'
+
+    @classmethod
+    def is_contains(cls, item: str) -> bool:
+        return item in get_args(cls.VALUES)
 
 
 @log(message='setting: get')
@@ -60,12 +74,12 @@ def get_setting(key: str) -> Any:
                     return 1
 
             if field == 'sorter-kind':
-                if SorterKind.is_in(value):
+                if SorterKind.is_contains(value):
                     return SorterKind[value]
                 return SorterKind['NONE']
 
             if field == 'filter-level':
-                if FilterLevel.is_in(value):
+                if FilterLevel.is_contains(value):
                     return FilterLevel[value]
                 return FilterLevel['NOTSET']
 
@@ -74,14 +88,14 @@ def get_setting(key: str) -> Any:
             value = settings.value('style/{}'.format(field))
 
             if field == 'font-size':
-                if value in ['12', '14', '16']:
+                if FontSize.is_contains(value):
                     return value
-                return DEFAULT_FONT_SIZE
+                return FontSize.DEFAULT
 
             if field == 'font-weight':
-                if value in ['400', '500', '600']:
+                if FontWeight.is_contains(value):
                     return value
-                return DEFAULT_FONT_WEIGHT
+                return FontWeight.DEFAULT
 
         case _:
             settings = load_settings()
@@ -109,7 +123,7 @@ def set_setting(key: str, value: str | int | float | list) -> None:
 
 def setdefault_setting() -> None:
 
-    # setdefault settings.ini
+    # set default `settings.ini`
     if not os.path.exists('settings.ini'):
         settings = QtCore.QSettings('settings.ini', QtCore.QSettings.IniFormat)
 
@@ -120,17 +134,17 @@ def setdefault_setting() -> None:
 
         # settings.setValue('widgetWindow/visible', False)
 
+        settings.setValue('style/font-size', FontSize.DEFAULT)
+        settings.setValue('style/font-weight', FontWeight.DEFAULT)
+
         settings.setValue('table/n_rows', 1)
         settings.setValue('table/n_columns', 10)
         settings.setValue('table/filter-level', FilterLevel.NOTSET.name)
         settings.setValue('table/sorter-kind', SorterKind.NONE.name)
 
-        settings.setValue('style/font-size', 14)
-        settings.setValue('style/font-weight', 500)
-
         settings.sync()
 
-    # setdefault config
+    # set default `config.json`
     if not os.path.exists('config.json'):
         config = Config.default()
         config.dump()
