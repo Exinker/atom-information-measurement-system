@@ -7,7 +7,7 @@ from aims.managers.data_manager import DataManager
 from aims.managers.windows_manager.widgets.central_widget import CentralWidget
 from aims.managers.windows_manager.widgets.sheet_queue_widget import SheetQueueWidget
 from aims.managers.windows_manager.widgets.sheet_widget import SheetWidget
-from tests.fakes.settings import FakeSettings
+from tests.fakes._settings import FakeSettings
 
 
 @pytest.mark.parametrize(
@@ -33,6 +33,6 @@ def test_central_widget_refresh(
         parent=None,
     )
 
-    central_widget._on_refresh_triggered()
+    central_widget.on_refreshed()
 
     assert isinstance(central_widget.stackedWidget.currentWidget(), expected)

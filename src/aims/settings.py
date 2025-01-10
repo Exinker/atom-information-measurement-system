@@ -8,6 +8,7 @@ from PySide6 import QtCore
 from aims.config import Config
 from spectrumapp.loggers import log
 from spectrumapp.settings import load_settings
+from spectrumapp.types import DirPath
 
 
 class FilterLevel(Enum):
@@ -120,11 +121,14 @@ def set_setting(key: str, value: str | int | float | list) -> None:
             settings.sync()
 
 
-def setdefault_setting() -> None:
+def setdefault_setting(filedir: DirPath | None = None) -> None:
+
+    filedir = filedir or os.getcwd()
 
     # set default `settings.ini`
-    if not os.path.exists('settings.ini'):
-        settings = QtCore.QSettings('settings.ini', QtCore.QSettings.IniFormat)
+    filepath = os.path.join(filedir, 'settings.ini')
+    if not os.path.exists(filepath):
+        settings = QtCore.QSettings(filepath, QtCore.QSettings.IniFormat)
 
         settings.setValue('mainWindow/visible', True)
         settings.setValue('mainWindow/menubar', False)
@@ -144,6 +148,9 @@ def setdefault_setting() -> None:
         settings.sync()
 
     # set default `config.json`
-    if not os.path.exists('config.json'):
+    filepath = os.path.join(filedir, 'config.json')
+    if not os.path.exists(filepath):
+        Config.FILEPATH = filepath
+
         config = Config.default()
         config.dump()

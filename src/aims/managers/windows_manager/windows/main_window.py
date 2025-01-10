@@ -63,7 +63,7 @@ class MainWindow(BaseMainWindow):
             window_name = window.objectName()
 
             if window_name in ['mainWindow']:
-                window.centralWidget()._on_refresh_triggered()
+                window.centralWidget().on_refreshed()
 
             if window_name in ['HelpWindow', 'AboutWindow']:
                 pass

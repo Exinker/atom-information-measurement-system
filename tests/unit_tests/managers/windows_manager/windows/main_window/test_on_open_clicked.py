@@ -9,7 +9,7 @@ from pytestqt.qtbot import QtBot
 
 from aims.managers.data_manager import DataManager
 from aims.managers.windows_manager.windows.main_window import MainWindow
-from tests.fakes.settings import FakeSettings
+from tests.fakes._settings import FakeSettings
 
 
 class FakeApplication:

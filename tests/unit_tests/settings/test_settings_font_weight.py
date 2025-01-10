@@ -4,7 +4,7 @@ import pytest
 
 import aims.settings
 from aims.settings import FontWeight, get_setting
-from tests.fakes.settings import fake_load_settings
+from tests.fakes._settings import fake_load_settings
 
 
 @pytest.mark.parametrize(

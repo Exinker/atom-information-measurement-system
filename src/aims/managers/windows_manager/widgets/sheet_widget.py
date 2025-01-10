@@ -36,7 +36,7 @@ class SheetWidget(QtWidgets.QWidget):
             self.tableViews.append(view)
 
     # --------        slots        --------
-    def _on_refresh_triggered(self, datum: DatumABC | None = None):
+    def on_refreshed(self, datum: DatumABC | None = None):
 
         datum = datum or self.data_manager.last_datum
         if datum is None:

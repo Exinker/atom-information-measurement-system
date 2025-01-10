@@ -1,8 +1,5 @@
 from collections.abc import Mapping
-from pathlib import Path
 from typing import Callable
-
-from PySide6 import QtCore
 
 
 class FakeSettings:
@@ -15,10 +12,10 @@ class FakeSettings:
 
 
 def fake_load_settings(
-    filedir: Path,
+    data: Mapping[str, str],
 ) -> Callable[..., FakeSettings]:
-    filepath = str(filedir / 'settings.ini')
 
-    def wrapper():
-        return QtCore.QSettings(filepath, QtCore.QSettings.IniFormat)
-    return wrapper
+    def factory() -> FakeSettings:
+        return FakeSettings(data=data)
+
+    return factory

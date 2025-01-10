@@ -5,11 +5,6 @@ from aims.managers.windows_manager.widgets.sheet_widget import SheetWidget
 from aims.settings import get_setting
 
 
-def _format_tab_label(label: str) -> str:
-    """Format label to represent not empty tab's label."""
-    return f'{label:<15}'
-
-
 class SheetQueueWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, data_manager: DataManager, **kwargs):
@@ -37,7 +32,7 @@ class SheetQueueWidget(QtWidgets.QWidget):
         return get_setting(key='config/tracked_queue_length')
 
     # --------        slots        --------
-    def _on_refresh_triggered(self):
+    def on_refreshed(self):
 
         for i in range(self.n_sheets):
 
@@ -51,12 +46,17 @@ class SheetQueueWidget(QtWidgets.QWidget):
             if datum is None:
                 self.tabWidget.setTabVisible(i, False)
                 self.tabWidget.setTabEnabled(i, False)
-                self.tabWidget.setTabText(i, _format_tab_label(label=''))
+                self.tabWidget.setTabText(i, _format_label(label=''))
 
             else:
                 self.tabWidget.setTabVisible(i, True)
                 self.tabWidget.setTabEnabled(i, True)
-                self.tabWidget.setTabText(i, _format_tab_label(label=datum.meta.probe_name))
+                self.tabWidget.setTabText(i, _format_label(label=datum.meta.probe_name))
 
                 widget = self.tabWidget.widget(i)
-                widget._on_refresh_triggered(datum=datum)
+                widget.on_refreshed(datum=datum)
+
+
+def _format_label(label: str) -> str:
+    """Format label to represent not empty tab's label."""
+    return f'{label:<15}'
