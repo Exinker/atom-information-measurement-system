@@ -7,15 +7,15 @@ from aims.managers.data_manager import DataManager
 from aims.managers.windows_manager.widgets.central_widget import CentralWidget
 from aims.managers.windows_manager.windows.widget_window import WidgetWindow
 from aims.settings import get_setting, set_setting
-from spectrumapp.decorators import wait
 from spectrumapp.loggers import log
 from spectrumapp.windows.main_window import BaseMainWindow
-from spectrumapp.windows.splash_screen_window import splashscreen
+from spectrumapp.windows.modifiers import wait
+from spectrumapp.windows.splash_screen_window import utils
 
 
 class MainWindow(BaseMainWindow):
 
-    # @splashscreen(progress=70, info='<strong>LOADING</strong> user interface...')
+    # @utils.splashscreen(progress=70, info='<strong>LOADING</strong> user interface...')
     def __init__(self, *args, data_manager: DataManager, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -70,7 +70,7 @@ class MainWindow(BaseMainWindow):
 
     @log(message='window: reset action')
     @wait
-    @splashscreen(delay=1)
+    @utils.splashscreen(delay=1)
     def on_resetted(self, *args, **kwargs):
         '''An action occurs due to change file.'''
         app = QtWidgets.QApplication.instance()

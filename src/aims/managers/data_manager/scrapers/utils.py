@@ -1,16 +1,15 @@
-import logging
 import os
 from datetime import datetime
 from typing import Iterator
 
 from aims.config import Directory, TrackedPediod
 from aims.managers.data_manager.types import XML, XMLPath
+from spectrumapp.types import FilePath
 
 
-LOGGER = logging.getLogger('app')
-
-
-def walk(directory: Directory) -> Iterator[XMLPath]:
+def walk(
+    directory: Directory,
+) -> Iterator[FilePath]:
     """Walk iterable along for a given path."""
 
     for filedir, _, filenames in os.walk(directory):
@@ -20,25 +19,28 @@ def walk(directory: Directory) -> Iterator[XMLPath]:
             yield filepath
 
 
-def validate_file(filepath: XMLPath, milestone: datetime, tracked_period: TrackedPediod) -> bool:
+def validate_file(
+    filepath: XMLPath,
+    milestone: datetime,
+    tracked_period: TrackedPediod,
+) -> bool:
     """Validate file to the simplest cases."""
 
-    # validate file's extension
     if not filepath.endswith('.xml'):
         return False
 
-    # validate file's created datetime
-    filestat = os.stat(filepath)
-
-    created_at = datetime.fromtimestamp(filestat.st_ctime)
+    created_at = datetime.fromtimestamp(
+        timestamp=os.stat(filepath).st_ctime,
+    )
     if not tracked_period.check(created_at, milestone=milestone):
         return False
 
-    #
     return True
 
 
-def validate_xml(xml: XML | None) -> bool:
+def validate_xml(
+    xml: XML | None,
+) -> bool:
     """Validate `xml` to simplest cases."""
 
     if xml is None:
@@ -47,10 +49,10 @@ def validate_xml(xml: XML | None) -> bool:
     if xml.tag != 'analysis':
         return False
 
-    titul = xml.find('titul')
-    if titul is None:
+    if xml.find('titul') is None:
         return False
 
+    titul = xml.find('titul')
     if any(
         titul.find(tag) is None
         for tag in ('organization', 'device', 'user', 'date', 'aname')

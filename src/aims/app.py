@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 
 from PySide6 import QtWidgets
@@ -8,16 +9,24 @@ from aims.managers.data_manager import DataManager
 from aims.managers.watcher_manager import WatcherManager
 from aims.managers.windows_manager import WindowsManager
 from aims.settings import get_setting
-from spectrumapp.decorators import wait
 from spectrumapp.loggers import log
+from spectrumapp.windows.modifiers import wait
 
 
-try:  # change `app_id` for correct icon present
-    from PySide6.QtWinExtras import QtWin
+try:  # change app id for correct icon present
+    from ctypes import windll
 
-    app_id = f'{aims.__organization__}.{aims.__name__}.MAINWINDOW.{aims.__version__}'
-    QtWin.setCurrentProcessExplicitAppUserModelID(app_id)
+    app_id = '{organization}.{name}.MAINWINDOW.{version}'.format(
+        name=os.environ['APPLICATION_NAME'],
+        version=os.environ['APPLICATION_VERSION'],
+        organization=os.environ['ORGANIZATION_NAME'],
+    )
+    windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+
 except ImportError:
+    pass
+
+except KeyError:  # for testing only
     pass
 
 

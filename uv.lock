@@ -48,7 +48,7 @@ testing = [
 [package.metadata]
 requires-dist = [
     { name = "setuptools", specifier = ">=75.6.0" },
-    { name = "spectrumapp", git = "https://github.com/Exinker/spectrumapp?rev=master" },
+    { name = "spectrumapp", git = "https://github.com/Exinker/spectrumapp?rev=1.0.2" },
     { name = "tqdm", specifier = "==4.66.4" },
     { name = "watchdog", specifier = "==4.0.1" },
 ]
@@ -1083,8 +1083,8 @@ wheels = [
 
 [[package]]
 name = "spectrumapp"
-version = "1.0.1"
-source = { git = "https://github.com/Exinker/spectrumapp?rev=master#5b0bf89b82ef9bc75f7a2ffb51c5d0f626e018d7" }
+version = "1.0.2"
+source = { git = "https://github.com/Exinker/spectrumapp?rev=1.0.2#b96a3f1d76f4d61138731f8d6fa3a7e674c9dd4c" }
 dependencies = [
     { name = "matplotlib" },
     { name = "numpy" },

@@ -2,7 +2,7 @@ import dataclasses
 import json
 import logging
 import os
-import sys
+import platform
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -30,14 +30,13 @@ LOGGING_MAX_BYTES = int(os.environ.get('LOGGING_MAX_BYTES', 1000 * 1000))  # 1 M
 
 N_WORKERS = os.environ.get('N_WORKERS', 1)
 
-match sys.platform:
-    case 'win32':
-        EXPLORER = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
-    case _:
-        EXPLORER = ''
+if platform.system() == 'Windows':
+    EXPLORER = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
+else:
+    EXPLORER = ''
 
 
-# ---------        ENV        ---------
+# ---------        COLOR        ---------
 COLOR = {
     'red': RedOrangeYellowGreenColorset.RED.value,
     'orange': RedOrangeYellowGreenColorset.ORANGE.value,
@@ -130,7 +129,7 @@ class TrackedPediod(Enum):
             return __datetime > (milestone - pd.offsets.DateOffset(months=1))
 
         if self == TrackedPediod.WEEK:
-            return __datetime > (milestone - pd.offsets.DateOffset(days=1))
+            return __datetime > (milestone - pd.offsets.DateOffset(weeks=1))
 
         if self == TrackedPediod.DAY:
             return __datetime > (milestone - pd.offsets.DateOffset(days=1))
@@ -181,11 +180,9 @@ class FiltratedSheet:
 
     def __new__(cls, value: str | None):
 
-        # no separation
         if value is None:
             return None
 
-        #
         if not isinstance(value, str):
             message = 'Filtrated sheet "{value}" have to be "null" or string!'.format(
                 value=json.dumps(value),
@@ -214,7 +211,6 @@ class FiltratedLabel(Enum):
     @classmethod
     def from_str(cls, value: str) -> 'TrackedPediod':
 
-        #
         valid_values = {item.value: item for item in cls}
         if value in valid_values:
             return valid_values[value]
@@ -231,11 +227,9 @@ class Separator:
 
     def __new__(cls, value: str | None):
 
-        # no separation
         if value is None:
             return None
 
-        #
         if not isinstance(value, str):
             message = 'Separator value "{value}" have to be "null" or string!'.format(
                 value=json.dumps(value),
@@ -255,11 +249,9 @@ class DatabasePath(str):
 
     def __new__(cls, path: str | None):
 
-        # no database
         if path is None:
             return None
 
-        #
         if not os.path.exists(path):
             message = 'Database path {path} is not found or not available!'.format(
                 path=json.dumps(path),
