@@ -10,11 +10,17 @@ from aims.managers.data_manager.cache import (
     cache,
 )
 from aims.managers.data_manager.scrapers.utils import (
-    validate_file,
-    validate_xml,
     walk,
 )
-from aims.managers.data_manager.types import AnalysisName, Frame, XML
+from aims.managers.data_manager.scrapers.validators import (
+    validate_file,
+    validate_xml,
+)
+from aims.managers.data_manager.types import (
+    AnalysisName,
+    Frame,
+    XML,
+)
 from aims.managers.data_manager.utils.formatters import (
     normalize_datetime,
     normalize_name,
@@ -81,14 +87,15 @@ def _scrape_xml(
     sep: str,
 ) -> Iterable[Mapping[str, Any]]:
 
-    if validate_file(
-        __filepath,
-        milestone=milestone,
-        tracked_period=tracked_period,
-    ):
+    is_validated = validate_file(__filepath, milestone=milestone, tracked_period=tracked_period)
+    if is_validated:
         xml = load_xml(__filepath)
 
-        if validate_xml(xml):
+        if xml is None:
+            return []
+
+        is_validated = validate_xml(xml)
+        if is_validated:
             analysis_name = _scrape_analysis(xml)
             probes = _scrape_probes(xml, sep=sep)
 
@@ -107,7 +114,7 @@ def _scrape_xml(
             return records
 
         else:
-            LOGGER.warning('XML %s is not validated!')
+            LOGGER.warning('XML %s is not validated!', __filepath)
 
     return []
 

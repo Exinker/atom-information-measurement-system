@@ -6,9 +6,10 @@ omit =
 	tests/
 
 [report]
-exclude_lines =
+exclude_also =
     import *
     from * import *
+    @abstractmethod
     def __init__
     def __repr__
     raise NotImplementedError
