@@ -51,29 +51,16 @@ class Directory(str):
 
     @classmethod
     def default(cls) -> 'Directory':
+
         path = os.getcwd()
 
-        super_path, root_dirname = os.path.split(path)
-        database_dir = os.path.join(super_path, 'DB')
+        root, name = os.path.split(path)
+        if (name.upper() == 'AIMS') and os.path.isdir(os.path.join(root, 'DB')):
+            return os.path.join(root, 'DB')
 
-        # check root directory
-        if root_dirname.upper() != 'AIMS':
-            return path
-
-        # check database directory
-        if not os.path.isdir(database_dir):
-            return path
-
-        #
-        return database_dir
+        return path
 
     def __new__(cls, path: str):
-
-        if not os.path.exists(path):
-            message = 'Tracked path {path} is not found or not available!'.format(
-                path=json.dumps(path),
-            )
-            raise ValueError(message)
 
         if not os.path.isdir(path):
             message = 'Tracked path {path} have to be a directory!'.format(
@@ -88,7 +75,6 @@ class TrackedMode(Enum):
     CONVERGENCE_BY_PROBES = 'convergence-by-probes-control'
     CONVERGENCE_BY_PARALLELS = 'convergence-by-parallels-control'
     # REFERENCE = 'reference-control'
-    NONE = 'none'
 
     @classmethod
     def default(cls) -> 'TrackedMode':
@@ -116,26 +102,26 @@ class TrackedPediod(Enum):
     DAY = 'day'
     TODAY = 'today'
 
-    def check(self, __datetime: datetime, milestone: datetime | None = None) -> bool:
+    def check(self, dt: datetime, milestone: datetime | None = None) -> bool:
         milestone = milestone or datetime.now()
 
         if self == TrackedPediod.ALL:
             return True
 
         if self == TrackedPediod.YEAR:
-            return __datetime > (milestone - pd.offsets.DateOffset(years=1))
+            return dt > (milestone - pd.offsets.DateOffset(years=1))
 
         if self == TrackedPediod.MONTH:
-            return __datetime > (milestone - pd.offsets.DateOffset(months=1))
+            return dt > (milestone - pd.offsets.DateOffset(months=1))
 
         if self == TrackedPediod.WEEK:
-            return __datetime > (milestone - pd.offsets.DateOffset(weeks=1))
+            return dt > (milestone - pd.offsets.DateOffset(weeks=1))
 
         if self == TrackedPediod.DAY:
-            return __datetime > (milestone - pd.offsets.DateOffset(days=1))
+            return dt > (milestone - pd.offsets.DateOffset(days=1))
 
         if self == TrackedPediod.TODAY:
-            return __datetime.date() == milestone.date()
+            return dt.date() == milestone.date()
 
         raise ValueError(f'Tracked pediod {self} is not supported!.')
 
@@ -245,28 +231,6 @@ class Separator:
         return value
 
 
-class DatabasePath(str):
-
-    def __new__(cls, path: str | None):
-
-        if path is None:
-            return None
-
-        if not os.path.exists(path):
-            message = 'Database path {path} is not found or not available!'.format(
-                path=json.dumps(path),
-            )
-            raise ValueError(message)
-
-        if not (os.path.isfile(path) and path.endswith('.xml')):
-            message = 'Database path {path} have to be a path of `xml` file!'.format(
-                path=json.dumps(path),
-            )
-            raise ValueError(message)
-
-        return super().__new__(cls, path)
-
-
 # ---------        Config        ---------
 @dataclass(frozen=True, slots=True)
 class Config(AbstractConfig):
@@ -283,8 +247,6 @@ class Config(AbstractConfig):
     filtrated_by_label: FiltratedLabel = field(default=FiltratedLabel.default())
 
     sep: str = field(default='*')
-
-    # database_path: DatabasePath = field(default=DatabasePath(None))
 
     FILEPATH: ClassVar[str] = field(default=os.path.join(os.getcwd(), 'config.json'))
 
@@ -340,8 +302,6 @@ class Config(AbstractConfig):
                 filtrated_by_label=FiltratedLabel.from_str(value=data['filtrated_by_label']),
 
                 sep=Separator(value=data['sep']),
-
-                # database_path=DatabasePath(path=data['database_path']),
             )
         except (
             KeyError,
@@ -370,7 +330,6 @@ class Config(AbstractConfig):
 def setdefault_config(force: bool = False) -> None:
     """Create default config file."""
 
-    filepath = Config.FILEPATH
-    if (not os.path.exists(filepath)) or force:
+    if force or not os.path.exists(Config.FILEPATH):
         config = Config.default()
         config.dump()

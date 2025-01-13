@@ -96,7 +96,7 @@ def _scrape_xml(
 
         is_validated = validate_xml(xml)
         if is_validated:
-            analysis_name = _scrape_analysis(xml)
+            analysis_name = _scrape_analysis_name(xml)
             probes = _scrape_probes(xml, sep=sep)
 
             records = []
@@ -119,7 +119,7 @@ def _scrape_xml(
     return []
 
 
-def _scrape_analysis(xml: XML) -> AnalysisName:
+def _scrape_analysis_name(xml: XML) -> AnalysisName:
     """Parse analysis from given Atom's `xml`."""
 
     try:

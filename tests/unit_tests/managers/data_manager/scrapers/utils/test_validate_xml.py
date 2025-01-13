@@ -1,9 +1,7 @@
 import dataclasses
-import os
 import uuid
 from dataclasses import dataclass, field
 from functools import partial
-from pathlib import Path
 from typing import Any, Callable, Literal, Mapping
 from xml.etree.ElementTree import Element, SubElement
 
@@ -12,7 +10,6 @@ from faker import Faker
 
 from aims.managers.data_manager.scrapers.validators import validate_xml
 from aims.managers.data_manager.types import XML
-from spectrumapp.types import FilePath
 
 
 fake = Faker('ru_RU')
@@ -65,7 +62,7 @@ def fake_xml_factory() -> Callable[[str], XML]:
 
         return __root
 
-    def wrapper(
+    def inner(
         exclude: str = '',
     ) -> XML:
 
@@ -79,7 +76,7 @@ def fake_xml_factory() -> Callable[[str], XML]:
             exclude=exclude,
         )
 
-    return wrapper
+    return inner
 
 
 def test_validate_xml(
