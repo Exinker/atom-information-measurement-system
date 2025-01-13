@@ -4,7 +4,7 @@ import pytest
 
 import aims.settings
 from aims.settings import FontWeight, get_setting
-from tests.fakes._settings import fake_load_settings
+from tests.fakes.settings import fake_settings_factory
 
 
 @pytest.mark.parametrize(
@@ -14,8 +14,8 @@ def test_font_weight_valid(
     expected: str,
     monkeypatch: pytest.MonkeyPatch,
 ):
-    monkeypatch.setattr(aims.settings, 'load_settings', fake_load_settings(
-        data={'style/font-weight': expected},
+    monkeypatch.setattr(aims.settings, 'load_settings', fake_settings_factory(
+        fields={'style/font-weight': expected},
     ))
 
     result = get_setting(key='style/font-weight')
@@ -35,8 +35,8 @@ def test_font_weight_invalid(
     expected: str,
     monkeypatch: pytest.MonkeyPatch,
 ):
-    monkeypatch.setattr(aims.settings, 'load_settings', fake_load_settings(
-        data={'style/font-weight': value},
+    monkeypatch.setattr(aims.settings, 'load_settings', fake_settings_factory(
+        fields={'style/font-weight': value},
     ))
 
     result = get_setting(key='style/font-weight')

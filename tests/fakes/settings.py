@@ -1,24 +1,27 @@
 from collections.abc import Mapping
-from pathlib import Path
 from typing import Callable
 
-from PySide6 import QtCore
+from aims.settings import DEFAULT_SETTING
 
 
 class FakeSettings:
 
-    def __init__(self, data: Mapping[str, str]) -> None:
+    def __init__(self, fields: Mapping[str, str]) -> None:
+
+        data = DEFAULT_SETTING
+        data.update(**fields)
         self.data = data
 
     def value(self, key: str) -> str:
+
         return self.data[key]
 
 
-def fake_load_settings(
-    filedir: Path,
+def fake_settings_factory(
+    fields: Mapping[str, str],
 ) -> Callable[..., FakeSettings]:
-    filepath = str(filedir / 'settings.ini')
 
-    def wrapper():
-        return QtCore.QSettings(filepath, QtCore.QSettings.IniFormat)
-    return wrapper
+    def factory() -> FakeSettings:
+        return FakeSettings(fields=fields)
+
+    return factory

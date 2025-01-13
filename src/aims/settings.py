@@ -1,7 +1,7 @@
 import json
 import os
 from enum import Enum
-from typing import Any, Literal, get_args
+from typing import Any, Literal, Mapping, get_args
 
 from PySide6 import QtCore
 
@@ -121,7 +121,25 @@ def set_setting(key: str, value: str | int | float | list) -> None:
             settings.sync()
 
 
-def setdefault_setting(filedir: DirPath | None = None) -> None:
+DEFAULT_SETTING = {
+    'mainWindow/visible': True,
+    'mainWindow/menubar': False,
+    'mainWindow/queue-widget': True,
+
+    'style/font-size': FontSize.DEFAULT,
+    'style/font-weight': FontWeight.DEFAULT,
+
+    'table/n_rows': 1,
+    'table/n_columns': 10,
+    'table/filter-level': FilterLevel.NOTSET.name,
+    'table/sorter-kind': SorterKind.NONE.name,
+}
+
+
+def setdefault_setting(
+    filedir: DirPath | None = None,
+    default_settings: Mapping[str, Any] = DEFAULT_SETTING,
+) -> None:
 
     filedir = filedir or os.getcwd()
 
@@ -130,20 +148,8 @@ def setdefault_setting(filedir: DirPath | None = None) -> None:
     if not os.path.exists(filepath):
         settings = QtCore.QSettings(filepath, QtCore.QSettings.IniFormat)
 
-        settings.setValue('mainWindow/visible', True)
-        settings.setValue('mainWindow/menubar', False)
-        settings.setValue('mainWindow/queue-widget', True)
-        # settings.setValue('mainWindow/meta-widget', False)
-
-        # settings.setValue('widgetWindow/visible', False)
-
-        settings.setValue('style/font-size', FontSize.DEFAULT)
-        settings.setValue('style/font-weight', FontWeight.DEFAULT)
-
-        settings.setValue('table/n_rows', 1)
-        settings.setValue('table/n_columns', 10)
-        settings.setValue('table/filter-level', FilterLevel.NOTSET.name)
-        settings.setValue('table/sorter-kind', SorterKind.NONE.name)
+        for key, value in default_settings.items():
+            settings.setValue(key, value)
 
         settings.sync()
 
