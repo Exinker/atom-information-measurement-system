@@ -25,6 +25,7 @@ dev = [
     { name = "pyinstaller" },
     { name = "pytest" },
     { name = "pytest-cov" },
+    { name = "pytest-faker" },
     { name = "pytest-flake8" },
     { name = "pytest-mock" },
     { name = "pytest-qt" },
@@ -44,6 +45,7 @@ testing = [
     { name = "faker" },
     { name = "pytest" },
     { name = "pytest-cov" },
+    { name = "pytest-faker" },
     { name = "pytest-flake8" },
     { name = "pytest-mock" },
     { name = "pytest-qt" },
@@ -70,6 +72,7 @@ dev = [
     { name = "pyinstaller", specifier = "==5.10.1" },
     { name = "pytest" },
     { name = "pytest-cov" },
+    { name = "pytest-faker", specifier = ">=2.0.0" },
     { name = "pytest-flake8" },
     { name = "pytest-mock", specifier = ">=3.14.0" },
     { name = "pytest-qt" },
@@ -87,6 +90,7 @@ testing = [
     { name = "faker", specifier = ">=33.3.1" },
     { name = "pytest" },
     { name = "pytest-cov" },
+    { name = "pytest-faker", specifier = ">=2.0.0" },
     { name = "pytest-flake8" },
     { name = "pytest-mock", specifier = ">=3.14.0" },
     { name = "pytest-qt" },
@@ -981,6 +985,15 @@ sdist = { url = "https://files.pythonhosted.org/packages/be/45/9b538de8cef30e17c
 wheels = [
     { url = "https://files.pythonhosted.org/packages/36/3b/48e79f2cd6a61dbbd4807b4ed46cb564b4fd50a76166b1c4ea5c1d9e2371/pytest_cov-6.0.0-py3-none-any.whl", hash = "sha256:eee6f1b9e61008bd34975a4d5bab25801eb31898b032dd55addc93e96fcaaa35", size = 22949 },
 ]
+
+[[package]]
+name = "pytest-faker"
+version = "2.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "faker" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c3/76/1ccba9a1d11a0dd614b31f7160709fe05530ff2823a0ce441063430ad56f/pytest-faker-2.0.0.tar.gz", hash = "sha256:6b37bb89d94f96552bfa51f8e8b89d32addded8ddb58a331488299ef0137d9b6", size = 2784 }
 
 [[package]]
 name = "pytest-flake8"

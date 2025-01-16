@@ -2,10 +2,10 @@ from typing import Any
 
 import pytest
 
-from aims.config import Separator
+from aims.config import Separator, DEFAULT_SEP
 
 
-@pytest.fixture(params=['*'])
+@pytest.fixture(params=[DEFAULT_SEP])
 def value(request) -> str:
     return request.param
 

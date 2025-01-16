@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from aims.config import Directory
-from aims.managers.data_manager.scrapers.utils import walk
+from aims.managers.data_manager.scrapers.scraper import walk
 
 
 @pytest.fixture(params=[0, 1, 42])

@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 
 from aims.config import TrackedPediod
-from aims.managers.data_manager.scrapers.validators import validate_file
+from aims.managers.data_manager.scrapers.utils.validators import validate_file
 from spectrumapp.types import FilePath
 
 

@@ -41,14 +41,4 @@ def validate_xml(
     )):
         return False
 
-    titul = xml.find('titul')
-    if any(titul.find(tag) is None for tag in (
-        'aname',
-        'user',
-        'date',
-        'organization',
-        'device',
-    )):
-        return False
-
     return True

@@ -4,15 +4,12 @@ from typing import Any, Iterable, Mapping
 
 import pandas as pd
 
-from aims.config import Directory, TrackedPediod
+from aims.config import TrackedPediod
 from aims.managers.data_manager.cache import (
     CacheManager,
     cache,
 )
-from aims.managers.data_manager.scrapers.utils import (
-    walk,
-)
-from aims.managers.data_manager.scrapers.validators import (
+from aims.managers.data_manager.scrapers.utils.validators import (
     validate_file,
     validate_xml,
 )
@@ -29,58 +26,13 @@ from aims.managers.data_manager.utils.loaders import load_xml
 
 
 LOGGER = logging.getLogger('app')
-
-
-class Scraper:
-
-    def __init__(
-        self,
-        milestone: datetime,
-        directory: Directory,
-        tracked_period: TrackedPediod,
-        sep: str,
-        verbose: bool = False,
-    ) -> None:
-        self.milestone = milestone
-        self.directory = directory
-        self.tracked_period = tracked_period
-        self.sep = sep
-
-        self.verbose = verbose
-
-    def scrape(self) -> Frame:
-
-        records = []
-        for filepath in walk(self.directory):
-
-            _records = _scrape_xml(
-                filepath,
-                milestone=self.milestone,
-                tracked_period=self.tracked_period,
-                sep=self.sep,
-            )
-            records.extend(_records)
-
-            if LOGGER.isEnabledFor(level=logging.DEBUG):
-                probe_names = pd.DataFrame(
-                    _records,
-                    columns=['analysis_name', 'probe_name', 'probe_guid', 'datetime', 'path'],
-                )['probe_name'].unique().tolist()
-                LOGGER.debug(
-                    'Probes %s were scraped from %r',
-                    ', '.join(map(repr, probe_names)),
-                    filepath,
-                )
-
-        records = pd.DataFrame(
-            records,
-            columns=['analysis_name', 'probe_name', 'probe_guid', 'datetime', 'path'],
-        )
-        return records
+DEFAULT_PROBES = pd.DataFrame(
+    columns=['probe_guid', 'id', 'name', 'datetime', 'is_certified'],
+).set_index('probe_guid', drop=False)
 
 
 @cache(cache=CacheManager(field='scraper'))
-def _scrape_xml(
+def scrape_xml(
     __filepath: str,
     milestone: datetime,
     tracked_period: TrackedPediod,
@@ -96,8 +48,8 @@ def _scrape_xml(
 
         is_validated = validate_xml(xml)
         if is_validated:
-            analysis_name = _scrape_analysis_name(xml)
-            probes = _scrape_probes(xml, sep=sep)
+            analysis_name = scrape_analysis_name(xml)
+            probes = scrape_probes(xml, sep=sep)
 
             records = []
             for probe_guid in probes.index:
@@ -119,47 +71,50 @@ def _scrape_xml(
     return []
 
 
-def _scrape_analysis_name(xml: XML) -> AnalysisName:
+def scrape_analysis_name(xml: XML) -> AnalysisName:
     """Parse analysis from given Atom's `xml`."""
 
     try:
-        analysis_name = xml.find('titul').find('aname').text
+        analysis_name = xml.find('titul/aname').text or ''
     except AttributeError:
-        return ''
-    else:
-        return analysis_name
+        analysis_name = ''
+
+    return analysis_name
 
 
-def _scrape_probes(
-    xml: XML,
+def scrape_probes(
+    __xml: XML,
     sep: str,
 ) -> Frame:
     """Parse probes data from given Atom's `xml`."""
-    default_probes = pd.DataFrame(
-        columns=['probe_guid', 'id', 'name', 'datetime', 'is_certified'],
-    ).set_index('probe_guid', drop=False)
 
+    probes = DEFAULT_PROBES.copy()
     try:
-        probes = default_probes.copy()
-        for probe in xml.find('probes').findall('probe'):
+        for probe in __xml.find('probes').findall('probe'):  # TODO: xpath
 
             is_not_empty = len(probe.findall('spe')) > 0
             if is_not_empty:
+
                 try:
                     probe_guid = probe.find('sample/guid').text
-                except AttributeError:
-                    # FIXME: remove capability with old version XML files!
+                except AttributeError:  # FIXME: remove capability with old version XML files!
                     probe_guid = probe.attrib['id']
 
                 probes.loc[probe_guid, 'probe_guid'] = probe_guid
                 probes.loc[probe_guid, 'id'] = int(probe.attrib['id'])
-                probes.loc[probe_guid, 'name'] = normalize_name(probe.attrib['name'], sep=sep)
-                probes.loc[probe_guid, 'datetime'] = normalize_datetime(probe.find('date[@type="last"]').text)
+                probes.loc[probe_guid, 'name'] = normalize_name(
+                    name=probe.attrib['name'],
+                    sep=sep,
+                )
+                probes.loc[probe_guid, 'created_at'] = normalize_datetime(
+                    created_at=probe.find('date[@type="last"]').text,
+                )
                 probes.loc[probe_guid, 'is_certified'] = {
                     'yes': True,
                     'no': False,
                 }.get(probe.attrib.get('COC', 'no'))
+
     except AttributeError:
-        return default_probes
+        return DEFAULT_PROBES.copy()
     else:
         return probes
