@@ -3,7 +3,7 @@ from functools import partial
 from multiprocessing import Pool
 from typing import Callable
 
-from aims.config import Config, N_WORKERS, TrackedMode
+from aims.configs import Config, N_WORKERS, TrackedMode
 from aims.managers.data_manager.data.datum import (
     ConvergenceByParallelsDatum,
     ConvergenceByProbesDatum,

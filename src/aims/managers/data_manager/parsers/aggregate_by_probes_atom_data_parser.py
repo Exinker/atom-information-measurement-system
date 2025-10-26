@@ -3,7 +3,7 @@ from warnings import simplefilter
 
 import pandas as pd
 
-from aims.config import Config, FiltratedLabel, FiltratedSheet
+from aims.configs import Config, FiltratedLabel, FiltratedSheet
 from aims.managers.data_manager.atom_data import AtomData
 from aims.managers.data_manager.parsers.base_atom_data_parser import AtomDataParserABC
 from aims.managers.data_manager.parsers.utils import (

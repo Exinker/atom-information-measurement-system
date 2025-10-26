@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from aims.config import (
+from aims.configs import (
     Config,
     TrackedMode,
 )

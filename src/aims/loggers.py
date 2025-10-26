@@ -4,7 +4,7 @@ import os
 
 from PySide6 import QtGui, QtWidgets
 
-from aims.config import (
+from aims.configs import (
     LOGGING_LEVEL,
     LOGGING_MAX_BYTES,
 )

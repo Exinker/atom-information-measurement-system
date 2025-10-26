@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from aims.config import Config
+from aims.configs import Config
 from aims.managers.data_manager.cache import CacheManager
 from aims.managers.data_manager.data import (
     DataABC,

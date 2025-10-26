@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from aims.config import Config
+from aims.configs import Config
 from aims.managers.data_manager.atom_data import AtomData
 from aims.managers.data_manager.types import XMLPath
 

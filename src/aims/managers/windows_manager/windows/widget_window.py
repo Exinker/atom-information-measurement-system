@@ -2,7 +2,7 @@ import os
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from aims.config import COLOR
+from aims.configs import COLOR
 from aims.settings import get_setting
 from spectrumapp.helpers import find_window
 from spectrumapp.paths import pave
@@ -30,7 +30,7 @@ class LastRecordFrame(QtWidgets.QFrame):
         layout.addRow('Образец:', widget)
 
     # --------        slots        --------
-    def _on_refresh_triggered(self):
+    def on_refreshed(self):
         app = QtWidgets.QApplication.instance()
         datum = app.data.last_datum
 
@@ -73,7 +73,7 @@ class StatInfoFrame(QtWidgets.QFrame):
         layout.addRow(label, widget)
 
     # --------        slots        --------
-    def _on_refresh_triggered(self):
+    def on_refreshed(self):
 
         app = QtWidgets.QApplication.instance()
         datum = app.data.last_datum
@@ -148,7 +148,7 @@ class AppInfoFrame(QtWidgets.QFrame):
         layout.addWidget(widget)
 
     # --------        slots        --------
-    def _on_refresh_triggered(self):
+    def on_refreshed(self):
         pass
 
 
@@ -173,7 +173,7 @@ class WidgetWidget(QtWidgets.QFrame):
         layout.addWidget(widget)
 
     # --------        slots        --------
-    def _on_refresh_triggered(self):
+    def on_refreshed(self):
 
         # update visible
         visible = get_setting(key='widgetWindow/visible')
@@ -182,7 +182,7 @@ class WidgetWidget(QtWidgets.QFrame):
         # update widgets
         for object_name in ['lastRecordFrame', 'statInfoFrame']:
             widget = self.findChild(QtWidgets.QFrame, object_name)
-            widget._on_refresh_triggered()
+            widget.on_refreshed()
 
 
 class WidgetWindow(BaseWindow):
@@ -211,7 +211,7 @@ class WidgetWindow(BaseWindow):
         layout.addWidget(self.widget)
 
     # --------        slots        --------
-    def _on_refresh_triggered(self):
+    def on_refreshed(self):
 
         # visible
         visible = get_setting(key='widgetWindow/visible')
@@ -222,7 +222,7 @@ class WidgetWindow(BaseWindow):
         self.setStyleSheet(style)
 
         #
-        self.widget._on_refresh_triggered()
+        self.widget.on_refreshed()
 
     # --------        events        --------
     def mouseDoubleClickEvent(self, event: QtGui.QMouseEvent) -> None:  # noqa: N802

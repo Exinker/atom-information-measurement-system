@@ -1,4 +1,4 @@
-from .scrapers import Scraper
+from .scraper import Scraper
 
 __all__ = [
     Scraper,

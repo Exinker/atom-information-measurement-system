@@ -53,7 +53,7 @@ class LastRecordFrame(QtWidgets.QFrame):
         layout.addRow('Время:', widget)
 
     # --------        slots        --------
-    def _on_refresh_triggered(self):
+    def on_refreshed(self):
         pass
 
         # datum = self.data_manager.last_datum
@@ -115,7 +115,7 @@ class MetaWidget(QtWidgets.QFrame):
         layout.addWidget(widget)
 
     # --------        slots        --------
-    def _on_refresh_triggered(self):
+    def on_refreshed(self):
 
         # update visible
         visible = get_setting(key='mainWindow/meta-widget')
@@ -124,4 +124,4 @@ class MetaWidget(QtWidgets.QFrame):
         # update widgets
         for object_name in ['lastRecordFrame']:
             widget = self.findChild(QtWidgets.QFrame, object_name)
-            widget._on_refresh_triggered()
+            widget.on_refreshed()

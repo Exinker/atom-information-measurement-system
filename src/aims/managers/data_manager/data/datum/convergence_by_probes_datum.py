@@ -5,7 +5,7 @@ from typing import ClassVar
 import numpy as np
 import pandas as pd
 
-from aims.config import Config
+from aims.configs import Config
 from aims.managers.data_manager.atom_data import AtomData
 from aims.managers.data_manager.cache import (
     CacheManager,

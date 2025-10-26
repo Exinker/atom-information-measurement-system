@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 
-from aims.config import Config
+from aims.configs import Config
 from aims.managers.data_manager.data.datum import DatumABC
 from aims.managers.data_manager.data.workers import get_worker
 from aims.managers.data_manager.index import (

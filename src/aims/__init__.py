@@ -8,7 +8,7 @@ import pkg_resources
 
 dotenv.load_dotenv()
 
-distribution = pkg_resources.get_distribution('spectrumapp')
+distribution = pkg_resources.get_distribution('aims')
 __name__ = 'Atom Information Measurement System'
 __version__ = distribution.version
 __author__ = 'Pavel Vaschenko'

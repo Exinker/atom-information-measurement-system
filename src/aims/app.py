@@ -1,30 +1,37 @@
 import logging
+import os
 import time
 
-from PySide6 import QtWidgets
-
-import aims
 from aims.managers.data_manager import DataManager
 from aims.managers.watcher_manager import WatcherManager
 from aims.managers.windows_manager import WindowsManager
 from aims.settings import get_setting
-from spectrumapp.decorators import wait
+from spectrumapp.application import BaseApplication
 from spectrumapp.loggers import log
+from spectrumapp.windows.modifiers import wait
 
 
-try:  # change `app_id` for correct icon present
-    from PySide6.QtWinExtras import QtWin
+try:  # change app id for correct icon present
+    from ctypes import windll
 
-    app_id = f'{aims.__organization__}.{aims.__name__}.MAINWINDOW.{aims.__version__}'
-    QtWin.setCurrentProcessExplicitAppUserModelID(app_id)
+    app_id = '{organization}.{name}.MAINWINDOW.{version}'.format(
+        name=os.environ['APPLICATION_NAME'],
+        version=os.environ['APPLICATION_VERSION'],
+        organization=os.environ['ORGANIZATION_NAME'],
+    )
+    windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+
 except ImportError:
+    pass
+
+except KeyError:  # for testing only
     pass
 
 
 LOGGER = logging.getLogger('app')
 
 
-class Application(QtWidgets.QApplication):
+class Application(BaseApplication):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -38,11 +45,6 @@ class Application(QtWidgets.QApplication):
             data_manager=self.data_manager,
         )
 
-        #
-        self.setOrganizationName(aims.__organization__)
-        self.setApplicationName(aims.__name__)
-        self.setApplicationVersion(aims.__version__)
-
     @wait
     def run(self, *args, **kwargs):
         """Run an application."""
@@ -52,7 +54,17 @@ class Application(QtWidgets.QApplication):
         )
         self.windows_manager.setup()
 
-        self.update()
+        self.refresh()
+
+    @log(message='app: update')
+    @wait
+    def refresh(self):
+        started_at = time.perf_counter()
+
+        self.data_manager.update()
+        self.windows_manager.update()
+
+        LOGGER.info('Update app elapsed time: %s, s.', time.perf_counter() - started_at)
 
     @log(message='app: reset')
     @wait
@@ -64,14 +76,4 @@ class Application(QtWidgets.QApplication):
             )
             self.data_manager.clear()
 
-        self.update()
-
-    @log(message='app: update')
-    @wait
-    def update(self):
-        started_at = time.perf_counter()
-
-        self.data_manager.update()
-        self.windows_manager.update()
-
-        LOGGER.info('Update app elapsed time: %s, s.', time.perf_counter() - started_at)
+        self.refresh()

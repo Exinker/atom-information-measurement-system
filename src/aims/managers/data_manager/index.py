@@ -2,7 +2,7 @@ from abc import abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from aims.config import Config, Directory, TrackedPediod
+from aims.configs import Config, Directory, TrackedPediod
 from aims.managers.data_manager.scrapers import Scraper
 from aims.managers.data_manager.types import AnalysisName, Frame, ProbeGUID, ProbeName, XMLPath
 

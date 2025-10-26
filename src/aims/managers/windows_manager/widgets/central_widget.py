@@ -14,7 +14,11 @@ class CentralWidget(QtWidgets.QWidget):
         self.data_manager = data_manager
 
         # style
-        self.setStyleSheet("font-size: 14px; font-weight: 600")
+        style = 'font-size: {font_size}px; font-weight: {font_weight}'.format(
+            font_size=get_setting(key='style/font-size'),
+            font_weight='600',
+        )
+        self.setStyleSheet(style)
 
         # layout
         layout = QtWidgets.QHBoxLayout(self)
@@ -37,10 +41,17 @@ class CentralWidget(QtWidgets.QWidget):
         )
         self.stackedWidget.addWidget(self.sheetQueueWidget)
 
-    def _on_refresh_triggered(self):
+    def on_refreshed(self):
+
+        # update style
+        style = 'font-size: {font_size}px; font-weight: {font_weight}'.format(
+            font_size=get_setting(key='style/font-size'),
+            font_weight='600',
+        )
+        self.setStyleSheet(style)
 
         # update stacked widget
         widget = self.sheetQueueWidget if get_setting(key='mainWindow/queue-widget') else self.sheetWidget
-        widget._on_refresh_triggered()
+        widget.on_refreshed()
 
         self.stackedWidget.setCurrentWidget(widget)

@@ -2,7 +2,7 @@ import dataclasses
 import json
 import logging
 import os
-import sys
+import platform
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -30,14 +30,13 @@ LOGGING_MAX_BYTES = int(os.environ.get('LOGGING_MAX_BYTES', 1000 * 1000))  # 1 M
 
 N_WORKERS = os.environ.get('N_WORKERS', 1)
 
-match sys.platform:
-    case 'win32':
-        EXPLORER = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
-    case _:
-        EXPLORER = ''
+if platform.system() == 'Windows':
+    EXPLORER = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
+else:
+    EXPLORER = ''
 
 
-# ---------        ENV        ---------
+# ---------        COLOR        ---------
 COLOR = {
     'red': RedOrangeYellowGreenColorset.RED.value,
     'orange': RedOrangeYellowGreenColorset.ORANGE.value,
@@ -52,29 +51,16 @@ class Directory(str):
 
     @classmethod
     def default(cls) -> 'Directory':
+
         path = os.getcwd()
 
-        super_path, root_dirname = os.path.split(path)
-        database_dir = os.path.join(super_path, 'DB')
+        root, name = os.path.split(path)
+        if (name.upper() == 'AIMS') and os.path.isdir(os.path.join(root, 'DB')):
+            return os.path.join(root, 'DB')
 
-        # check root directory
-        if root_dirname.upper() != 'AIMS':
-            return path
-
-        # check database directory
-        if not os.path.isdir(database_dir):
-            return path
-
-        #
-        return database_dir
+        return path
 
     def __new__(cls, path: str):
-
-        if not os.path.exists(path):
-            message = 'Tracked path {path} is not found or not available!'.format(
-                path=json.dumps(path),
-            )
-            raise ValueError(message)
 
         if not os.path.isdir(path):
             message = 'Tracked path {path} have to be a directory!'.format(
@@ -89,7 +75,6 @@ class TrackedMode(Enum):
     CONVERGENCE_BY_PROBES = 'convergence-by-probes-control'
     CONVERGENCE_BY_PARALLELS = 'convergence-by-parallels-control'
     # REFERENCE = 'reference-control'
-    NONE = 'none'
 
     @classmethod
     def default(cls) -> 'TrackedMode':
@@ -117,26 +102,26 @@ class TrackedPediod(Enum):
     DAY = 'day'
     TODAY = 'today'
 
-    def check(self, __datetime: datetime, milestone: datetime | None = None) -> bool:
+    def check(
+        self,
+        created_at: datetime,
+        milestone: datetime | None = None,
+    ) -> bool:
         milestone = milestone or datetime.now()
 
-        if self == TrackedPediod.ALL:
-            return True
-
-        if self == TrackedPediod.YEAR:
-            return __datetime > (milestone - pd.offsets.DateOffset(years=1))
-
-        if self == TrackedPediod.MONTH:
-            return __datetime > (milestone - pd.offsets.DateOffset(months=1))
-
-        if self == TrackedPediod.WEEK:
-            return __datetime > (milestone - pd.offsets.DateOffset(days=1))
-
-        if self == TrackedPediod.DAY:
-            return __datetime > (milestone - pd.offsets.DateOffset(days=1))
-
-        if self == TrackedPediod.TODAY:
-            return __datetime.date() == milestone.date()
+        match self:
+            case TrackedPediod.ALL:
+                return True
+            case TrackedPediod.YEAR:
+                return milestone < created_at + pd.offsets.DateOffset(years=1)
+            case TrackedPediod.MONTH:
+                return milestone < created_at + pd.offsets.DateOffset(months=1)
+            case TrackedPediod.WEEK:
+                return milestone < created_at + pd.offsets.DateOffset(weeks=1)
+            case TrackedPediod.DAY:
+                return milestone < created_at + pd.offsets.DateOffset(days=1)
+            case TrackedPediod.TODAY:
+                return created_at.date() == milestone.date()
 
         raise ValueError(f'Tracked pediod {self} is not supported!.')
 
@@ -181,11 +166,9 @@ class FiltratedSheet:
 
     def __new__(cls, value: str | None):
 
-        # no separation
         if value is None:
             return None
 
-        #
         if not isinstance(value, str):
             message = 'Filtrated sheet "{value}" have to be "null" or string!'.format(
                 value=json.dumps(value),
@@ -214,7 +197,6 @@ class FiltratedLabel(Enum):
     @classmethod
     def from_str(cls, value: str) -> 'TrackedPediod':
 
-        #
         valid_values = {item.value: item for item in cls}
         if value in valid_values:
             return valid_values[value]
@@ -231,11 +213,9 @@ class Separator:
 
     def __new__(cls, value: str | None):
 
-        # no separation
         if value is None:
             return None
 
-        #
         if not isinstance(value, str):
             message = 'Separator value "{value}" have to be "null" or string!'.format(
                 value=json.dumps(value),
@@ -251,31 +231,10 @@ class Separator:
         return value
 
 
-class DatabasePath(str):
-
-    def __new__(cls, path: str | None):
-
-        # no database
-        if path is None:
-            return None
-
-        #
-        if not os.path.exists(path):
-            message = 'Database path {path} is not found or not available!'.format(
-                path=json.dumps(path),
-            )
-            raise ValueError(message)
-
-        if not (os.path.isfile(path) and path.endswith('.xml')):
-            message = 'Database path {path} have to be a path of `xml` file!'.format(
-                path=json.dumps(path),
-            )
-            raise ValueError(message)
-
-        return super().__new__(cls, path)
-
-
 # ---------        Config        ---------
+DEFAULT_SEP = '*'
+
+
 @dataclass(frozen=True, slots=True)
 class Config(AbstractConfig):
     version: str
@@ -290,9 +249,7 @@ class Config(AbstractConfig):
     filtrated_by_sheet: FiltratedSheet = field(default=None)
     filtrated_by_label: FiltratedLabel = field(default=FiltratedLabel.default())
 
-    sep: str = field(default='*')
-
-    # database_path: DatabasePath = field(default=DatabasePath(None))
+    sep: str = field(default=DEFAULT_SEP)
 
     FILEPATH: ClassVar[str] = field(default=os.path.join(os.getcwd(), 'config.json'))
 
@@ -325,12 +282,12 @@ class Config(AbstractConfig):
         except FileNotFoundError as error:
             LOGGER.warning('Load config failed with %s: %s', type(error).__name__, error)
 
-            setdefault_config()
+            setdefault_configs()
             return cls.load()
         except json.JSONDecodeError as error:
             LOGGER.warning('Load config failed with %s: %s', type(error).__name__, error)
 
-            setdefault_config(force=True)
+            setdefault_configs(force=True)
             return cls.load()
 
         try:
@@ -348,8 +305,6 @@ class Config(AbstractConfig):
                 filtrated_by_label=FiltratedLabel.from_str(value=data['filtrated_by_label']),
 
                 sep=Separator(value=data['sep']),
-
-                # database_path=DatabasePath(path=data['database_path']),
             )
         except (
             KeyError,
@@ -358,7 +313,7 @@ class Config(AbstractConfig):
         ) as error:
             LOGGER.warning('Load config failed with %s: %s', type(error).__name__, error)
 
-            setdefault_config(force=True)
+            setdefault_configs(force=True)
             return cls.load()
         else:
             return config
@@ -375,10 +330,9 @@ class Config(AbstractConfig):
         }
 
 
-def setdefault_config(force: bool = False) -> None:
+def setdefault_configs(force: bool = False) -> None:
     """Create default config file."""
 
-    filepath = Config.FILEPATH
-    if (not os.path.exists(filepath)) or force:
+    if force or not os.path.exists(Config.FILEPATH):
         config = Config.default()
         config.dump()

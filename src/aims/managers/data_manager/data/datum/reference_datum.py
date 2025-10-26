@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from aims.config import Config
+from aims.configs import Config
 from aims.managers.data_manager.atom_database import MeasurementToleranceDatabase
 from aims.managers.data_manager.data.datum import DatumABC
 from aims.managers.data_manager.index import IndexABC
