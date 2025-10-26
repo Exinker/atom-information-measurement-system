@@ -11,6 +11,7 @@ from aims.configs import (
     FiltratedLabel,
     TrackedMode,
     TrackedPediod,
+    DEFAULT_SEP,
     setdefault_config,
 )
 
@@ -30,7 +31,7 @@ def assert_default_config() -> Callable[[Config], None]:
         assert config.tracked_queue_length == 5
         assert config.filtrated_by_sheet is None
         assert config.filtrated_by_label == FiltratedLabel.default()
-        assert config.sep == '*'
+        assert config.sep == DEFAULT_SEP
 
     return inner
 

@@ -102,26 +102,26 @@ class TrackedPediod(Enum):
     DAY = 'day'
     TODAY = 'today'
 
-    def check(self, dt: datetime, milestone: datetime | None = None) -> bool:
+    def check(
+        self,
+        created_at: datetime,
+        milestone: datetime | None = None,
+    ) -> bool:
         milestone = milestone or datetime.now()
 
-        if self == TrackedPediod.ALL:
-            return True
-
-        if self == TrackedPediod.YEAR:
-            return dt > (milestone - pd.offsets.DateOffset(years=1))
-
-        if self == TrackedPediod.MONTH:
-            return dt > (milestone - pd.offsets.DateOffset(months=1))
-
-        if self == TrackedPediod.WEEK:
-            return dt > (milestone - pd.offsets.DateOffset(weeks=1))
-
-        if self == TrackedPediod.DAY:
-            return dt > (milestone - pd.offsets.DateOffset(days=1))
-
-        if self == TrackedPediod.TODAY:
-            return dt.date() == milestone.date()
+        match self:
+            case TrackedPediod.ALL:
+                return True
+            case TrackedPediod.YEAR:
+                return milestone < created_at + pd.offsets.DateOffset(years=1)
+            case TrackedPediod.MONTH:
+                return milestone < created_at + pd.offsets.DateOffset(months=1)
+            case TrackedPediod.WEEK:
+                return milestone < created_at + pd.offsets.DateOffset(weeks=1)
+            case TrackedPediod.DAY:
+                return milestone < created_at + pd.offsets.DateOffset(days=1)
+            case TrackedPediod.TODAY:
+                return created_at.date() == milestone.date()
 
         raise ValueError(f'Tracked pediod {self} is not supported!.')
 
@@ -232,6 +232,9 @@ class Separator:
 
 
 # ---------        Config        ---------
+DEFAULT_SEP = '*'
+
+
 @dataclass(frozen=True, slots=True)
 class Config(AbstractConfig):
     version: str
@@ -246,7 +249,7 @@ class Config(AbstractConfig):
     filtrated_by_sheet: FiltratedSheet = field(default=None)
     filtrated_by_label: FiltratedLabel = field(default=FiltratedLabel.default())
 
-    sep: str = field(default='*')
+    sep: str = field(default=DEFAULT_SEP)
 
     FILEPATH: ClassVar[str] = field(default=os.path.join(os.getcwd(), 'config.json'))
 
