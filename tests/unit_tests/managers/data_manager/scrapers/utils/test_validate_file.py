@@ -7,7 +7,7 @@ from typing import Callable
 import pandas as pd
 import pytest
 
-from aims.config import TrackedPediod
+from aims.configs import TrackedPediod
 from aims.managers.data_manager.scrapers.validators import validate_file
 from spectrumapp.types import FilePath
 

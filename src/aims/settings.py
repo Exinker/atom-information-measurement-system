@@ -5,7 +5,7 @@ from typing import Any, Literal, Mapping, get_args
 
 from PySide6 import QtCore
 
-from aims.config import Config
+from aims.configs import Config
 from spectrumapp.loggers import log
 from spectrumapp.settings import load_settings
 from spectrumapp.types import DirPath

@@ -2,7 +2,7 @@ from typing import Iterable
 
 import pandas as pd
 
-from aims.config import FiltratedLabel, FiltratedSheet
+from aims.configs import FiltratedLabel, FiltratedSheet
 from aims.managers.data_manager.types import Series, XML
 
 

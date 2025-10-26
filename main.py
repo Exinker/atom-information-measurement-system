@@ -1,7 +1,7 @@
 import sys
 
 from aims.app import Application
-from aims.config import setdefault_config
+from aims.configs import setdefault_config
 from aims.environs import setdefault_environ
 from aims.loggers import setdefault_logger
 from aims.settings import setdefault_setting

@@ -3,7 +3,7 @@ import os
 import numpy as np
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from aims.config import COLOR
+from aims.configs import COLOR
 from aims.managers.data_manager import DataManager
 from aims.managers.data_manager.data.data import DatumABC
 from aims.managers.data_manager.utils.runners import run_explorer

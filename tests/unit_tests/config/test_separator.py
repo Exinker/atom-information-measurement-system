@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from aims.config import Separator
+from aims.configs import Separator
 
 
 @pytest.fixture(params=['*'])

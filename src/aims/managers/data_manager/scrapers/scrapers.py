@@ -4,7 +4,7 @@ from typing import Any, Iterable, Mapping
 
 import pandas as pd
 
-from aims.config import Directory, TrackedPediod
+from aims.configs import Directory, TrackedPediod
 from aims.managers.data_manager.cache import (
     CacheManager,
     cache,

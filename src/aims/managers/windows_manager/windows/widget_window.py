@@ -2,7 +2,7 @@ import os
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from aims.config import COLOR
+from aims.configs import COLOR
 from aims.settings import get_setting
 from spectrumapp.helpers import find_window
 from spectrumapp.paths import pave

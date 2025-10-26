@@ -2,7 +2,7 @@ import logging
 import os
 import subprocess
 
-from aims.config import EXPLORER
+from aims.configs import EXPLORER
 from aims.managers.data_manager.types import XMLPath
 
 

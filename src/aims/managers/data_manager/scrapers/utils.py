@@ -1,7 +1,7 @@
 import os
 from typing import Iterator
 
-from aims.config import Directory
+from aims.configs import Directory
 from spectrumapp.types import FilePath
 
 

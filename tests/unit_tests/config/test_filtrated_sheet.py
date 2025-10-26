@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from aims.config import FiltratedSheet
+from aims.configs import FiltratedSheet
 
 
 @pytest.fixture(params=['лаборант'])

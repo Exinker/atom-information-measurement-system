@@ -5,7 +5,7 @@ from typing import Callable
 import pytest
 from pytest import MonkeyPatch
 
-from aims.config import (
+from aims.configs import (
     Config,
     Directory,
     FiltratedLabel,

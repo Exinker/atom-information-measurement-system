@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from aims.config import Directory
+from aims.configs import Directory
 from aims.managers.data_manager.scrapers.utils import walk
 
 

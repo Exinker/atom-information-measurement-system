@@ -1,6 +1,6 @@
 import pytest
 
-from aims.config import FiltratedLabel
+from aims.configs import FiltratedLabel
 
 
 def test_filtrated_label_default():

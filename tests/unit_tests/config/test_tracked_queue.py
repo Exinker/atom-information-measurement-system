@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from aims.config import TrackedQueue
+from aims.configs import TrackedQueue
 
 
 @pytest.fixture(params=[1, 2])

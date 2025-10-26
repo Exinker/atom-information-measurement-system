@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-from aims.config import TrackedPediod
+from aims.configs import TrackedPediod
 from aims.managers.data_manager.types import XML, XMLPath
 
 

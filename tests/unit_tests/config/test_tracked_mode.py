@@ -1,6 +1,6 @@
 import pytest
 
-from aims.config import TrackedMode
+from aims.configs import TrackedMode
 
 
 def test_tracked_mode_default():

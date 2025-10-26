@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from pytest import MonkeyPatch
 
-from aims.config import Directory
+from aims.configs import Directory
 
 
 def test_directory():

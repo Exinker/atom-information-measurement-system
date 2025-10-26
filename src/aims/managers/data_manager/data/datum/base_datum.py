@@ -6,7 +6,7 @@ from typing import ClassVar, TypeAlias
 import numpy as np
 import pandas as pd
 
-from aims.config import Config
+from aims.configs import Config
 from aims.managers.data_manager.index import IndexABC
 from aims.managers.data_manager.types import AnalysisName, ProbeName, Series
 from aims.settings import FilterLevel, SorterKind

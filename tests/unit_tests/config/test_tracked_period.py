@@ -1,6 +1,6 @@
 import pytest
 
-from aims.config import TrackedPediod
+from aims.configs import TrackedPediod
 
 
 def test_tracked_pediod_default():
