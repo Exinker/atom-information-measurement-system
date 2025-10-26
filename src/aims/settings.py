@@ -1,14 +1,19 @@
 import json
+import logging
 import os
 from enum import Enum
-from typing import Any, Literal, Mapping, get_args
+from typing import Any, Mapping
 
 from PySide6 import QtCore
+from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from aims.configs import Config
 from spectrumapp.loggers import log
 from spectrumapp.settings import load_settings
 from spectrumapp.types import DirPath
+
+
+LOGGER = logging.getLogger('app')
 
 
 class FilterLevel(Enum):
@@ -18,7 +23,7 @@ class FilterLevel(Enum):
     DANGER = 3
 
     @classmethod
-    def is_contains(cls, item: str) -> bool:
+    def validate(cls, item: str) -> bool:
         return item in cls._member_names_
 
 
@@ -27,26 +32,67 @@ class SorterKind(Enum):
     FILTER_LEVEL = 'filter-level'
 
     @classmethod
-    def is_contains(cls, item: str) -> bool:
+    def validate(cls, item: str) -> bool:
         return item in cls._member_names_
 
 
-class FontSize:
-    VALUES = Literal['12', '14', '16']
-    DEFAULT = '14'
+class BaseValidator(BaseModel):
 
     @classmethod
-    def is_contains(cls, item: str) -> bool:
-        return item in get_args(cls.VALUES)
+    def validate(cls, value: str | None) -> int:
+
+        if value is None:
+            return cls().value
+
+        try:
+            return cls.model_validate({'value': value}).value
+        except ValidationError as error:
+            LOGGER.error(
+                '%s validation error: %s',
+                cls.__name__,
+                error,
+            )
+            return cls().value
 
 
-class FontWeight:
-    VALUES = Literal['400', '500', '600']
-    DEFAULT = '400'
+class FontSize(BaseValidator):
 
+    value: int = Field(14, ge=8, le=24)
+
+
+class FontWeight(BaseValidator):
+
+    value: int = Field(400)
+
+    @field_validator('value')
     @classmethod
-    def is_contains(cls, item: str) -> bool:
-        return item in get_args(cls.VALUES)
+    def validate_value(cls, value: str | None) -> int:
+
+        if value is None:
+            return cls().value
+
+        try:
+            value = int(value)
+            if value in [200, 400, 600]:
+                return value
+            raise ValueError
+        except TypeError:
+            raise
+
+
+class HeaderHeight(BaseValidator):
+
+    value: int = Field(20, ge=10, le=50)
+
+
+class HorizontalHeaderWidth(BaseValidator):
+
+    value: int = Field(80, ge=50, le=500)
+
+
+class VerticalHeaderWidth(BaseValidator):
+
+    value: int = Field(120, ge=50, le=500)
 
 
 @log(message='setting: get')
@@ -74,12 +120,12 @@ def get_setting(key: str) -> Any:
                     return 1
 
             if field == 'sorter-kind':
-                if SorterKind.is_contains(value):
+                if SorterKind.validate(value):
                     return SorterKind[value]
                 return SorterKind['NONE']
 
             if field == 'filter-level':
-                if FilterLevel.is_contains(value):
+                if FilterLevel.validate(value):
                     return FilterLevel[value]
                 return FilterLevel['NOTSET']
 
@@ -88,14 +134,19 @@ def get_setting(key: str) -> Any:
             value = settings.value('style/{}'.format(field))
 
             if field == 'font-size':
-                if FontSize.is_contains(value):
-                    return value
-                return FontSize.DEFAULT
+                return FontSize.validate(value)
 
             if field == 'font-weight':
-                if FontWeight.is_contains(value):
-                    return value
-                return FontWeight.DEFAULT
+                return FontWeight.validate(value)
+
+            if field == 'header-height':
+                return HeaderHeight.validate(value)
+
+            if field == 'horizontal-header-width':
+                return HorizontalHeaderWidth.validate(value)
+
+            if field == 'vertical-header-width':
+                return VerticalHeaderWidth.validate(value)
 
         case _:
             settings = load_settings()
@@ -126,8 +177,8 @@ DEFAULT_SETTING = {
     'mainWindow/menubar': False,
     'mainWindow/queue-widget': True,
 
-    'style/font-size': FontSize.DEFAULT,
-    'style/font-weight': FontWeight.DEFAULT,
+    'style/font-size': FontSize().value,
+    'style/font-weight': FontWeight().value,
 
     'table/n_rows': 1,
     'table/n_columns': 10,
@@ -136,7 +187,7 @@ DEFAULT_SETTING = {
 }
 
 
-def setdefault_setting(
+def setdefault_settings(
     filedir: DirPath | None = None,
     default_settings: Mapping[str, Any] = DEFAULT_SETTING,
 ) -> None:

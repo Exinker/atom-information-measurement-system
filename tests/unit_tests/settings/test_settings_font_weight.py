@@ -1,5 +1,3 @@
-from typing import get_args
-
 import pytest
 
 import aims.settings
@@ -8,7 +6,7 @@ from tests.fakes.settings import fake_settings_factory
 
 
 @pytest.mark.parametrize(
-    'expected', get_args(FontWeight.VALUES),
+    'expected', [200, 400, 600],
 )
 def test_font_weight_valid(
     expected: str,
@@ -26,8 +24,8 @@ def test_font_weight_valid(
 @pytest.mark.parametrize(
     ['value', 'expected'],
     [
-        ('300', FontWeight.DEFAULT),
-        ('900', FontWeight.DEFAULT),
+        (300, FontWeight().value),
+        (900, FontWeight().value),
     ],
 )
 def test_font_weight_invalid(

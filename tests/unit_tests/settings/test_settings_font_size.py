@@ -23,9 +23,8 @@ def assert_font_weight(
     assert str(font.pixelSize()) == expected
 
 
-@pytest.mark.skip(reason='FIXME: have to check it!')
 @pytest.mark.parametrize(
-    'expected', get_args(FontSize.VALUES),
+    'expected', get_args(FontSize().value),
 )
 def test_font_size_valid(
     expected: str,
@@ -55,8 +54,8 @@ def test_font_size_valid(
 @pytest.mark.parametrize(
     ['value', 'expected'],
     [
-        ('10', FontSize.DEFAULT),
-        ('20', FontSize.DEFAULT),
+        (2, FontSize().value),
+        (64, FontSize().value),
     ],
 )
 def test_font_size_invalid(

@@ -12,7 +12,7 @@ from aims.configs import (
     TrackedMode,
     TrackedPediod,
     DEFAULT_SEP,
-    setdefault_config,
+    setdefault_configs,
 )
 
 
@@ -82,7 +82,7 @@ def test_setdefault_config(
 ) -> Config:
     monkeypatch.setattr(Config, 'FILEPATH', filepath)
 
-    setdefault_config()
+    setdefault_configs()
 
     assert os.path.exists(filepath)
 
@@ -101,7 +101,7 @@ def test_setdefault_config_forced(
     config = Config.default()
     config.dump()
 
-    setdefault_config(force=force)
+    setdefault_configs(force=force)
 
     assert os.path.exists(filepath)
     assert spy.call_count == 1 + force

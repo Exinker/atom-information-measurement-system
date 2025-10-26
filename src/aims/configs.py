@@ -282,12 +282,12 @@ class Config(AbstractConfig):
         except FileNotFoundError as error:
             LOGGER.warning('Load config failed with %s: %s', type(error).__name__, error)
 
-            setdefault_config()
+            setdefault_configs()
             return cls.load()
         except json.JSONDecodeError as error:
             LOGGER.warning('Load config failed with %s: %s', type(error).__name__, error)
 
-            setdefault_config(force=True)
+            setdefault_configs(force=True)
             return cls.load()
 
         try:
@@ -313,7 +313,7 @@ class Config(AbstractConfig):
         ) as error:
             LOGGER.warning('Load config failed with %s: %s', type(error).__name__, error)
 
-            setdefault_config(force=True)
+            setdefault_configs(force=True)
             return cls.load()
         else:
             return config
@@ -330,7 +330,7 @@ class Config(AbstractConfig):
         }
 
 
-def setdefault_config(force: bool = False) -> None:
+def setdefault_configs(force: bool = False) -> None:
     """Create default config file."""
 
     if force or not os.path.exists(Config.FILEPATH):

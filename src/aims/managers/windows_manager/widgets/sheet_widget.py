@@ -217,8 +217,6 @@ class VerticalHeader(QtWidgets.QHeaderView):
     ):
         super().__init__(*args, orientation, **kwargs)
 
-        self.setDefaultSectionSize(25)
-        self.setFixedWidth(140)
         self.sectionDoubleClicked.connect(self._on_dbl_clicked)
 
     def mouseDoubleClickEvent(self, event: QtGui.QMouseEvent) -> None:  # noqa: N802
@@ -262,7 +260,6 @@ class TableView(QtWidgets.QTableView):
 
         # headers
         hh = self.horizontalHeader()
-        hh.setFixedHeight(25)
         hh.setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
 
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
@@ -271,28 +268,53 @@ class TableView(QtWidgets.QTableView):
         self.setVerticalHeader(vh)
 
         # geometry
-        # self.setMinimumSize(QtCore.QSize(5 + 120 + 15, 90))
+        self.setMinimumSize(QtCore.QSize(10, 10))
 
     def _update(self, model: QtCore.QAbstractTableModel):
 
-        # update style
-        style = 'font-size: {font_size}px; font-weight: {font_weight}'.format(
+        # update styles
+        base_style = 'font-size: {font_size}px; font-weight: {font_weight}'.format(
             font_size=get_setting(key='style/font-size'),
             font_weight=get_setting(key='style/font-weight'),
         )
-        self.setStyleSheet(style)
+        self.setStyleSheet(base_style)
+
+        horizontal_header_style = """
+            QHeaderView::section {{
+                height: {height}px;
+                width: {width}px;
+            }}
+        """.format(
+            height=get_setting(key='style/header-height'),
+            width=get_setting(key='style/horizontal-header-width'),
+        )
+        self.horizontalHeader().setStyleSheet(horizontal_header_style)
+
+        vertical_header_style = """
+            QHeaderView::section {{
+                height: {height}px;
+                width: {width}px;
+            }}
+        """.format(
+            height=get_setting(key='style/header-height'),
+            width=get_setting(key='style/vertical-header-width'),
+        )
+        self.verticalHeader().setStyleSheet(vertical_header_style)
 
         # update model
         self.setModel(model)
 
         # update view
-        n_target_columns = len(model._target_columns)
+        width = get_setting(key='style/vertical-header-width')
         for i, column in enumerate(model._meta_columns):
-            is_hidden = not (column in model._meta_columns_visible)
-            self.setColumnHidden(i, is_hidden)
+            is_vissible = column in model._meta_columns_visible
+            self.setColumnHidden(i, not is_vissible)
 
-        for i in range(len(model._meta_columns_visible) + n_target_columns):  # minus number of hidded columns
-            self.setColumnWidth(i, 120)
+            self.setColumnWidth(i, width)
+
+        width = get_setting(key='style/horizontal-header-width')
+        for i, column in enumerate(model._target_columns, start=len(model._meta_columns)):
+            self.setColumnWidth(i, width)
 
         self.clearSpans()
         self.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
