@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Self
 
 from aims.configs import Config, Directory, TrackedPediod
 from aims.managers.data_manager.scrapers import Scraper
@@ -9,6 +10,7 @@ from aims.managers.data_manager.types import AnalysisName, Frame, ProbeGUID, Pro
 
 @dataclass
 class IndexABC:
+
     records: Frame
     milestone: datetime
     directory: Directory
@@ -45,7 +47,7 @@ class IndexABC:
         tracked_period: TrackedPediod,
         sep: str,
         verbose: bool = False,
-    ) -> 'IndexABC':
+    ) -> Self:
         """Получить `index` путем итеративного парсинга .xml файлов в заданной директории `directory`."""
 
         scraper = Scraper(

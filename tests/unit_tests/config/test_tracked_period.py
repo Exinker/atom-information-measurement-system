@@ -33,11 +33,11 @@ def test_tracked_pediod_from_str_invalid(
         TrackedPediod.from_str(value)
 
 
-def test_tracked_pediod_check_created_at_now(
+def test_tracked_pediod_check_datetime_now(
     tracked_pediod: TrackedPediod,
 ):
     status = tracked_pediod.check(
-        created_at=datetime.now(),
+        datetime.now(),
     )
 
     assert status is True
@@ -57,7 +57,7 @@ def test_tracked_pediod_check_negative(
 ):
 
     status = tracked_pediod.check(
-        created_at=datetime.now() - offset,
+        datetime.now() - offset,
     )
 
     assert status is False

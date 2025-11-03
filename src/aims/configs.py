@@ -104,7 +104,7 @@ class TrackedPediod(Enum):
 
     def check(
         self,
-        created_at: datetime,
+        __datetime: datetime,
         milestone: datetime | None = None,
     ) -> bool:
         milestone = milestone or datetime.now()
@@ -113,15 +113,15 @@ class TrackedPediod(Enum):
             case TrackedPediod.ALL:
                 return True
             case TrackedPediod.YEAR:
-                return milestone < created_at + pd.offsets.DateOffset(years=1)
+                return milestone < __datetime + pd.offsets.DateOffset(years=1)
             case TrackedPediod.MONTH:
-                return milestone < created_at + pd.offsets.DateOffset(months=1)
+                return milestone < __datetime + pd.offsets.DateOffset(months=1)
             case TrackedPediod.WEEK:
-                return milestone < created_at + pd.offsets.DateOffset(weeks=1)
+                return milestone < __datetime + pd.offsets.DateOffset(weeks=1)
             case TrackedPediod.DAY:
-                return milestone < created_at + pd.offsets.DateOffset(days=1)
+                return milestone < __datetime + pd.offsets.DateOffset(days=1)
             case TrackedPediod.TODAY:
-                return created_at.date() == milestone.date()
+                return __datetime.date() == milestone.date()
 
         raise ValueError(f'Tracked pediod {self} is not supported!.')
 

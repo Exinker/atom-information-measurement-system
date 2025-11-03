@@ -24,6 +24,7 @@ class Scraper:
         sep: str,
         verbose: bool = False,
     ) -> None:
+
         self.milestone = milestone
         self.directory = directory
         self.tracked_period = tracked_period

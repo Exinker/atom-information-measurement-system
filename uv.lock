@@ -4,7 +4,7 @@ requires-python = ">=3.12"
 
 [[package]]
 name = "aims"
-version = "1.0.0a3"
+version = "1.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "pydantic" },

@@ -15,10 +15,10 @@ def validate_file(
     if not filepath.endswith('.xml'):
         return False
 
-    created_at = datetime.fromtimestamp(
+    dt = datetime.fromtimestamp(
         timestamp=os.stat(filepath).st_ctime,
     )
-    if not tracked_period.check(created_at, milestone=milestone):
+    if not tracked_period.check(dt, milestone=milestone):
         return False
 
     return True

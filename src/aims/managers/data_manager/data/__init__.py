@@ -16,6 +16,7 @@ def data_factory(
     milestone: datetime,
     config: Config,
 ) -> DataABC:
+
     match config.tracked_mode:
         case TrackedMode.CONVERGENCE_BY_PROBES:
             return ConvergenceByProbesData.create(

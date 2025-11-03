@@ -21,8 +21,8 @@ def normalize_name(
 
 
 def normalize_datetime(
-    created_at: str,
+    __datetime: str,
 ) -> datetime:
-    """Normalize `created_at` datetime."""
+    """Normalize datetime."""
 
-    return datetime.fromisoformat(created_at)
+    return datetime.fromisoformat(__datetime)

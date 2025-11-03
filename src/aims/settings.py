@@ -95,7 +95,7 @@ class VerticalHeaderWidth(BaseValidator):
     value: int = Field(120, ge=50, le=500)
 
 
-@log(message='setting: get')
+@log(message='setting: get', level=logging.NOTSET)
 def get_setting(key: str) -> Any:
 
     match key.split('/'):
@@ -158,7 +158,7 @@ def get_setting(key: str) -> Any:
                 return value
 
 
-@log(message='setting: set')
+@log(message='setting: set', level=logging.DEBUG)
 def set_setting(key: str, value: str | int | float | list) -> None:
 
     match key.split('/'):

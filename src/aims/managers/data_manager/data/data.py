@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import Self
 
 from aims.configs import Config
 from aims.managers.data_manager.data.datum import DatumABC
@@ -86,7 +87,7 @@ class ConvergenceByParallelsData(DataABC):
         cls,
         milestone: datetime,
         config: Config,
-    ) -> 'ConvergenceByParallelsData':
+    ) -> Self:
 
         index = ConvergenceByParallelsIndex.create(
             milestone=milestone,

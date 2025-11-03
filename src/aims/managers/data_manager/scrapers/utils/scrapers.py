@@ -4,7 +4,7 @@ from typing import Any, Iterable, Mapping
 
 import pandas as pd
 
-from aims.configs import Directory, TrackedPediod
+from aims.configs import TrackedPediod
 from aims.managers.data_manager.cache import (
     CacheManager,
     cache,
@@ -106,8 +106,8 @@ def scrape_probes(
                     name=probe.attrib['name'],
                     sep=sep,
                 )
-                probes.loc[probe_guid, 'created_at'] = normalize_datetime(
-                    created_at=probe.find('date[@type="last"]').text,
+                probes.loc[probe_guid, 'datetime'] = normalize_datetime(
+                    probe.find('date[@type="last"]').text,
                 )
                 probes.loc[probe_guid, 'is_certified'] = {
                     'yes': True,
