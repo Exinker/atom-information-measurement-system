@@ -17,6 +17,7 @@ LOGGER = logging.getLogger('app')
 
 
 class FilterLevel(Enum):
+
     NOTSET = 0
     NORMAL = 1
     WARRING = 2
@@ -28,6 +29,7 @@ class FilterLevel(Enum):
 
 
 class SorterKind(Enum):
+
     NONE = 'none'
     FILTER_LEVEL = 'filter-level'
 
@@ -87,12 +89,12 @@ class HeaderHeight(BaseValidator):
 
 class HorizontalHeaderWidth(BaseValidator):
 
-    value: int = Field(80, ge=50, le=500)
+    value: int = Field(120, ge=50, le=500)
 
 
 class VerticalHeaderWidth(BaseValidator):
 
-    value: int = Field(120, ge=50, le=500)
+    value: int = Field(160, ge=50, le=500)
 
 
 @log(message='setting: get', level=logging.NOTSET)
@@ -179,6 +181,8 @@ DEFAULT_SETTING = {
 
     'style/font-size': FontSize().value,
     'style/font-weight': FontWeight().value,
+    'style/horizontal-header-width': HorizontalHeaderWidth().value,
+    'style/vertical-header-width': VerticalHeaderWidth().value,
 
     'table/n_rows': 1,
     'table/n_columns': 10,

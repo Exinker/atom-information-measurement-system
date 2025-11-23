@@ -9,6 +9,7 @@ LOGGER = logging.getLogger('app')
 
 
 class CacheManager:
+
     storeges = defaultdict(dict)
 
     def __init__(self, field: str) -> None:

@@ -83,11 +83,11 @@ class AggregateByProbesAtomDataParser(AtomDataParserABC):
         meta = pd.DataFrame(
             columns=cls.META_COLUMN_NAMES,
         ).set_index('probe_guid', drop=False)
-        for probe in xml.find('probes').findall('probe'):
+        for __probe in xml.find('probes').findall('probe'):
 
-            is_not_empty = len(probe.findall('spe')) > 0
+            is_not_empty = len(__probe.findall('spe')) > 0
             if is_not_empty:
-                probe_guid = parse_probe_guid(probe)
+                probe_guid = parse_probe_guid(__probe)
 
                 meta.loc[probe_guid, 'filepath'] = filepath
                 meta.loc[probe_guid, 'organization_name'] = organization_name
@@ -95,26 +95,26 @@ class AggregateByProbesAtomDataParser(AtomDataParserABC):
                 meta.loc[probe_guid, 'user_name'] = user_name
                 meta.loc[probe_guid, 'analysis_name'] = analysis_name
                 meta.loc[probe_guid, 'probe_guid'] = probe_guid
-                meta.loc[probe_guid, 'probe_id'] = int(probe.attrib['id'])
-                meta.loc[probe_guid, 'probe_name'] = probe.attrib.get('name', '???')
-                meta.loc[probe_guid, 'datetime'] = normalize_datetime(probe.find('date[@type="last"]').text)
+                meta.loc[probe_guid, 'probe_id'] = int(__probe.attrib['id'])
+                meta.loc[probe_guid, 'probe_name'] = __probe.attrib.get('name', '???')
+                meta.loc[probe_guid, 'datetime'] = normalize_datetime(__probe.find('date[@type="last"]').text)
                 meta.loc[probe_guid, 'is_certified'] = {
                     'yes': True,
                     'no': False,
-                }.get(probe.attrib.get('COC', 'no'))
+                }.get(__probe.attrib.get('COC', 'no'))
 
         concentration = pd.DataFrame(
             columns=['probe_guid'],
         ).set_index('probe_guid', drop=True)
-        for sheet in find_sheets(xml.find('columns'), sheet_name=filtrated_by_sheet):
-            for column in find_columns(sheet, label=filtrated_by_label):
-                line = parse_column(column)
+        for __sheet in find_sheets(xml.find('columns'), sheet_name=filtrated_by_sheet):
+            for __column in find_columns(__sheet, label=filtrated_by_label):
+                line = parse_column(__column)
 
-                for probe in column.findall('cells/pc'):
-                    probe_id = int(probe.attrib['i'])
+                for __probe in __column.findall('cells/pc'):
+                    probe_id = int(__probe.attrib['i'])
                     probe_guid = meta[meta['probe_id'] == probe_id]['probe_guid'].item()
 
-                    concentration.loc[probe_guid, line['nickname']] = probe.attrib.get('v', '')
+                    concentration.loc[probe_guid, line['nickname']] = __probe.attrib.get('v', '')
 
         return AtomData(
             meta=meta,

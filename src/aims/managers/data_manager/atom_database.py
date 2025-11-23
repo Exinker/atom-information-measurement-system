@@ -7,6 +7,7 @@ from aims.managers.data_manager.types import AnalysisName, Frame, XML
 
 @dataclass
 class Tolerance:
+
     n_parallels: int
     dabs: float
     Dabs: float

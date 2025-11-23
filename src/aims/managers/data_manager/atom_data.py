@@ -5,6 +5,7 @@ from aims.managers.data_manager.types import AnalysisName, Frame, XML
 
 @dataclass
 class AtomMeta:
+
     organization_name: str
     device_name: str
     user_name: str

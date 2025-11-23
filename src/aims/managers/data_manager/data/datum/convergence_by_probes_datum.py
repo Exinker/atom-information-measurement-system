@@ -100,6 +100,7 @@ class ConvergenceByProbesDatum(DatumABC):
             concentration = pd.DataFrame(
                 pd.concat(concentration),
             ).reset_index(drop=True)
+
         except Exception as error:  # add custom exceptions
             LOGGER.warning('Atom data parse faild with %s: %s', type(error).__name__, error)
             return cls.from_default()

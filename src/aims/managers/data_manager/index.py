@@ -125,9 +125,10 @@ class ConvergenceByProbesIndex(IndexABC):
         records = self.records[
             (self.records['analysis_name'] == analysis_name) & (self.records['probe_name'] == probe_name)
         ].copy(deep=True)
+        records = records.sort_values('datetime').drop_duplicates('probe_guid', keep='last')
+
         if records.empty:
             return tuple()
-
         return tuple(records['path'].unique())
 
 
@@ -169,9 +170,8 @@ class ConvergenceByParallelsIndex(IndexABC):
         records = self.records[
             (self.records['probe_guid'] == probe_guid)
         ].copy(deep=True)
-        records = records.set_index('datetime', drop=False)
-        records = records.groupby(by='probe_guid').max().sort_values(by='datetime')
+        records = records.sort_values('datetime').drop_duplicates('probe_guid', keep='last')
+
         if records.empty:
             return tuple()
-
         return records['path'].item()

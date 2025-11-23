@@ -72,6 +72,7 @@ class Directory(str):
 
 
 class TrackedMode(Enum):
+
     CONVERGENCE_BY_PROBES = 'convergence-by-probes-control'
     CONVERGENCE_BY_PARALLELS = 'convergence-by-parallels-control'
     # REFERENCE = 'reference-control'
@@ -95,6 +96,7 @@ class TrackedMode(Enum):
 
 
 class TrackedPediod(Enum):
+
     ALL = 'all'
     YEAR = 'year'
     MONTH = 'month'
@@ -185,6 +187,7 @@ class FiltratedSheet:
 
 
 class FiltratedLabel(Enum):
+
     LABORANT = 'laborant'
     ENGINEAR = 'enginear'
     REPORT = 'report'
@@ -237,6 +240,7 @@ DEFAULT_SEP = '*'
 
 @dataclass(frozen=True, slots=True)
 class Config(AbstractConfig):
+
     version: str
     directory: Directory
 

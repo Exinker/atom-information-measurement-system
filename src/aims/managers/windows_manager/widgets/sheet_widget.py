@@ -228,10 +228,8 @@ class VerticalHeader(QtWidgets.QHeaderView):
         model = self.parent().model()
         data = model._data
 
-        file_dir, file_name = data.iloc[section][['file_dir', 'file_name']]
-
-        path = os.path.join(file_dir, file_name)
-        run_explorer(path)
+        filepath = data.iloc[section]['filepath']
+        run_explorer(filepath)
 
 
 class TableView(QtWidgets.QTableView):

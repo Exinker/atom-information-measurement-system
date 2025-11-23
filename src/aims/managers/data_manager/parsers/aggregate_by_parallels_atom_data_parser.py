@@ -80,18 +80,18 @@ class AggregateByParallelsAtomDataParser(AtomDataParserABC):
         meta = pd.DataFrame(
             columns=cls.META_COLUMN_NAMES,
         ).set_index('parallel_id', drop=False)
-        for probe in xml.find('probes').findall('probe'):
+        for __probe in xml.find('probes').findall('probe'):
 
-            is_not_empty = len(probe.findall('spe')) > 0
+            is_not_empty = len(__probe.findall('spe')) > 0
             if is_not_empty:
-                probe_guid = probe.find('sample/guid').text
-                probe_name = probe.attrib.get('name', '???')
+                probe_guid = __probe.find('sample/guid').text
+                probe_name = __probe.attrib.get('name', '???')
                 is_certified = {
                     'yes': True,
                     'no': False,
-                }.get(probe.attrib.get('COC', 'no'))
+                }.get(__probe.attrib.get('COC', 'no'))
 
-                for parallel in probe.findall('spe'):
+                for parallel in __probe.findall('spe'):
                     parallel_id = int(parallel.attrib['id'])
 
                     meta.loc[parallel_id, 'filepath'] = filepath
@@ -100,7 +100,7 @@ class AggregateByParallelsAtomDataParser(AtomDataParserABC):
                     meta.loc[parallel_id, 'user_name'] = user_name
                     meta.loc[parallel_id, 'analysis_name'] = analysis_name
                     meta.loc[parallel_id, 'probe_guid'] = probe_guid
-                    meta.loc[parallel_id, 'probe_id'] = int(probe.attrib['id'])
+                    meta.loc[parallel_id, 'probe_id'] = int(__probe.attrib['id'])
                     meta.loc[parallel_id, 'probe_name'] = probe_name
                     meta.loc[parallel_id, 'datetime'] = normalize_datetime(parallel.find('date').text)
                     meta.loc[parallel_id, 'is_certified'] = is_certified
@@ -113,18 +113,18 @@ class AggregateByParallelsAtomDataParser(AtomDataParserABC):
         statistics = pd.DataFrame(
             columns=['kind'],
         ).set_index('kind', drop=True)
-        for sheet in find_sheets(xml.find('columns'), sheet_name=filtrated_by_sheet):
-            for column in find_columns(sheet, label=filtrated_by_label):
-                line = parse_column(column)
+        for __sheet in find_sheets(xml.find('columns'), sheet_name=filtrated_by_sheet):
+            for __column in find_columns(__sheet, label=filtrated_by_label):
+                line = parse_column(__column)
 
-                for probe in column.findall('cells/pc'):
-                    for parallel in probe.findall('cl'):
+                for __probe in __column.findall('cells/pc'):
+                    for parallel in __probe.findall('cl'):
                         parallel_id = int(parallel.attrib['i'])
 
                         concentration.loc[parallel_id, line['nickname']] = parallel.attrib.get('v', '')
 
-                    statistics.loc['Cред.', line['nickname']] = _parse_mean(probe)
-                    statistics.loc['СКО', line['nickname']] = _parse_standard_deviation(probe)
+                    statistics.loc['Cред.', line['nickname']] = _parse_mean(__probe)
+                    statistics.loc['СКО', line['nickname']] = _parse_standard_deviation(__probe)
 
         return AtomData(
             meta=meta,

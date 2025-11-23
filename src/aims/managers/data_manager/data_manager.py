@@ -12,6 +12,7 @@ from aims.managers.data_manager.data.datum import DatumABC
 class DataManager:
 
     def __init__(self) -> None:
+
         self._milestone = None
         self._data = None
 
@@ -28,7 +29,6 @@ class DataManager:
 
         if self.data:
             return self.data[-1]
-
         return None
 
     def update(self) -> None:
