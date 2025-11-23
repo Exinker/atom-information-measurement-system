@@ -5,7 +5,6 @@ from PySide6 import QtWidgets
 import aims
 from aims.managers.data_manager import DataManager
 from aims.managers.windows_manager.widgets.central_widget import CentralWidget
-from aims.managers.windows_manager.windows.widget_window import WidgetWindow
 from aims.settings import get_setting, set_setting
 from spectrumapp.loggers import log
 from spectrumapp.windows.main_window import BaseMainWindow
@@ -32,9 +31,6 @@ class MainWindow(BaseMainWindow):
         # update title
         self.on_title_updated()
 
-        # widget window
-        self.widgetWindow = WidgetWindow()
-
     @log(message='window: refresh action')
     @wait
     def on_refreshed(self, *args, **kwargs):
@@ -43,7 +39,6 @@ class MainWindow(BaseMainWindow):
         # visible
         if all([
             not get_setting(key='mainWindow/visible'),
-            not get_setting(key='widgetWindow/visible'),
         ]):
             visible = True
         else:
